@@ -127,7 +127,8 @@ function type(){
  clearTimeout(typing?.t);
  if(!speed){node.textContent=text;typing=null;return afterLine();}
  let i=0;typing={t:null};
- const tick=()=>{i++;node.textContent=text.slice(0,i);if(i>=text.length){typing=null;afterLine();return;}const c=text[i-1];typing.t=setTimeout(tick,speed+(/[.!?。…]/.test(c)?160:/[,，]/.test(c)?70:0));};
+ const voice=S.line.who?(CAST[S.line.who]?S.line.who:'other'):'narration';
+ const tick=()=>{i++;node.textContent=text.slice(0,i);SFX.blip(voice,text[i-1]);if(i>=text.length){typing=null;afterLine();return;}const c=text[i-1];typing.t=setTimeout(tick,speed+(/[.!?。…]/.test(c)?160:/[,，]/.test(c)?70:0));};
  tick();
 }
 function finishType(){clearTimeout(typing?.t);typing=null;const n=$('#vnText');if(n&&S.line)n.textContent=S.line.text;afterLine();}
@@ -261,13 +262,15 @@ function config(){const d=$('#vnConfig'),st=meta.settings;
  <label>음악 볼륨<input type="range" id="cfgBgm" min="0" max="100" value="${Math.round(BGM.settings().volume*100)}"></label>
  <label>효과음 볼륨<input type="range" id="cfgSfx" min="0" max="100" value="${Math.round(SFX.settings().volume*100)}"></label>
  <label class="check"><input type="checkbox" id="cfgSfxMute" ${SFX.settings().muted?'checked':''}> 효과음 끄기</label>
+ <label class="check"><input type="checkbox" id="cfgBlip" ${SFX.settings().blip!==false?'checked':''}> 대사 타이핑 소리 (뽁뽁뽁)</label>
  <div class="sfx-preview"><small>효과음 미리듣기</small>${[['alarm','비상'],['stamp','또?!'],['radio','무전 수신'],['transmit','송신'],['correct','복창'],['wrong','오답'],['rewind','되감기'],['clear','교신 종료'],['phone','쏙!'],['card','장 시작'],['save','저장']].map(([k,n])=>`<button class="quiet" data-sfx="${k}">${n}</button>`).join('')}</div>
+ <div class="sfx-preview"><small>타이핑 목소리 미리듣기</small>${[['orpheia','오르페이아'],['harin','하린'],['instructor','교관'],['jian','지안'],['sangcheol','상철'],['narration','서술']].map(([k,n])=>`<button class="quiet" data-voice="${k}">${n}</button>`).join('')}</div>
  <label class="check"><input type="checkbox" id="cfgMute" ${BGM.settings().muted?'checked':''}> 음악 끄기</label>
  <label class="check"><input type="checkbox" id="cfgSkip" ${st.skipUnread?'checked':''}> 읽지 않은 대사도 스킵</label>
  <label class="check"><input type="checkbox" id="cfgUnlock" ${st.unlockAll?'checked':''}> 회상·갤러리 전체 열람 (공부용)</label>
  <button class="quiet" id="cfgReset">이야기 진행 기록 초기화</button></div>`;
  d.querySelector('[data-close]').onclick=()=>d.close();
- $('#cfgText').onchange=e=>{records.textSpeed=+e.target.value;save();};$('#cfgAuto').onchange=e=>{st.auto=+e.target.value;persist();};$('#cfgBgm').oninput=e=>BGM.setVolume(+e.target.value/100);$('#cfgMute').onchange=e=>BGM.setMuted(e.target.checked);$('#cfgSfx').oninput=e=>SFX.setVolume(+e.target.value/100);$('#cfgSfx').onchange=()=>SFX.play('confirm');$('#cfgSfxMute').onchange=e=>SFX.setMuted(e.target.checked);d.querySelectorAll('[data-sfx]').forEach(b=>b.onclick=()=>SFX.play(b.dataset.sfx));
+ $('#cfgText').onchange=e=>{records.textSpeed=+e.target.value;save();};$('#cfgAuto').onchange=e=>{st.auto=+e.target.value;persist();};$('#cfgBgm').oninput=e=>BGM.setVolume(+e.target.value/100);$('#cfgMute').onchange=e=>BGM.setMuted(e.target.checked);$('#cfgSfx').oninput=e=>SFX.setVolume(+e.target.value/100);$('#cfgSfx').onchange=()=>SFX.play('confirm');$('#cfgSfxMute').onchange=e=>SFX.setMuted(e.target.checked);$('#cfgBlip').onchange=e=>SFX.setBlip(e.target.checked);d.querySelectorAll('[data-sfx]').forEach(b=>b.onclick=()=>SFX.play(b.dataset.sfx));d.querySelectorAll('[data-voice]').forEach(b=>b.onclick=()=>{const w=b.dataset.voice;[...'주인님안녕하세요'].forEach((c,i)=>setTimeout(()=>SFX.blip(w,c),i*45));});
  $('#cfgSkip').onchange=e=>{st.skipUnread=e.target.checked;persist();};$('#cfgUnlock').onchange=e=>{st.unlockAll=e.target.checked;persist();};
  $('#cfgReset').onclick=()=>{if(!confirm('세이브·읽음·해금 기록을 모두 지울까요? 훈련 오답 기록은 남습니다.'))return;meta={saves:{},read:{},seen:[],scenes:[],flags:{},settings:st};seenSet.clear();sceneSet.clear();persist();d.close();title();};
  d.showModal();

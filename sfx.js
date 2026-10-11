@@ -45,8 +45,20 @@ const SFX=(()=>{
   rewind:()=>{tone(300,0,.7,{type:'sine',vol:.18,to:1800});noise(0,.7,{vol:.12,freq:3000,sweep:300,q:1});[1568,1319,1047].forEach((f,i)=>tone(f,.5+i*.06,.2,{type:'sine',vol:.08}));},
   clear:()=>{[523,659,784,1047,1319].forEach((f,i)=>tone(f,i*.09,.5,{type:'triangle',vol:.12}));tone(1568,.5,.9,{type:'sine',vol:.08});},
  };
+ // Text blips ("뽁뽁뽁"): each speaker has a voice pitch; spaces and punctuation stay silent,
+ // narration is softer; only every other character sounds so fast text does not turn into a buzz.
+ const VOICE={orpheia:[880,'triangle'],harin:[700,'square'],instructor:[330,'triangle'],jian:[560,'sine'],sangcheol:[440,'square'],other:[520,'triangle'],narration:[620,'sine',.035]};
+ let blipN=0,lastBlip=0;
+ function blip(who,ch){
+  if(set.muted||set.blip===false||!ctx||ctx.state!=='running')return;
+  if(!ch||/[\s.,!?…~·\-—"“”'()「」\[\]]/.test(ch))return;
+  const now=performance.now();if(now-lastBlip<38||(blipN++%2))return;lastBlip=now;
+  const [f,type,vol=.07]=VOICE[who]||VOICE.other;
+  tone(f*(.94+Math.random()*.12),0,.045,{type,vol,attack:.002});
+ }
+ function setBlip(on){set.blip=on;persist();}
  function play(name){if(set.muted||!ctx||ctx.state!=='running'||!SOUNDS[name])return;try{SOUNDS[name]();}catch{}}
  function setVolume(v){set.volume=v;persist();if(master)master.gain.value=set.muted?0:v;}
  function setMuted(m){set.muted=m;persist();if(master)master.gain.value=m?0:set.volume;}
- return {play,setVolume,setMuted,settings:()=>({...set}),names:Object.keys(SOUNDS)};
+ return {blip,setBlip,play,setVolume,setMuted,settings:()=>({...set}),names:Object.keys(SOUNDS)};
 })();

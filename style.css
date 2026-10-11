@@ -254,3 +254,11 @@ img.vn-stamp{width:min(34vw,360px);text-shadow:none}
 .vn-title:has(.kv) .vn-title-chr{display:none}
 .vn-title-logo{width:min(440px,70vw)}
 @media(max-width:700px){.vn-title-bg.kv,.vn-title-bg.kv-clear{left:0;width:100%;object-position:60% center;filter:brightness(.55)}.vn-title:has(.kv)::before{background:linear-gradient(0deg,#040c14ee,#040c1466 60%)}}
+/* Name plate: text keeps its own padding; a portrait, when present, sits in the left cap. */
+.vn-name{padding:5px 18px}
+.vn-name.has-face{padding:4px 16px 4px 4px}
+.vn-face{position:relative}
+.vn-face.crop img{position:absolute;width:210%;height:auto;max-width:none;left:50%;top:-3%;transform:translateX(-50%);object-fit:initial}
+.vn-face.crop-instructor img,.vn-face.crop-jian img{width:230%;top:-2%}
+.c-instructor .vn-face{border-color:#ffbc76aa;background:#2a2016}.c-harin .vn-face{border-color:#a8e6b4aa;background:#16281d}.c-jian .vn-face{border-color:#c9b6ffaa;background:#1d1733}
+.vn-face.crop-instructor img{top:-6%}

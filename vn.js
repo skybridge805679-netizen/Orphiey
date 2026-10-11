@@ -153,7 +153,13 @@ function paint(){
  const l=S.line,box=$('#vnBox');if(!box)return;
  box.className='vn-box'+(l?.who?' '+(CAST[l.who]?.cls||'c-other'):' is-narr');
  $('#vnWho').textContent=l?.who?nameOf(l.who):'';$('#vnName').hidden=!l?.who;
- const faceKey=l?.who==='orpheia'?(CAST.orpheia.face[l.expr]||'neutral'):'';const face=$('#vnFace');face.hidden=!faceKey;if(faceKey)face.querySelector('img').src=asset(ART_READY.has(`orpheia_face_${faceKey}.png`)?`ui/face_${faceKey}.png`:'orpheia_sd_maid_v2.png');
+ // Name-plate portrait: ORPHEIA has dedicated face icons; other cast crop the head from their current standing.
+ const face=$('#vnFace'),faceKey=l?.who==='orpheia'?(CAST.orpheia.face[l.expr]||'neutral'):'';
+ let faceSrc='',crop='';
+ if(faceKey&&ART_READY.has(`orpheia_face_${faceKey}.png`))faceSrc=`ui/face_${faceKey}.png`;
+ else if(l?.who&&CAST[l.who]){const f=standFile(l.who,l.expr||S.chars[l.who]?.expr||'neutral');if(f){faceSrc=f;crop=' crop crop-'+l.who;}}
+ face.hidden=!faceSrc;face.className='vn-face'+crop;$('#vnName').classList.toggle('has-face',!!faceSrc);
+ if(faceSrc){const img=face.querySelector('img');if(img.dataset.f!==faceSrc){img.dataset.f=faceSrc;img.src=asset(faceSrc);}}
  $('#vnText').textContent='';$('#vnCaret').classList.remove('ready');
  $('#vn').querySelector('[data-vn="auto"]').classList.toggle('on',auto);$('#vn').querySelector('[data-vn="skip"]').classList.toggle('on',skip);
 }

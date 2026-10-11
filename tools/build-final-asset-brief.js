@@ -10,6 +10,9 @@ const STYLE_CAST='기존 오르페이아 PNG와 같은 화풍으로 새 인물�
 const CHAPTERS={'ch00-prologue':'프롤로그','ch01':'1장','ch02':'2장','ch03':'3장','ch04':'4장','ch05':'5장','ch06':'6장','ch07':'7장','ch08':'8장','ch09':'9장','ch10':'10장','ch11':'11장','ch12':'12장','ch13-final':'최종장'};
 const scripts=Object.fromEntries(Object.keys(CHAPTERS).map(k=>[k,fs.readFileSync(path.join(ROOT,'story',k+'.js'),'utf8')]));
 const usedIn=(file,needle)=>Object.entries(scripts).filter(([,src])=>src.includes(needle)).map(([k])=>CHAPTERS[k]);
+// Standings are called by speaker name and expression, not file name.
+const NAMES={instructor:['서도희','instructor'],harin:['유하린','harin'],jian:['류지안','jian'],orpheia:['오르페이아','orpheia']};
+const exprUsedIn=(who,expr)=>Object.entries(scripts).filter(([,src])=>NAMES[who].some(n=>src.includes(`[${n}|${expr}]`)||src.includes(`@show ${n} ${expr}`))).map(([k])=>CHAPTERS[k]);
 
 // ── Who is who (sent with every character prompt).
 const CAST={
@@ -87,7 +90,7 @@ for(const a of VN_ART){
  else if(CG[stem]){const [pri,scene,comp]=CG[stem];it={pri,kind:'end',style:/오르페이아/.test(scene)?'char':'cast',scene,comp,ref:'orpheia_sd_maid_v2.png'+(/하린|서도희|류지안/.test(scene)?', chr_harin_neutral.png · chr_instructor_neutral.png · chr_jian_neutral.png (있으면)':'')+', 해당 장면 배경 PNG'};}
  else if(UI[a.file]){const [pri,,scene,comp,kind,style]=UI[a.file];it={pri,kind,style,scene,comp,ref:'orpheia_sd_maid_v2.png, chr_instructor_neutral.png, chr_harin_neutral.png (있으면), bg_control_room_night.png'};}
  else continue;
- const needle=stem;const uses=usedIn(a.file,needle);
+ const needle=stem;const cm=stem.match(/^chr_(instructor|harin|jian)_(\w+)$/)||stem.match(/^orpheia_sd_()(\w+)$/);const uses=cm?exprUsedIn(cm[1]||'orpheia',cm[2]):usedIn(a.file,needle);
  const use=a.type==='타이틀'?'타이틀 화면':a.file==='title_logo.png'?'타이틀 화면 로고':a.file==='ui_ttott_stamp.png'?'두 번째 이후 모든 비상 연출':a.file==='ui_chapter_card.png'?'모든 장 타이틀 카드':uses.length?uses.join(' · '):'갤러리';
  ITEMS.push({file:a.file,title:a.title,type:a.type,...it,use});
 }

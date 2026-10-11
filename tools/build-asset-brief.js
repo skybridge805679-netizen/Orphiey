@@ -124,7 +124,10 @@ ${promptOf(it)}
 5. 신호 현시·진로·계기 수치·대피 방향·위험물의 정체 등, 보고 전 단계에서 아직 알려지지 않은 정보를 그림이 먼저 보여 주지 않는지 확인합니다.
 6. 배경은 절차 도해가 아닙니다. 설비 상태를 새로 발명해 넣지 않습니다.
 `;
+module.exports={STYLE_CHAR,STYLE_BG,EXCLUDE,OUT};
+if(require.main===module){
 const out=path.join(__dirname,'..','docs');
 fs.writeFileSync(path.join(out,'추가-에셋-생성지침.json'),JSON.stringify(json,null,2)+'\n');
 fs.writeFileSync(path.join(out,'추가-에셋-생성지침.md'),md);
 console.log(ITEMS.length+' items, '+ITEMS.reduce((n,it)=>n+it.files.length,0)+' files');
+}

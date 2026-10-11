@@ -87,13 +87,14 @@ function step(){
    case 'bgm':S.bgm=op.arg==='auto'?'':op.arg;if(S.bgm)BGM.play(S.bgm==='off'?'':S.bgm);else BGM.scene(S.bg);S.pc++;break;
    case 'cg':{const f=op.arg==='off'?'':cgFile(op.arg);S.cg=f;if(f)markSeen(f);S.pc++;paint();break;}
    case 'show':{const was=S.chars[op.who];S.chars[op.who]={expr:op.expr,pos:op.pos};if(!was)pendingFx[op.who]='enter';else if(was.expr!==op.expr&&EXPR_FX[op.expr])pendingFx[op.who]=EXPR_FX[op.expr];S.pc++;paint();break;}
-   case 'phone':S.phone=op.arg!=='off';if(S.phone&&S.chars.orpheia)pendingFx.orpheia='enter';S.pc++;paint();break;
+   case 'phone':S.phone=op.arg!=='off';if(S.phone)SFX.play('phone');if(S.phone&&S.chars.orpheia)pendingFx.orpheia='enter';S.pc++;paint();break;
    case 'hop':case 'tilt':case 'nod':case 'sink':if(op.arg)pendingFx[ALIAS[op.arg]||op.arg]=op.t;S.pc++;paint();break;
    case 'hide':if(op.who==='all')S.chars={};else delete S.chars[op.who];S.pc++;paint();break;
    case 'day':S.day=op.arg;return card('day',op.arg);
    case 'chapter':return card('chapter',op.num,op.title);
    case 'alarm':return alarm(op.arg);
-   case 'flash':fx('flash');S.pc++;break;
+   case 'flash':fx('flash');SFX.play('flash');S.pc++;break;
+   case 'sfx':SFX.play(op.arg);S.pc++;break;
    case 'shake':if(op.arg)pendingFx[ALIAS[op.arg]||op.arg]='shake';else fx('shake');S.pc++;paint();break;
    case 'wait':busy=true;setTimeout(()=>{busy=false;S.pc++;step();},+op.arg||600);return;
    case 'choice':return choose(op);
@@ -186,13 +187,13 @@ function setHidden(v){hidden=v;$('#vn')?.classList.toggle('ui-hidden',v);}
 function fx(kind){const vn=$('#vn');if(!vn)return;vn.classList.remove(kind);void vn.offsetWidth;vn.classList.add(kind);setTimeout(()=>vn.classList.remove(kind),700);}
 function card(kind,a,b){
  paint();busy=true;S.line=null;const c=$('#vnCard');$('#vnBox').classList.add('quiet');
- c.className='vn-card '+kind;c.hidden=false;c.style.backgroundImage=kind==='chapter'&&ART_READY.has('ui_chapter_card.png')?`linear-gradient(#03090f88,#03090fcc),url(${asset('ui_chapter_card.png')})`:'';c.innerHTML=kind==='chapter'?`<small>${esc(a)}</small><h2>${esc(b)}</h2>`:`<p>${esc(a)}</p>`;
+ c.className='vn-card '+kind;c.hidden=false;if(kind==='chapter')SFX.play('card');c.style.backgroundImage=kind==='chapter'&&ART_READY.has('ui_chapter_card.png')?`linear-gradient(#03090f88,#03090fcc),url(${asset('ui_chapter_card.png')})`:'';c.innerHTML=kind==='chapter'?`<small>${esc(a)}</small><h2>${esc(b)}</h2>`:`<p>${esc(a)}</p>`;
  const done=()=>{if(c.hidden)return;c.hidden=true;$('#vnBox')?.classList.remove('quiet');busy=false;S.pc++;step();};
  c.onclick=e=>{e.stopPropagation();done();};setTimeout(done,skip?150:kind==='chapter'?2600:1700);
 }
 function alarm(text){
- S.line=null;paint();busy=true;S.bgm='';BGM.play('bgm_emergency');S.flags.alarms=(S.flags.alarms||0)+1;
- const f=$('#vnFx'),again=S.flags.alarms>=2;f.innerHTML=`<div class="vn-alarm"><b>비상</b><span>${esc(text||'EMERGENCY CALL')}</span>${again?(ART_READY.has('ui_ttott_stamp.png')?`<img class="vn-stamp" src="${asset('ui_ttott_stamp.png')}" alt="또?!">`:'<i class="vn-stamp">또?!</i>'):''}</div>`;$('#vn').classList.add('alarming');fx('shake');
+ S.line=null;paint();busy=true;S.bgm='';BGM.play('bgm_emergency');SFX.play('alarm');S.flags.alarms=(S.flags.alarms||0)+1;
+ const f=$('#vnFx'),again=S.flags.alarms>=2;if(again)setTimeout(()=>SFX.play('stamp'),380);f.innerHTML=`<div class="vn-alarm"><b>비상</b><span>${esc(text||'EMERGENCY CALL')}</span>${again?(ART_READY.has('ui_ttott_stamp.png')?`<img class="vn-stamp" src="${asset('ui_ttott_stamp.png')}" alt="또?!">`:'<i class="vn-stamp">또?!</i>'):''}</div>`;$('#vn').classList.add('alarming');fx('shake');
  setTimeout(()=>{f.innerHTML='';$('#vn')?.classList.remove('alarming');busy=false;S.pc++;step();},skip?200:1500);
 }
 function credits(){
@@ -205,7 +206,7 @@ function credits(){
 function choose(op){
  S.line=null;paint();stopAuto();skip=false;const box=$('#vnChoices');box.hidden=false;$('#vnBox').classList.add('quiet');
  box.innerHTML=op.opts.map((o,i)=>`<button data-i="${i}"><span>${i+1}</span>${esc(o.text)}</button>`).join('');
- const pick=i=>{const o=op.opts[i];if(!o)return;box.hidden=true;box.innerHTML='';$('#vnBox').classList.remove('quiet');log.push({who:'▶ 선택',text:o.text});if(o.set)evalSet(o.set);S.pc=curCh().labels[o.label]??S.pc+1;step();};
+ SFX.play('select');const pick=i=>{const o=op.opts[i];if(!o)return;SFX.play('confirm');box.hidden=true;box.innerHTML='';$('#vnBox').classList.remove('quiet');log.push({who:'▶ 선택',text:o.text});if(o.set)evalSet(o.set);S.pc=curCh().labels[o.label]??S.pc+1;step();};
  box.querySelectorAll('button').forEach(b=>b.onclick=e=>{e.stopPropagation();pick(+b.dataset.i);});
  box.dataset.active='1';VN._pick=pick;
 }
@@ -220,7 +221,7 @@ function drill(id){
 function afterDrill(R){
  const score=cleanCount(R),sc=R.sc;markScene(sc.id);markSeen('cg_training_clear.png');
  document.body.classList.remove('in-drill');run=null;cancelStory();stopMedia();
- shell();paint();busy=true;BGM.scene(S.bg);
+ shell();paint();busy=true;BGM.scene(S.bg);SFX.play('clear');
  const c=$('#vnCard');$('#vnBox').classList.add('quiet');c.className='vn-card drill-done';c.hidden=false;
  c.innerHTML=`<small>교신 종료 · ${esc(sc.id)}</small><h2>${esc(sc.title)}</h2><p>첫 시도 정답 ${score} / ${R.steps.length}${R.rewinds?` · 예측 되감기 ${R.rewinds}회`:''}${R.hinted&&Object.keys(R.hinted).length?` · 힌트 ${Object.keys(R.hinted).length}회`:''}</p><p class="unlock">회상 「사건 기록부」에 추가되었습니다.</p><button class="primary">이야기로 돌아가기 ▶</button>`;
  c.querySelector('button').onclick=e=>{e.stopPropagation();c.hidden=true;$('#vnBox').classList.remove('quiet');busy=false;S.pc++;step();};
@@ -237,7 +238,7 @@ function finishChapter(next){
 // ── Save / load.
 function snapshot(label){return {state:JSON.parse(JSON.stringify(S)),log:log.slice(-60),time:Date.now(),label:label||'',chapter:`${curCh().title} · ${curCh().subtitle}`,preview:S.line?.text||label||'',bg:S.bg};}
 function autosave(label){if(!S)return;meta.saves.auto=snapshot(label);persist();}
-function saveTo(slot){if(!S||!S.line&&slot!=='auto'){toast('대사가 표시된 상태에서 저장할 수 있어요.');return false;}meta.saves[slot]=snapshot();persist();toast(slot==='quick'?'퀵 세이브 완료':'저장했습니다.');return true;}
+function saveTo(slot){if(!S||!S.line&&slot!=='auto'){toast('대사가 표시된 상태에서 저장할 수 있어요.');return false;}meta.saves[slot]=snapshot();persist();SFX.play('save');toast(slot==='quick'?'퀵 세이브 완료':'저장했습니다.');return true;}
 function loadFrom(slot){const s=meta.saves[slot];if(!s||!byId[s.state.ch]){toast('불러올 데이터가 없습니다.');return;}
  if(run){cancelStory();stopMedia();run=null;}document.body.classList.remove('in-drill');
  S=JSON.parse(JSON.stringify(s.state));log=s.log||[];if(S.bgm)BGM.play(S.bgm==='off'?'':S.bgm);else BGM.scene(S.bg);busy=false;skip=false;auto=false;setHidden(false);closeDialogs();shell();
@@ -258,12 +259,15 @@ function config(){const d=$('#vnConfig'),st=meta.settings;
  <label>대사 속도<select id="cfgText">${[[45,'여유롭게'],[28,'보통'],[16,'빠르게'],[0,'즉시 표시']].map(([v,n])=>`<option value="${v}" ${records.textSpeed===v?'selected':''}>${n}</option>`).join('')}</select></label>
  <label>오토 대기<select id="cfgAuto">${[[2600,'느리게'],[1600,'보통'],[800,'빠르게']].map(([v,n])=>`<option value="${v}" ${st.auto===v?'selected':''}>${n}</option>`).join('')}</select></label>
  <label>음악 볼륨<input type="range" id="cfgBgm" min="0" max="100" value="${Math.round(BGM.settings().volume*100)}"></label>
+ <label>효과음 볼륨<input type="range" id="cfgSfx" min="0" max="100" value="${Math.round(SFX.settings().volume*100)}"></label>
+ <label class="check"><input type="checkbox" id="cfgSfxMute" ${SFX.settings().muted?'checked':''}> 효과음 끄기</label>
+ <div class="sfx-preview"><small>효과음 미리듣기</small>${[['alarm','비상'],['stamp','또?!'],['radio','무전 수신'],['transmit','송신'],['correct','복창'],['wrong','오답'],['rewind','되감기'],['clear','교신 종료'],['phone','쏙!'],['card','장 시작'],['save','저장']].map(([k,n])=>`<button class="quiet" data-sfx="${k}">${n}</button>`).join('')}</div>
  <label class="check"><input type="checkbox" id="cfgMute" ${BGM.settings().muted?'checked':''}> 음악 끄기</label>
  <label class="check"><input type="checkbox" id="cfgSkip" ${st.skipUnread?'checked':''}> 읽지 않은 대사도 스킵</label>
  <label class="check"><input type="checkbox" id="cfgUnlock" ${st.unlockAll?'checked':''}> 회상·갤러리 전체 열람 (공부용)</label>
  <button class="quiet" id="cfgReset">이야기 진행 기록 초기화</button></div>`;
  d.querySelector('[data-close]').onclick=()=>d.close();
- $('#cfgText').onchange=e=>{records.textSpeed=+e.target.value;save();};$('#cfgAuto').onchange=e=>{st.auto=+e.target.value;persist();};$('#cfgBgm').oninput=e=>BGM.setVolume(+e.target.value/100);$('#cfgMute').onchange=e=>BGM.setMuted(e.target.checked);
+ $('#cfgText').onchange=e=>{records.textSpeed=+e.target.value;save();};$('#cfgAuto').onchange=e=>{st.auto=+e.target.value;persist();};$('#cfgBgm').oninput=e=>BGM.setVolume(+e.target.value/100);$('#cfgMute').onchange=e=>BGM.setMuted(e.target.checked);$('#cfgSfx').oninput=e=>SFX.setVolume(+e.target.value/100);$('#cfgSfx').onchange=()=>SFX.play('confirm');$('#cfgSfxMute').onchange=e=>SFX.setMuted(e.target.checked);d.querySelectorAll('[data-sfx]').forEach(b=>b.onclick=()=>SFX.play(b.dataset.sfx));
  $('#cfgSkip').onchange=e=>{st.skipUnread=e.target.checked;persist();};$('#cfgUnlock').onchange=e=>{st.unlockAll=e.target.checked;persist();};
  $('#cfgReset').onclick=()=>{if(!confirm('세이브·읽음·해금 기록을 모두 지울까요? 훈련 오답 기록은 남습니다.'))return;meta={saves:{},read:{},seen:[],scenes:[],flags:{},settings:st};seenSet.clear();sceneSet.clear();persist();d.close();title();};
  d.showModal();

@@ -262,3 +262,4 @@ img.vn-stamp{width:min(34vw,360px);text-shadow:none}
 .vn-face.crop-instructor img,.vn-face.crop-jian img{width:230%;top:-2%}
 .c-instructor .vn-face{border-color:#ffbc76aa;background:#2a2016}.c-harin .vn-face{border-color:#a8e6b4aa;background:#16281d}.c-jian .vn-face{border-color:#c9b6ffaa;background:#1d1733}
 .vn-face.crop-instructor img{top:-6%}
+.sfx-preview{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.sfx-preview small{width:100%}.sfx-preview button{font-size:12px;padding:6px 10px}

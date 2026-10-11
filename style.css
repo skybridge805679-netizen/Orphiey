@@ -247,3 +247,10 @@ img.vn-stamp{width:min(34vw,360px);text-shadow:none}
 .partner-line.examiner{border-color:#9fb6c399;background:rgb(16 24 32 / .75)}.partner-line.examiner b{color:#cfe0ea}
 .exam-face{display:grid;place-items:center;font-size:15px;font-weight:900;color:#cfe0ea;background:#1d2b36;border-color:#9fb6c399}
 .vn-card.chapter{background-size:cover;background-position:center}
+/* Title key visual: art shifted right, a dark wash on the left keeps logo and menu readable. */
+.vn-title-bg.kv{left:20%;width:80%;object-fit:cover;object-position:35% center;filter:brightness(.92)}
+.vn-title-bg.kv-clear{left:12%;width:88%;object-position:40% center}
+.vn-title:has(.kv)::before{content:'';position:absolute;inset:0;z-index:1;background:linear-gradient(90deg,#040c14 0%,#040c14 22%,#040c14d9 34%,#040c1400 52%);pointer-events:none}
+.vn-title:has(.kv) .vn-title-chr{display:none}
+.vn-title-logo{width:min(440px,70vw)}
+@media(max-width:700px){.vn-title-bg.kv,.vn-title-bg.kv-clear{left:0;width:100%;object-position:60% center;filter:brightness(.55)}.vn-title:has(.kv)::before{background:linear-gradient(0deg,#040c14ee,#040c1466 60%)}}

@@ -14,17 +14,20 @@ function markScene(id){if(!sceneSet.has(id)){sceneSet.add(id);meta.scenes=[...sc
 const CAST={
  orpheia:{name:'오르페이아',cls:'c-orpheia',stand:{neutral:'orpheia_sd_maid_v2.png',smile:'orpheia_sd_praise_v2.png',worry:'orpheia_sd_worried_v2.png',explain:'orpheia_sd_briefing.png',surprised:['orpheia_sd_surprised.png','orpheia_sd_maid_v2.png'],pout:['orpheia_sd_pout.png','orpheia_sd_worried_v2.png'],shy:['orpheia_sd_shy.png','orpheia_sd_praise_v2.png'],driver:'orpheia_sd_driver_v2.png',stationmaster:'orpheia_sd_stationmaster_v2.png',engineer:'orpheia_sd_engineer_v2.png',evacuation:'orpheia_sd_evacuation_v2.png'},
   face:{neutral:'neutral',smile:'smile',worry:'worry',explain:'serious',surprised:'serious',pout:'worry',shy:'relief',serious:'serious',resolve:'resolve',relief:'relief'}},
- instructor:{name:'도윤재 교관',cls:'c-instructor',stand:{neutral:['chr_instructor_neutral.png',''],stern:['chr_instructor_stern.png',''],smile:['chr_instructor_smile.png',''],coffee:['chr_instructor_coffee.png','']}},
- harang:{name:'채하랑',cls:'c-harang',stand:{neutral:['chr_harang_neutral.png',''],smile:['chr_harang_smile.png',''],surprised:['chr_harang_surprised.png',''],pout:['chr_harang_pout.png',''],excited:['chr_harang_excited.png','']}},
+ instructor:{name:'서도희 교관',cls:'c-instructor',stand:{neutral:['chr_instructor_neutral.png',''],stern:['chr_instructor_stern.png',''],smile:['chr_instructor_smile.png',''],coffee:['chr_instructor_coffee.png','']}},
+ harin:{name:'유하린',cls:'c-harin',stand:{neutral:['chr_harin_neutral.png',''],smile:['chr_harin_smile.png',''],surprised:['chr_harin_surprised.png',''],pout:['chr_harin_pout.png',''],excited:['chr_harin_excited.png','']}},
+ sangcheol:{name:'신상철',cls:'c-player',stand:{}},
 };
-const ALIAS={'오르페이아':'orpheia','도윤재':'instructor','교관':'instructor','도윤재 교관':'instructor','하랑':'harang','채하랑':'harang'};
+const ALIAS={'오르페이아':'orpheia','서도희':'instructor','서 교관':'instructor','교관':'instructor','서도희 교관':'instructor','하린':'harin','유하린':'harin','상철':'sangcheol','신상철':'sangcheol'};
+// Expression changes give the standing a small one-shot motion; @shake/@hop/@tilt <who> force one.
+const EXPR_FX={surprised:'shake',excited:'hop',smile:'hop',shy:'hop',pout:'tilt',worry:'sink',stern:'nod'};
 // Third-round art (docs/추가-에셋-생성지침-VN.md) is probed with HEAD requests; found files join ART_READY and the gallery.
 const VN_PLANNED=[
- ...['neutral','stern','smile','coffee'].map(k=>[`chr_instructor_${k}.png`,`도윤재 교관 · ${k}`,'투명 캐릭터']),
- ...['neutral','smile','surprised','pout','excited'].map(k=>[`chr_harang_${k}.png`,`채하랑 · ${k}`,'투명 캐릭터']),
+ ...['neutral','stern','smile','coffee'].map(k=>[`chr_instructor_${k}.png`,`서도희 교관 · ${k}`,'투명 캐릭터']),
+ ...['neutral','smile','surprised','pout','excited'].map(k=>[`chr_harin_${k}.png`,`유하린 · ${k}`,'투명 캐릭터']),
  ...['surprised','pout','shy'].map(k=>[`orpheia_sd_${k}.png`,`오르페이아 · ${k}`,'투명 캐릭터']),
  ['bg_center_lobby.png','관제센터 로비 · 아침','배경'],['bg_cafeteria.png','구내식당 · 점심','배경'],['bg_break_room.png','야간 휴게실','배경'],['bg_rooftop_night.png','관제센터 옥상 · 밤','배경'],
- ['title_key_visual.png','타이틀 키 비주얼','타이틀'],['cg_vn_first_boot.png','첫 기동','이벤트 CG'],['cg_vn_rooftop_name.png','옥상, 이름 이야기','이벤트 CG'],['cg_vn_night_shift.png','새벽 세 시의 휴게실','이벤트 CG'],
+ ['title_key_visual.png','타이틀 키 비주얼','타이틀'],['cg_vn_first_boot.png','첫 기동','이벤트 CG'],['cg_vn_rooftop_name.png','옥상, 이름 이야기','이벤트 CG'],['cg_vn_night_shift.png','새벽 세 시의 휴게실','이벤트 CG'],['cg_vn_phone_move.png','쏙! 스마트폰 이사','이벤트 CG'],
 ];
 function probe(file){
  if(window.__ASSET_INLINE)return Promise.resolve(!!window.__ASSET_INLINE[file]);
@@ -66,6 +69,7 @@ function parse(src,id){
 }
 
 // ── State and runner.
+let pendingFx={};
 let S=null,typing=null,autoTimer=null,auto=false,skip=false,hidden=false,log=[],busy=false;
 const fresh=ch=>({ch,pc:0,bg:'',cg:'',chars:{},day:'',line:null,flags:{...meta.flags}});
 const curCh=()=>byId[S.ch];
@@ -86,18 +90,21 @@ function step(){
    case 'add':S.flags[op.flag]=(S.flags[op.flag]||0)+op.val;S.pc++;break;
    case 'bg':S.bg=bgFile(op.arg);S.cg='';markSeen(S.bg);S.pc++;paint();break;
    case 'cg':{const f=op.arg==='off'?'':cgFile(op.arg);S.cg=f;if(f)markSeen(f);S.pc++;paint();break;}
-   case 'show':S.chars[op.who]={expr:op.expr,pos:op.pos};S.pc++;paint();break;
+   case 'show':{const was=S.chars[op.who];S.chars[op.who]={expr:op.expr,pos:op.pos};if(!was)pendingFx[op.who]='enter';else if(was.expr!==op.expr&&EXPR_FX[op.expr])pendingFx[op.who]=EXPR_FX[op.expr];S.pc++;paint();break;}
+   case 'phone':S.phone=op.arg!=='off';if(S.phone&&S.chars.orpheia)pendingFx.orpheia='enter';S.pc++;paint();break;
+   case 'hop':case 'tilt':case 'nod':case 'sink':if(op.arg)pendingFx[ALIAS[op.arg]||op.arg]=op.t;S.pc++;paint();break;
    case 'hide':if(op.who==='all')S.chars={};else delete S.chars[op.who];S.pc++;paint();break;
    case 'day':S.day=op.arg;return card('day',op.arg);
    case 'chapter':return card('chapter',op.num,op.title);
    case 'alarm':return alarm(op.arg);
-   case 'flash':case 'shake':fx(op.t);S.pc++;break;
+   case 'flash':fx('flash');S.pc++;break;
+   case 'shake':if(op.arg)pendingFx[ALIAS[op.arg]||op.arg]='shake';else fx('shake');S.pc++;paint();break;
    case 'wait':busy=true;setTimeout(()=>{busy=false;S.pc++;step();},+op.arg||600);return;
    case 'choice':return choose(op);
    case 'drill':return drill(op.arg);
    case 'end':return finishChapter(op.arg);
    case 'say':case 'narr':
-    if(op.t==='say'&&op.expr&&S.chars[op.who])S.chars[op.who].expr=op.expr;
+    if(op.t==='say'&&op.expr&&S.chars[op.who]){if(S.chars[op.who].expr!==op.expr&&EXPR_FX[op.expr])pendingFx[op.who]=EXPR_FX[op.expr];S.chars[op.who].expr=op.expr;}
     S.line={who:op.who||'',text:op.text,expr:op.expr||S.chars[op.who]?.expr||'neutral'};
     log.push({who:nameOf(S.line.who),text:op.text});if(log.length>LOG_MAX)log.shift();
     if(skip&&!isRead(S.pc)&&!meta.settings.skipUnread)skip=false;
@@ -131,7 +138,7 @@ function stopAuto(){clearTimeout(autoTimer);}
 // ── Rendering.
 function shell(){
  document.body.classList.add('vn-mode');
- $('#main').innerHTML=`<section class="vn" id="vn" aria-label="비주얼 노벨"><div class="vn-layer vn-bg"><img id="vnBg" alt=""></div><div class="vn-layer vn-chars" id="vnChars"></div><div class="vn-layer vn-cg"><img id="vnCg" alt=""></div><div class="vn-layer vn-fx" id="vnFx"></div><div class="vn-day" id="vnDay"></div><div class="vn-card" id="vnCard" hidden></div><div class="vn-choices" id="vnChoices" hidden></div>
+ $('#main').innerHTML=`<section class="vn" id="vn" aria-label="비주얼 노벨"><div class="vn-layer vn-bg"><img id="vnBg" alt=""></div><div class="vn-layer vn-chars" id="vnChars"></div><div class="vn-phone" id="vnPhone" hidden><div class="vn-phone-notch"></div><div class="vn-phone-screen"></div></div><div class="vn-layer vn-cg"><img id="vnCg" alt=""></div><div class="vn-layer vn-fx" id="vnFx"></div><div class="vn-day" id="vnDay"></div><div class="vn-card" id="vnCard" hidden></div><div class="vn-choices" id="vnChoices" hidden></div>
  <div class="vn-box" id="vnBox"><div class="vn-name" id="vnName"><span class="vn-face" id="vnFace"><img alt=""></span><b id="vnWho"></b></div><p class="vn-text" id="vnText" aria-live="polite"></p><span class="vn-caret" id="vnCaret">▼</span></div>
  <nav class="vn-menu" aria-label="메뉴">${[['log','로그'],['auto','오토'],['skip','스킵'],['qsave','Q.세이브'],['qload','Q.로드'],['save','세이브'],['load','로드'],['config','설정'],['hide','숨기기'],['title','타이틀']].map(([k,v])=>`<button data-vn="${k}">${v}</button>`).join('')}</nav></section>`;
  const vn=$('#vn');
@@ -144,8 +151,7 @@ function paint(){
  if(!$('#vn'))shell();
  const bg=$('#vnBg');if(bg&&S.bg&&bg.dataset.f!==S.bg){bg.dataset.f=S.bg;bg.src=asset(S.bg);}
  const cg=$('#vnCg');if(cg){cg.parentElement.classList.toggle('on',!!S.cg);if(S.cg&&cg.dataset.f!==S.cg){cg.dataset.f=S.cg;cg.src=asset(S.cg);}}
- const wrap=$('#vnChars');if(wrap){const want=Object.entries(S.chars).map(([who,c])=>({who,file:standFile(who,c.expr),pos:c.pos})).filter(c=>c.file);
-  wrap.innerHTML=want.map(c=>`<img class="vn-chr pos-${c.pos}${S.line?.who===c.who?' speaking':''}" src="${asset(c.file)}" alt="${esc(nameOf(c.who))}">`).join('');want.forEach(c=>markSeen(c.file));}
+ paintChars();
  const day=$('#vnDay');if(day)day.textContent=S.day;
  const l=S.line,box=$('#vnBox');if(!box)return;
  box.className='vn-box'+(l?.who?' '+(CAST[l.who]?.cls||'c-other'):' is-narr');
@@ -153,6 +159,24 @@ function paint(){
  const faceKey=l?.who==='orpheia'?(CAST.orpheia.face[l.expr]||'neutral'):'';const face=$('#vnFace');face.hidden=!faceKey;if(faceKey)face.querySelector('img').src=asset(ART_READY.has(`orpheia_face_${faceKey}.png`)?`ui/face_${faceKey}.png`:'orpheia_sd_maid_v2.png');
  $('#vnText').textContent='';$('#vnCaret').classList.remove('ready');
  $('#vn').querySelector('[data-vn="auto"]').classList.toggle('on',auto);$('#vn').querySelector('[data-vn="skip"]').classList.toggle('on',skip);
+}
+// Standings are kept as persistent nodes so idle motion keeps running and only real changes animate.
+function paintChars(){
+ const wrap=$('#vnChars'),phone=$('#vnPhone');if(!wrap)return;
+ const inPhone=who=>S.phone&&who==='orpheia';
+ phone.hidden=!(S.phone&&S.chars.orpheia);
+ const keep=new Set();
+ for(const [who,c] of Object.entries(S.chars)){
+  const file=standFile(who,c.expr);if(!file)continue;keep.add(who);markSeen(file);
+  const host=inPhone(who)?phone.querySelector('.vn-phone-screen'):wrap;
+  let el=document.getElementById('chr-'+who);
+  if(!el||el.parentElement!==host){el?.remove();el=document.createElement('div');el.id='chr-'+who;el.innerHTML='<div class="vn-chr-fx"><img alt=""></div>';host.appendChild(el);}
+  el.className=`vn-chr pos-${c.pos}${S.line?.who===who||!S.line?.who?' speaking':''}`;
+  const img=el.querySelector('img');if(img.dataset.f!==file){img.dataset.f=file;img.src=asset(file);img.alt=nameOf(who);}
+  const fxName=pendingFx[who];if(fxName){const f=el.firstChild;f.className='vn-chr-fx';void f.offsetWidth;f.classList.add('fx-'+fxName);}
+ }
+ pendingFx={};
+ for(const el of [...wrap.children,...(phone?.querySelector('.vn-phone-screen').children||[])])if(!keep.has(el.id.slice(4)))el.remove();
 }
 function setHidden(v){hidden=v;$('#vn')?.classList.toggle('ui-hidden',v);}
 function fx(kind){const vn=$('#vn');if(!vn)return;vn.classList.remove(kind);void vn.offsetWidth;vn.classList.add(kind);setTimeout(()=>vn.classList.remove(kind),700);}
@@ -187,13 +211,13 @@ function afterDrill(R){
  document.body.classList.remove('in-drill');run=null;cancelStory();stopMedia();
  shell();paint();busy=true;
  const c=$('#vnCard');$('#vnBox').classList.add('quiet');c.className='vn-card drill-done';c.hidden=false;
- c.innerHTML=`<small>교신 종료 · ${esc(sc.id)}</small><h2>${esc(sc.title)}</h2><p>첫 시도 정답 ${score} / ${R.steps.length}${R.rewinds?` · 예측 되감기 ${R.rewinds}회`:''}</p><p class="unlock">회상 「사건 기록부」에 추가되었습니다.</p><button class="primary">이야기로 돌아가기 ▶</button>`;
+ c.innerHTML=`<small>교신 종료 · ${esc(sc.id)}</small><h2>${esc(sc.title)}</h2><p>첫 시도 정답 ${score} / ${R.steps.length}${R.rewinds?` · 예측 되감기 ${R.rewinds}회`:''}${R.hinted&&Object.keys(R.hinted).length?` · 힌트 ${Object.keys(R.hinted).length}회`:''}</p><p class="unlock">회상 「사건 기록부」에 추가되었습니다.</p><button class="primary">이야기로 돌아가기 ▶</button>`;
  c.querySelector('button').onclick=e=>{e.stopPropagation();c.hidden=true;$('#vnBox').classList.remove('quiet');busy=false;S.pc++;step();};
 }
 
 function finishChapter(next){
  const i=chapters.indexOf(curCh()),nx=next?byId[next]:chapters[i+1];persist();
- if(nx){S={...fresh(nx.id),flags:S.flags,day:S.day};autosave('장 시작');paint();return step();}
+ if(nx){S={...fresh(nx.id),flags:S.flags,day:S.day,phone:S.phone};autosave('장 시작');paint();return step();}
  busy=true;S.line=null;paint();const c=$('#vnCard');c.className='vn-card chapter';c.hidden=false;$('#vnBox').classList.add('quiet');
  c.innerHTML=`<small>TO BE CONTINUED</small><h2>다음 이야기는 준비 중이에요</h2><p>주인님, 여기까지 함께해 주셔서 고마워요. 회상에서 겪은 사건을 다시 연습할 수 있어요.</p><button class="primary">타이틀로</button>`;
  c.querySelector('button').onclick=e=>{e.stopPropagation();busy=false;title();};

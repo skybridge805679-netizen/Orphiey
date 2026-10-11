@@ -50,7 +50,7 @@ const ROLE_AIR={
  evacuation:['안내 방송과 발소리가 겹친 채로 승무원이 무전을 잡는다.'],
  system:['관제 화면의 표시가 바뀌고, 다음 호출을 알리는 램프가 켜진다.','잠깐의 정적. 그리고 다시 교신 램프가 깜박인다.','상황판의 칸 하나가 채워지자마자 다음 보고가 들어온다.'],
 };
-const EXAM_AIR_STORY=['교신이 잠깐 빈 틈, 뒤에 서 있던 도윤재 교관이 커피잔을 내려놓고 묻는다.','도 교관이 화면에서 눈을 떼지 않은 채 질문을 던진다. 현장은 잠시 복창을 기다리는 중이다.','“신입, 하나만 묻지.” 도 교관의 목소리는 무전보다 낮다.'];
+const EXAM_AIR_STORY=['교신이 잠깐 빈 틈, 뒤에 서 있던 서도희 교관이 커피잔을 내려놓고 묻는다.','서 교관이 화면에서 눈을 떼지 않은 채 질문을 던진다. 현장은 잠시 복창을 기다리는 중이다.','“상철 씨, 하나만 묻죠.” 서 교관의 목소리는 무전보다 낮다.'];
 const EXAM_AIR=['감독관이 시뮬레이터를 잠시 멈추고 관제석 쪽으로 몸을 기울인다.','교신이 멈춘 사이, 뒤편에서 감독관의 질문이 날아온다.','화면 속 시간이 멈춘다. 지금은 감독관에게 답할 차례다.'];
 function roleOf(st){const s=st.dialogue.spk;return /기관사|기장|운전원/.test(s)?'driver':/역장|역무|운전취급실/.test(s)?'stationmaster':/현장|선로|시설|복구|작업|기술|전력|전철|신호/.test(s)?'engineer':/차장|승무원/.test(s)?'evacuation':st.role||'system';}
 function narration(run,i=run.i){
@@ -68,7 +68,7 @@ function narration(run,i=run.i){
 function prompt(run){
  const it=run.steps[run.i],st=it.step,q=(st.dialogue.q||st.q).trim(),seed=it.src.id+'#'+it.idx;
  if(run.rewoundAt===run.i)return pick(['시간을 되감았어요. 아까의 기록은 잊지 말고, 이번엔 이 질문만 봐요 —','괜찮아요, 주인님. 같은 순간으로 돌아왔어요. 다시 한 번 —','되감기 완료예요. 이번에는 오르페이아도 같이 숨을 고를게요 —'],seed+'r')+` 「${q}」`;
- if(st.dialogue.exam&&run.mode==='story')return pick(['교관님 질문이에요. 지금까지 한 순서를 그대로 말로 꺼내 보면 돼요 —','도 교관님이 시험하시는 거예요. 침착하게요 —'],seed)+` 「${q}」`;
+ if(st.dialogue.exam&&run.mode==='story')return pick(['교관님 질문이에요. 지금까지 한 순서를 그대로 말로 꺼내 보면 돼요 —','서 교관님이 시험하시는 거예요. 침착하게요 —'],seed)+` 「${q}」`;
  if(st.dialogue.exam)return pick(['감독관님 질문이에요. 교재의 순서 그대로 답하면 돼요 —','이건 실기 구술 질문이에요. 담당과 시점을 같이 떠올려 주세요 —','교신은 잠시 멈췄어요. 대신 감독관님께 답할 차례예요 —'],seed)+` 「${q}」`;
  return pick(['주인님, 지금 판단하실 것은 이거예요 —','보고는 다 들어왔어요. 관제석의 차례예요 —','현장이 주인님의 지령을 기다려요 —','침착하게요, 주인님. 물어야 할 건 하나예요 —'],seed)+` 「${q}」`;
 }
@@ -114,15 +114,47 @@ const BRIDGE={
  misc:['현장은 지령을 복창하고 그대로 따른다. 판단의 무게는 고스란히 관제석으로 돌아온다.','교신은 정확히 전달되었다. 문제는 전달된 내용 그 자체였다.'],
 };
 const CLOSING=/^이번 훈련의 시간은/;
+// Butterfly chain for endings nobody has hand-written yet (story/endings.js wins when present):
+// the dispatch goes out → the one needed action never happens → the textbook consequence → an absurd
+// escalation tied to this scenario's places and trains → an aftermath punchline.
+const ESCALATE={
+ '충돌·탈선':['몇 정거장 떨어진 {station} 다음 역에서는, 아무것도 모르는 승객들이 평소처럼 승강장에 줄을 선다. 줄이 점점 길어지자 누군가 돗자리를 편다.','현장 사진이 SNS에 먼저 올라온다. 관제실은 그 사진으로 {train}의 정확한 위치를 처음 확인한다.','출동한 복구 기중기가, 아무도 통제하지 않은 {station} 앞 교차로에서 웨딩카 행렬과 마주친다. 하객 120명이 기중기를 배경으로 단체 사진을 찍는다.'],
+ '화재':['연기 냄새를 맡은 옆 건물 고깃집 손님들이 자기 가게에 불이 난 줄 알고 뛰쳐나온다. 계산한 사람은 아무도 없었다.','{station} 주변 화재 감지기들이 줄줄이 울리고, 근처 아파트 단지 주민 단톡방이 메시지 300개로 폭발한다.'],
+ '사상':['구급차는 왔지만 들어갈 통로를 아무도 열어 두지 않았다. 구급대원들은 {station} 출입구 다섯 곳을 차례로 돌며 문을 두드린다.','현장 주변에 모인 사람들이 저마다 휴대전화를 들고, 관제실보다 먼저 상황을 생중계한다.'],
+ '차량·설비고장':['{train} 승객들은 멈춘 객실에서 휴대전화 배터리가 닳는 순서대로 하나둘 체념한다. 마지막 보조배터리 하나를 두고 즉석 경매가 열린다.','고장 열차 뒤로 열차가 한 대, 두 대, 다섯 대 줄을 선다. 하늘에서 보면 노선 전체가 주차장이다.'],
+ '전력':['{train}의 실내등이 꺼지고 승객들이 일제히 휴대전화 손전등을 켠다. 객실이 점점 콘서트장처럼 보이기 시작한다.','하필 그 시각, 가장 가까운 변전소 당직자는 야식 배달을 받으러 정문에 나가 있었다.'],
+ '운전취급(폐색·신호)':['같은 구간에 열차 두 대가 서로를 모른 채 들어선다. 두 기관사는 동시에 상대 열차의 전조등을 보고, 동시에 같은 단어를 외친다.','{station} 역장은 관제 지시와 신호기와 시간표가 세 가지 다른 말을 하는 것을 보고, 역무실 달력에 「오늘은 쉬는 날」이라고 적고 싶어진다.'],
+ '자연재해':['빗물은 기다려 주지 않는다. {station} 대합실에 들어온 물이 어느새 발목을 넘고, 누군가 고무 오리를 띄운다.','바람에 날아온 현수막 하나가 전차선에 걸린다. 현수막에는 「안전 최우선」이라고 적혀 있었다.'],
+ '테러·위험물':['의심물체 주변으로 사람들이 오히려 모여든다. 몇몇은 사진을 찍고, 한 명은 그 가방이 자기 것과 같은 모델이라며 브랜드를 묻는다.','통제되지 않은 {station} 대합실에서는 영문을 모르는 승객들이 평소처럼 커피를 사고 키오스크 앞에 줄을 선다.'],
+ '지휘·보고':['보고가 엇갈리면서 같은 사고가 본사 시스템에 세 건으로 등록된다. 세 건 모두 서로 다른 담당자가 배정된다.','사장, 본부장, 단장이 각자 다른 경로로 소식을 듣고 각자 다른 지시를 내린다. 현장은 세 가지 지시를 전부 복창한다.'],
+};
+const PUNCH=['다음 날 아침 뉴스 자막: 「{line} {station} 사고… 원인은 "그 순간 아무도 하지 않은 한 가지"」.','그날 밤 실시간 검색어 1위는 「#{station}_무슨일」이었다.','사고조사 보고서는 412쪽에 이른다. 결론은 단 한 줄이었다. 「그때 그걸 했어야 했다.」','{station} 역 고양이는 그날 이후 무전기 소리만 들으면 숨는다.','1년 뒤, 이 사건은 신입 관제사 교육 첫 시간의 단골 사례가 된다. 슬라이드 제목은 「하지 않은 한 줄」.'];
+const PUNCH_STORY=['서 교관은 보고서를 끝까지 읽고, 식은 커피를 한 번에 비운 뒤 말없이 형광펜을 꺼낸다.','하린은 그날 일기장에 적는다. 「오늘의 또?!: 아직 끝나지 않음.」'];
+function places(sc){
+ const vals=Object.values(sc.cast||{}).join(' ')+' '+(sc.intro||'');
+ const station=(vals.match(/[가-힣]{1,5}역(?![가-힣])/)||[''])[0]||'현장';
+ const train=((vals.match(/KTX\s?제?\d+열차|[KT]?\d{3,4}열차|제\d+열차/)||[''])[0])||'멈춘 열차';
+ const line=(sc.cast?.['노선']||sc.cast?.['선']||sc.cast?.['선구']||'').split(/[(\s]/)[0]||(sc.part==='도시철도'?'하늘선':'한빛선');
+ return {station,train,line};
+}
+const shortAct=t=>{const a=t.split(/\s[—–]\s/)[0].trim();return a.length>46?a.slice(0,44)+'…':a;};
 function ending(run,i=run.i,choice=run.picks[i]){
  const it=run.steps[i],st=it.step,base=st.failures?.[choice];if(!base)return null;
  const t=st.opts[choice].t,kind=KIND.find(([,,re])=>re.test(t))||['misc','판단 착오'],seed=`${it.src.id}#${it.idx}#${choice}`;
- const paras=base.text.split(/\n\n+/).filter(p=>!CLOSING.test(p)&&!p.startsWith('“')&&p!==st.dialogue.narr&&!p.startsWith('(비교)'));
- const consequence=paras[paras.length-1]||'';
- const c=clock(run,i),sp=st.speech[choice];
- const open=st.dialogue.exam&&run.mode==='story'?'도 교관이 커피잔을 내려놓는다. “그 답대로 현장이 움직였다면 — 이렇게 됐겠지.”':st.dialogue.exam?'감독관이 기록지에서 눈을 들고, 짧게 고개를 젓는다. “실제 상황이었다면 — 그 답이 이렇게 전해졌을 겁니다.”':`${c.label?c.label+'. ':''}${josa(sp.to.replace(/^발화\s*·\s*/,''),'을','를')} 향한 지령이 송신된다.`;
- const text=[open,`“${sp.line}”`,pick(BRIDGE[kind[0]],seed),consequence,run.mode==='story'?'— 여기까지가, 송신 버튼에 손이 닿기 전 0.3초 동안 오르페이아가 계산한 미래였다. 지령은 아직 나가지 않았다.':`${c.label?c.label+', ':''}훈련 기록은 이 지점에서 멈춘다. 오르페이아가 이 판단 직전의 순간을 붙잡아 두었다.`].filter(Boolean).join('\n\n');
- return {...base,text,tag:kind[1],kind:kind[0]};
+ const c=clock(run,i),sp=st.speech[choice],story=run.mode==='story';
+ const open=st.dialogue.exam&&story?'서 교관이 커피잔을 내려놓는다. “그 답대로 현장이 움직였다면 — 이렇게 됐겠지.”':st.dialogue.exam?'감독관이 기록지에서 눈을 들고, 짧게 고개를 젓는다. “실제 상황이었다면 — 그 답이 이렇게 전해졌을 겁니다.”':`${c.label?c.label+'. ':''}${josa(sp.to.replace(/^발화\s*·\s*/,''),'을','를')} 향한 지령이 송신된다.`;
+ const close=story?'— 여기까지가, 송신 버튼에 손이 닿기 전 0.3초 동안 오르페이아가 계산한 미래였다. 지령은 아직 나가지 않았다.':`${c.label?c.label+', ':''}훈련 기록은 이 지점에서 멈춘다. 오르페이아가 이 판단 직전의 순간을 붙잡아 두었다.`;
+ const hand=typeof ENDINGS!=='undefined'&&ENDINGS[seed];
+ let body,title=base.title;
+ if(hand){body=hand.text;title=hand.title;}
+ else{
+  const paras=base.text.split(/\n\n+/).filter(p=>!CLOSING.test(p)&&!p.startsWith('“')&&p!==st.dialogue.narr&&!p.startsWith('(비교)'));
+  const consequence=paras[paras.length-1]||'',v=places(it.src);
+  const esc=fill(pick(ESCALATE[it.src.cat]||ESCALATE['지휘·보고'],seed+'e'),v),punch=fill(pick(story?[...PUNCH,...PUNCH_STORY]:PUNCH,seed+'p'),v);
+  body=[pick(BRIDGE[kind[0]],seed),`— 그 순간 정말 필요했던 일, 「${shortAct(st.opts[st.ans].t)}」는 끝내 아무도 하지 않았다.`,consequence,esc,punch].join('\n\n');
+ }
+ const text=[open,`“${sp.line}”`,body,close].join('\n\n');
+ return {...base,title,text,tag:kind[1],kind:kind[0],hand:!!hand};
 }
 function comfort(run){const it=run.steps[run.i],f=ending(run);return pick([`주인님, 괜찮아요. 「${f.tag}」였을 뿐이에요. 오르페이아가 그 순간 바로 앞까지 시간을 되감아 둘게요.`,`읏… 아팠죠. 하지만 실제 현장이 아니라 다행이에요. 같은 보고부터 다시 받아 볼까요?`,`이건 주인님의 실수가 아니라 연습이 해 준 경고예요. 「${f.tag}」 — 오르페이아가 꼭 기억해 둘게요.`],it.src.id+'#'+it.idx+'c');}
 

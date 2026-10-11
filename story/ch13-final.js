@@ -148,6 +148,7 @@ VN.chapter('ch13','최종장','뒤돌아보지 않는 노래',`
 @bg bg_hanbit_center
 @day 7월 18일 (금) 10:00 · 한빛센터 · 결과 발표
 일주일 뒤. 관제운영실장실에 모인 건 나, 하린, 서 교관, 그리고 류지안 연구원이었다.
+@bgm bgm_result
 @show jian serious right
 [정해온 실장] 실기 평가 결과입니다. 유하린, 통과.
 @show harin surprised left
@@ -217,6 +218,7 @@ VN.chapter('ch13','최종장','뒤돌아보지 않는 노래',`
 @day 이듬해 3월 4일 (화) 08:30 · 하늘선 종합관제센터
 @cg cg_end_normal
 그리고 다시, 하늘선의 평범한 아침.
+@bgm bgm_result
 @phone off
 @show orpheia smile center
 [오르페이아|smile] 주인님, 출근 확인! 오늘 하늘선 운행 열차 백열두 대, 전부 정상이에요.

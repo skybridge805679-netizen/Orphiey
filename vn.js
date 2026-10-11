@@ -83,7 +83,8 @@ function step(){
    case 'if':{const v=S.flags[op.flag]||0,ok={'>=':v>=op.val,'<=':v<=op.val,'==':v===op.val,'>':v>op.val,'<':v<op.val}[op.op];S.pc=ok?ch.labels[op.label]:S.pc+1;break;}
    case 'set':S.flags[op.flag]=op.val;S.pc++;break;
    case 'add':S.flags[op.flag]=(S.flags[op.flag]||0)+op.val;S.pc++;break;
-   case 'bg':S.bg=bgFile(op.arg);S.cg='';markSeen(S.bg);S.pc++;paint();break;
+   case 'bg':S.bg=bgFile(op.arg);S.cg='';S.bgm='';markSeen(S.bg);BGM.scene(op.arg);S.pc++;paint();break;
+   case 'bgm':S.bgm=op.arg==='auto'?'':op.arg;if(S.bgm)BGM.play(S.bgm==='off'?'':S.bgm);else BGM.scene(S.bg);S.pc++;break;
    case 'cg':{const f=op.arg==='off'?'':cgFile(op.arg);S.cg=f;if(f)markSeen(f);S.pc++;paint();break;}
    case 'show':{const was=S.chars[op.who];S.chars[op.who]={expr:op.expr,pos:op.pos};if(!was)pendingFx[op.who]='enter';else if(was.expr!==op.expr&&EXPR_FX[op.expr])pendingFx[op.who]=EXPR_FX[op.expr];S.pc++;paint();break;}
    case 'phone':S.phone=op.arg!=='off';if(S.phone&&S.chars.orpheia)pendingFx.orpheia='enter';S.pc++;paint();break;
@@ -190,12 +191,12 @@ function card(kind,a,b){
  c.onclick=e=>{e.stopPropagation();done();};setTimeout(done,skip?150:kind==='chapter'?2600:1700);
 }
 function alarm(text){
- S.line=null;paint();busy=true;S.flags.alarms=(S.flags.alarms||0)+1;
+ S.line=null;paint();busy=true;S.bgm='';BGM.play('bgm_emergency');S.flags.alarms=(S.flags.alarms||0)+1;
  const f=$('#vnFx'),again=S.flags.alarms>=2;f.innerHTML=`<div class="vn-alarm"><b>비상</b><span>${esc(text||'EMERGENCY CALL')}</span>${again?(ART_READY.has('ui_ttott_stamp.png')?`<img class="vn-stamp" src="${asset('ui_ttott_stamp.png')}" alt="또?!">`:'<i class="vn-stamp">또?!</i>'):''}</div>`;$('#vn').classList.add('alarming');fx('shake');
  setTimeout(()=>{f.innerHTML='';$('#vn')?.classList.remove('alarming');busy=false;S.pc++;step();},skip?200:1500);
 }
 function credits(){
- S.line=null;paint();busy=true;const c=$('#vnCard');$('#vnBox').classList.add('quiet');c.className='vn-card credits';c.hidden=false;
+ S.line=null;paint();busy=true;BGM.play('song_ending');const c=$('#vnCard');$('#vnBox').classList.add('quiet');c.className='vn-card credits';c.hidden=false;
  const roll=[['ORPHEIA','電脳侍女의 비상관제 일지'],['출연','오르페이아 · 신상철 · 서도희 · 유하린 · 류지안'],['그리고','하늘선과 한빛선의 모든 기관사·역장·현장 담당자'],['원작 교재','철도 비상시 조치 실무 · 교재 74개 사고 432개 교신'],['시나리오·연출','Claude'],['일러스트','이미지 생성 AI와 주인님'],['기획','주인님'],['THANK YOU FOR PLAYING','들은 건 복창하고, 한 일은 기록한다.']];
  c.innerHTML=`<div class="credit-roll">${roll.map(([a,b])=>`<small>${esc(a)}</small><p>${esc(b)}</p>`).join('')}</div>`;
  const done=()=>{if(c.hidden)return;c.hidden=true;$('#vnBox').classList.remove('quiet');busy=false;S.pc++;step();};
@@ -219,7 +220,7 @@ function drill(id){
 function afterDrill(R){
  const score=cleanCount(R),sc=R.sc;markScene(sc.id);markSeen('cg_training_clear.png');
  document.body.classList.remove('in-drill');run=null;cancelStory();stopMedia();
- shell();paint();busy=true;
+ shell();paint();busy=true;BGM.scene(S.bg);
  const c=$('#vnCard');$('#vnBox').classList.add('quiet');c.className='vn-card drill-done';c.hidden=false;
  c.innerHTML=`<small>교신 종료 · ${esc(sc.id)}</small><h2>${esc(sc.title)}</h2><p>첫 시도 정답 ${score} / ${R.steps.length}${R.rewinds?` · 예측 되감기 ${R.rewinds}회`:''}${R.hinted&&Object.keys(R.hinted).length?` · 힌트 ${Object.keys(R.hinted).length}회`:''}</p><p class="unlock">회상 「사건 기록부」에 추가되었습니다.</p><button class="primary">이야기로 돌아가기 ▶</button>`;
  c.querySelector('button').onclick=e=>{e.stopPropagation();c.hidden=true;$('#vnBox').classList.remove('quiet');busy=false;S.pc++;step();};
@@ -239,7 +240,7 @@ function autosave(label){if(!S)return;meta.saves.auto=snapshot(label);persist();
 function saveTo(slot){if(!S||!S.line&&slot!=='auto'){toast('대사가 표시된 상태에서 저장할 수 있어요.');return false;}meta.saves[slot]=snapshot();persist();toast(slot==='quick'?'퀵 세이브 완료':'저장했습니다.');return true;}
 function loadFrom(slot){const s=meta.saves[slot];if(!s||!byId[s.state.ch]){toast('불러올 데이터가 없습니다.');return;}
  if(run){cancelStory();stopMedia();run=null;}document.body.classList.remove('in-drill');
- S=JSON.parse(JSON.stringify(s.state));log=s.log||[];busy=false;skip=false;auto=false;setHidden(false);closeDialogs();shell();
+ S=JSON.parse(JSON.stringify(s.state));log=s.log||[];if(S.bgm)BGM.play(S.bgm==='off'?'':S.bgm);else BGM.scene(S.bg);busy=false;skip=false;auto=false;setHidden(false);closeDialogs();shell();
  const line=S.line;S.line=null;paint();if(line){S.line=line;paint();type();}else step();}
 function latest(){return Object.entries(meta.saves).sort((a,b)=>b[1].time-a[1].time)[0]?.[0];}
 const fmt=t=>new Date(t).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
@@ -256,11 +257,13 @@ function config(){const d=$('#vnConfig'),st=meta.settings;
  d.innerHTML=`<div class="dialog-header"><div><small>CONFIG</small><h2>설정</h2></div><button class="quiet" data-close>닫기 ×</button></div><div class="vn-config">
  <label>대사 속도<select id="cfgText">${[[45,'여유롭게'],[28,'보통'],[16,'빠르게'],[0,'즉시 표시']].map(([v,n])=>`<option value="${v}" ${records.textSpeed===v?'selected':''}>${n}</option>`).join('')}</select></label>
  <label>오토 대기<select id="cfgAuto">${[[2600,'느리게'],[1600,'보통'],[800,'빠르게']].map(([v,n])=>`<option value="${v}" ${st.auto===v?'selected':''}>${n}</option>`).join('')}</select></label>
+ <label>음악 볼륨<input type="range" id="cfgBgm" min="0" max="100" value="${Math.round(BGM.settings().volume*100)}"></label>
+ <label class="check"><input type="checkbox" id="cfgMute" ${BGM.settings().muted?'checked':''}> 음악 끄기</label>
  <label class="check"><input type="checkbox" id="cfgSkip" ${st.skipUnread?'checked':''}> 읽지 않은 대사도 스킵</label>
  <label class="check"><input type="checkbox" id="cfgUnlock" ${st.unlockAll?'checked':''}> 회상·갤러리 전체 열람 (공부용)</label>
  <button class="quiet" id="cfgReset">이야기 진행 기록 초기화</button></div>`;
  d.querySelector('[data-close]').onclick=()=>d.close();
- $('#cfgText').onchange=e=>{records.textSpeed=+e.target.value;save();};$('#cfgAuto').onchange=e=>{st.auto=+e.target.value;persist();};
+ $('#cfgText').onchange=e=>{records.textSpeed=+e.target.value;save();};$('#cfgAuto').onchange=e=>{st.auto=+e.target.value;persist();};$('#cfgBgm').oninput=e=>BGM.setVolume(+e.target.value/100);$('#cfgMute').onchange=e=>BGM.setMuted(e.target.checked);
  $('#cfgSkip').onchange=e=>{st.skipUnread=e.target.checked;persist();};$('#cfgUnlock').onchange=e=>{st.unlockAll=e.target.checked;persist();};
  $('#cfgReset').onclick=()=>{if(!confirm('세이브·읽음·해금 기록을 모두 지울까요? 훈련 오답 기록은 남습니다.'))return;meta={saves:{},read:{},seen:[],scenes:[],flags:{},settings:st};seenSet.clear();sceneSet.clear();persist();d.close();title();};
  d.showModal();
@@ -281,7 +284,7 @@ function menu(k){
 
 // ── Title.
 function title(){
- stopAuto();clearTimeout(typing?.t);typing=null;busy=false;skip=false;auto=false;S=null;
+ BGM.play('bgm_title');stopAuto();clearTimeout(typing?.t);typing=null;busy=false;skip=false;auto=false;S=null;
  if(run){cancelStory();stopMedia();run=null;}document.body.classList.remove('in-drill');document.body.classList.add('vn-mode');closeDialogs();
  const cont=latest();
  $('#main').innerHTML=`<section class="vn-title"><img class="vn-title-bg${ART_READY.has(meta.cleared?'title_key_visual_clear.png':'title_key_visual.png')?' kv'+(meta.cleared?' kv-clear':''):''}" src="${asset(meta.cleared?art('title_key_visual_clear.png',art('title_key_visual.png',art('bg_spring_cherry.png','bg_control_room_night.png'))):art('title_key_visual.png','bg_control_room_night.png'))}" alt=""><img class="vn-title-chr" src="${asset(art('title_key_visual.png','')?'':'orpheia_sd_maid_v2.png')}" alt="" ${art('title_key_visual.png','')?'hidden':''}><div class="vn-title-body"><small>RAILWAY DISPATCH VISUAL NOVEL</small>${ART_READY.has('title_logo.png')?`<img class="vn-title-logo" src="${asset('title_logo.png')}" alt="오르페이아 — 電脳侍女의 비상관제 일지">`:'<h1>오르페이아<span>電脳侍女의 비상관제 일지</span></h1>'}${meta.cleared?'<p class="vn-cleared">ALL CLEAR · 회상과 갤러리가 모두 열렸어요</p>':''}<nav>

@@ -66,6 +66,7 @@ VN.chapter('ch04','제4장','숫자 뒤의 사람들',`
 @phone off
 @day 5월 10일 (금) 07:30 · 휴게실
 다음 날 아침. 휴게실 테이블 위에 낡은 수첩 한 권이 놓여 있었다. 표지는 손때로 반들반들했다.
+@bgm bgm_heavy
 @show instructor neutral right
 [서도희] 상철 씨. 그거 봐도 돼요.
 @cg cg_vn_notebook

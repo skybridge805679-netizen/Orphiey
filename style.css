@@ -110,3 +110,9 @@
 .rewinding .cg-stage{filter:hue-rotate(-25deg) saturate(.6)}
 @keyframes rewind-out{0%{opacity:1}70%{opacity:1}100%{opacity:0}}@keyframes rewind-spin{from{transform:rotate(0)}to{transform:rotate(-200deg)}}
 @media(prefers-reduced-motion:reduce){.rewind-fx,.rewind-fx img{animation:none!important;opacity:0}}
+/* Partner icon: dedicated face art fills the circle; full-body SD fallbacks are cropped to the head. */
+.partner-face{position:relative;flex-shrink:0;width:42px;height:42px;border-radius:50%;overflow:hidden;border:1px solid #f3b9d099;background:#2a1b2e}
+.partner-line .partner-face img{position:absolute;inset:0;width:100%;height:100%;border:0;border-radius:0;object-fit:cover;background:none}
+.partner-face.sd-crop img{width:200%;height:auto;inset:auto;left:50%;top:-6%;transform:translateX(-50%)}
+.partner-line.compact .partner-face{width:34px;height:34px}
+@media(max-width:700px){.partner-face{width:34px;height:34px}}

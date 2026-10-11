@@ -65,8 +65,10 @@ function narration(run,i=run.i){
 }
 
 // ── Partner voice: the question is framed by ORPHEIA instead of hidden.
+const inExam=run=>run.mode==='story'&&typeof VN!=='undefined'&&!!VN.flag('finalExam');
 function prompt(run){
  const it=run.steps[run.i],st=it.step,q=(st.dialogue.q||st.q).trim(),seed=it.src.id+'#'+it.idx;
+ if(inExam(run))return `평가 문항 — 「${q}」`;
  if(run.rewoundAt===run.i)return pick(['시간을 되감았어요. 아까의 기록은 잊지 말고, 이번엔 이 질문만 봐요 —','괜찮아요, 주인님. 같은 순간으로 돌아왔어요. 다시 한 번 —','되감기 완료예요. 이번에는 오르페이아도 같이 숨을 고를게요 —'],seed+'r')+` 「${q}」`;
  if(st.dialogue.exam&&run.mode==='story')return pick(['교관님 질문이에요. 지금까지 한 순서를 그대로 말로 꺼내 보면 돼요 —','서 교관님이 시험하시는 거예요. 침착하게요 —'],seed)+` 「${q}」`;
  if(st.dialogue.exam)return pick(['감독관님 질문이에요. 교재의 순서 그대로 답하면 돼요 —','이건 실기 구술 질문이에요. 담당과 시점을 같이 떠올려 주세요 —','교신은 잠시 멈췄어요. 대신 감독관님께 답할 차례예요 —'],seed)+` 「${q}」`;
@@ -76,6 +78,7 @@ const CHEER=['정확해요, 주인님! 현장이 바로 움직이기 시작했�
 const CHEER_ROLE={driver:'기관사님 목소리가 한결 차분해졌어요.',stationmaster:'역장님이 바로 승객 쪽으로 움직였어요.',engineer:'현장 점검이 지령대로 시작됐어요.',evacuation:'안내 방송이 승객을 제대로 이끌고 있어요.'};
 function react(run){
  const it=run.steps[run.i],st=it.step,seed=it.src.id+'#'+it.idx,right=run.picks[run.i]===st.ans,last=run.i===run.steps.length-1;
+ if(inExam(run))return right?pick(['기록했습니다. 다음 단계로 진행합니다.','확인. 다음 교신으로.','적절합니다. 계속하세요.'],seed):'다시 수행한 결과를 기록했습니다. 해설을 확인하고 진행하세요.';
  if(!right)return '방금 건 정답 지령을 보냈을 때의 응답이에요. 주인님이 고른 지령과 무엇이 달랐는지, 아래 근거로 같이 확인해요.';
  let streak=0;for(let k=run.i;k>=0&&run.picks[k]===run.steps[k].step.ans&&!run.missed?.[k];k--)streak++;
  if(st.dialogue.exam)return pick(['감독관님이 고개를 끄덕였어요. 다음 교신으로 돌아가요.','구술도 완벽해요. 이 순서, 시험장에서도 그대로 말하면 돼요.'],seed);
@@ -143,7 +146,8 @@ function ending(run,i=run.i,choice=run.picks[i]){
  const t=st.opts[choice].t,kind=KIND.find(([,,re])=>re.test(t))||['misc','판단 착오'],seed=`${it.src.id}#${it.idx}#${choice}`;
  const c=clock(run,i),sp=st.speech[choice],story=run.mode==='story';
  const open=st.dialogue.exam&&story?'서 교관이 커피잔을 내려놓는다. “그 답대로 현장이 움직였다면 — 이렇게 됐겠지.”':st.dialogue.exam?'감독관이 기록지에서 눈을 들고, 짧게 고개를 젓는다. “실제 상황이었다면 — 그 답이 이렇게 전해졌을 겁니다.”':`${c.label?c.label+'. ':''}${josa(sp.to.replace(/^발화\s*·\s*/,''),'을','를')} 향한 지령이 송신된다.`;
- const close=story?'— 여기까지가, 송신 버튼에 손이 닿기 전 0.3초 동안 오르페이아가 계산한 미래였다. 지령은 아직 나가지 않았다.':`${c.label?c.label+', ':''}훈련 기록은 이 지점에서 멈춘다. 오르페이아가 이 판단 직전의 순간을 붙잡아 두었다.`;
+ const exam=story&&typeof VN!=='undefined'&&VN.flag('finalExam');
+ const close=exam?'— 평가 시뮬레이터가 그 지령의 결과를 끝까지 재생했다. 이번엔 오르페이아의 예측이 아니다. 평가관이 짧게 말한다. "그 단계부터, 다시."':story?'— 여기까지가, 송신 버튼에 손이 닿기 전 0.3초 동안 오르페이아가 계산한 미래였다. 지령은 아직 나가지 않았다.':`${c.label?c.label+', ':''}훈련 기록은 이 지점에서 멈춘다. 오르페이아가 이 판단 직전의 순간을 붙잡아 두었다.`;
  const hand=typeof ENDINGS!=='undefined'&&ENDINGS[seed];
  let body,title=base.title;
  if(hand){body=hand.text;title=hand.title;}
@@ -156,7 +160,7 @@ function ending(run,i=run.i,choice=run.picks[i]){
  const text=[open,`“${sp.line}”`,body,close].join('\n\n');
  return {...base,title,text,tag:kind[1],kind:kind[0],hand:!!hand};
 }
-function comfort(run){const it=run.steps[run.i],f=ending(run);return pick([`주인님, 괜찮아요. 「${f.tag}」였을 뿐이에요. 오르페이아가 그 순간 바로 앞까지 시간을 되감아 둘게요.`,`읏… 아팠죠. 하지만 실제 현장이 아니라 다행이에요. 같은 보고부터 다시 받아 볼까요?`,`이건 주인님의 실수가 아니라 연습이 해 준 경고예요. 「${f.tag}」 — 오르페이아가 꼭 기억해 둘게요.`],it.src.id+'#'+it.idx+'c');}
+function comfort(run){const it=run.steps[run.i],f=ending(run);if(inExam(run))return `「${f.tag}」로 판정되었습니다. 평가 모드에서는 보조 기능이 비활성화되어 있습니다. 그 단계부터 다시 수행하세요.`;return pick([`주인님, 괜찮아요. 「${f.tag}」였을 뿐이에요. 오르페이아가 그 순간 바로 앞까지 시간을 되감아 둘게요.`,`읏… 아팠죠. 하지만 실제 현장이 아니라 다행이에요. 같은 보고부터 다시 받아 볼까요?`,`이건 주인님의 실수가 아니라 연습이 해 준 경고예요. 「${f.tag}」 — 오르페이아가 꼭 기억해 둘게요.`],it.src.id+'#'+it.idx+'c');}
 
 // ── Epilogue for the clear screen.
 function epilogue(run){

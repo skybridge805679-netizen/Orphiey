@@ -12,37 +12,32 @@ function markScene(id){if(!sceneSet.has(id)){sceneSet.add(id);meta.scenes=[...sc
 
 // ── Cast. Planned art (docs/추가-에셋-생성지침-VN.md) is used once listed in ART_READY; otherwise the fallback.
 const CAST={
- orpheia:{name:'오르페이아',cls:'c-orpheia',stand:{neutral:'orpheia_sd_maid_v2.png',smile:'orpheia_sd_praise_v2.png',worry:'orpheia_sd_worried_v2.png',explain:'orpheia_sd_briefing.png',surprised:['orpheia_sd_surprised.png','orpheia_sd_maid_v2.png'],pout:['orpheia_sd_pout.png','orpheia_sd_worried_v2.png'],shy:['orpheia_sd_shy.png','orpheia_sd_praise_v2.png'],driver:'orpheia_sd_driver_v2.png',stationmaster:'orpheia_sd_stationmaster_v2.png',engineer:'orpheia_sd_engineer_v2.png',evacuation:'orpheia_sd_evacuation_v2.png'},
-  face:{neutral:'neutral',smile:'smile',worry:'worry',explain:'serious',surprised:'serious',pout:'worry',shy:'relief',serious:'serious',resolve:'resolve',relief:'relief'}},
- instructor:{name:'서도희 교관',cls:'c-instructor',stand:{neutral:['chr_instructor_neutral.png',''],stern:['chr_instructor_stern.png',''],smile:['chr_instructor_smile.png',''],coffee:['chr_instructor_coffee.png','']}},
- harin:{name:'유하린',cls:'c-harin',stand:{neutral:['chr_harin_neutral.png',''],smile:['chr_harin_smile.png',''],surprised:['chr_harin_surprised.png',''],pout:['chr_harin_pout.png',''],excited:['chr_harin_excited.png','']}},
+ orpheia:{name:'오르페이아',cls:'c-orpheia',stand:{neutral:'orpheia_sd_maid_v2.png',smile:'orpheia_sd_praise_v2.png',worry:'orpheia_sd_worried_v2.png',explain:'orpheia_sd_briefing.png',surprised:['orpheia_sd_surprised.png','orpheia_sd_maid_v2.png'],pout:['orpheia_sd_pout.png','orpheia_sd_worried_v2.png'],shy:['orpheia_sd_shy.png','orpheia_sd_praise_v2.png'],excited:'orpheia_sd_praise_v2.png',casual:['orpheia_sd_casual.png','orpheia_sd_maid_v2.png'],yukata:['orpheia_sd_yukata.png','orpheia_sd_maid_v2.png'],santa:['orpheia_sd_santa.png','orpheia_sd_praise_v2.png'],coat:['orpheia_sd_coat.png','orpheia_sd_maid_v2.png'],suit:['orpheia_sd_suit.png','orpheia_sd_briefing.png'],driver:'orpheia_sd_driver_v2.png',stationmaster:'orpheia_sd_stationmaster_v2.png',engineer:'orpheia_sd_engineer_v2.png',evacuation:'orpheia_sd_evacuation_v2.png'},
+  face:{casual:'smile',yukata:'smile',santa:'smile',coat:'neutral',suit:'serious',excited:'smile',driver:'serious',stationmaster:'serious',engineer:'serious',evacuation:'serious',neutral:'neutral',smile:'smile',worry:'worry',explain:'serious',surprised:'serious',pout:'worry',shy:'relief',serious:'serious',resolve:'resolve',relief:'relief'}},
+ instructor:{name:'서도희 교관',cls:'c-instructor',stand:{neutral:['chr_instructor_neutral.png',''],stern:['chr_instructor_stern.png',''],smile:['chr_instructor_smile.png',''],coffee:['chr_instructor_coffee.png',''],casual:['chr_instructor_casual.png','chr_instructor_neutral.png']}},
+ harin:{name:'유하린',cls:'c-harin',stand:{neutral:['chr_harin_neutral.png',''],smile:['chr_harin_smile.png',''],surprised:['chr_harin_surprised.png',''],pout:['chr_harin_pout.png',''],excited:['chr_harin_excited.png',''],casual:['chr_harin_casual.png','chr_harin_neutral.png'],yukata:['chr_harin_yukata.png','chr_harin_neutral.png']}},
+ jian:{name:'류지안',cls:'c-jian',stand:{neutral:['chr_jian_neutral.png',''],smile:['chr_jian_smile.png',''],serious:['chr_jian_serious.png','']}},
  sangcheol:{name:'신상철',cls:'c-player',stand:{}},
 };
-const ALIAS={'오르페이아':'orpheia','서도희':'instructor','서 교관':'instructor','교관':'instructor','서도희 교관':'instructor','하린':'harin','유하린':'harin','상철':'sangcheol','신상철':'sangcheol'};
+const ALIAS={'오르페이아':'orpheia','서도희':'instructor','서 교관':'instructor','교관':'instructor','서도희 교관':'instructor','하린':'harin','유하린':'harin','상철':'sangcheol','신상철':'sangcheol','류지안':'jian','지안':'jian'};
 // Expression changes give the standing a small one-shot motion; @shake/@hop/@tilt <who> force one.
 const EXPR_FX={surprised:'shake',excited:'hop',smile:'hop',shy:'hop',pout:'tilt',worry:'sink',stern:'nod'};
 // Third-round art (docs/추가-에셋-생성지침-VN.md) is probed with HEAD requests; found files join ART_READY and the gallery.
-const VN_PLANNED=[
- ...['neutral','stern','smile','coffee'].map(k=>[`chr_instructor_${k}.png`,`서도희 교관 · ${k}`,'투명 캐릭터']),
- ...['neutral','smile','surprised','pout','excited'].map(k=>[`chr_harin_${k}.png`,`유하린 · ${k}`,'투명 캐릭터']),
- ...['surprised','pout','shy'].map(k=>[`orpheia_sd_${k}.png`,`오르페이아 · ${k}`,'투명 캐릭터']),
- ['bg_center_lobby.png','관제센터 로비 · 아침','배경'],['bg_cafeteria.png','구내식당 · 점심','배경'],['bg_break_room.png','야간 휴게실','배경'],['bg_rooftop_night.png','관제센터 옥상 · 밤','배경'],
- ['title_key_visual.png','타이틀 키 비주얼','타이틀'],['cg_vn_first_boot.png','첫 기동','이벤트 CG'],['cg_vn_rooftop_name.png','옥상, 이름 이야기','이벤트 CG'],['cg_vn_night_shift.png','새벽 세 시의 휴게실','이벤트 CG'],['cg_vn_phone_move.png','쏙! 스마트폰 이사','이벤트 CG'],
-];
+const VN_PLANNED=VN_ART.map(a=>[a.file,a.title,a.type]);
 function probe(file){
  if(window.__ASSET_INLINE)return Promise.resolve(!!window.__ASSET_INLINE[file]);
  if(location.protocol==='file:')return new Promise(ok=>{const i=new Image();i.onload=()=>ok(true);i.onerror=()=>ok(false);i.src=asset(file);});
  return fetch(asset(file),{method:'HEAD'}).then(r=>r.ok,()=>false);
 }
 const ready=Promise.all(VN_PLANNED.map(([file,title,type])=>probe(file).then(ok=>{if(!ok)return;ART_READY.add(file);if(!CG_ART.some(a=>a.file===file))CG_ART.push({file,title,type});})));
-const standFile=(who,expr)=>{const s=CAST[who]?.stand[expr]??CAST[who]?.stand.neutral;if(!s)return '';return Array.isArray(s)?art(s[0],s[1]):s;};
-const BG_FALLBACK={bg_center_lobby:'bg_control_room_night.png',bg_cafeteria:'bg_control_room_night.png',bg_break_room:'bg_control_room_night.png',bg_rooftop_night:'bg_mainline_signal_night.png',bg_street_evening:'bg_platform_emergency_normal.png',bg_dorm_night:'bg_control_room_night.png',title_key_visual:'bg_control_room_night.png'};
+const standFile=(who,expr)=>{const s=CAST[who]?.stand[expr]??CAST[who]?.stand.neutral;if(!s)return '';if(!Array.isArray(s))return s;const f=art(s[0],'');if(f)return f;return s[1]&&s[1].startsWith('chr_')?art(s[1],''):s[1];};
+const BG_FALLBACK=Object.fromEntries(VN_ART.filter(a=>a.fallback).map(a=>[a.file.replace(/\.png$/,''),a.fallback]));BG_FALLBACK.title_key_visual='bg_control_room_night.png';
 const bgFile=f=>{const k=f.replace(/\.png$/,'');return BG_FALLBACK[k]?art(k+'.png',BG_FALLBACK[k]):f.endsWith('.png')?f:f+'.png';};
 const cgFile=f=>{const k=f.replace(/\.png$/,'')+'.png';return ART_READY.has(k)||CG_ART.some(a=>a.file===k)?k:'';};
 
 // ── Script parser. Lines: "@cmd args", "[이름|표정] 대사", "> 선택지 -> label {flag+1}", "// 주석", 그 외는 서술.
 const chapters=[],byId={};
-function chapter(id,title,subtitle,src){const ops=parse(src,id);const ch={id,title,subtitle,ops,labels:{}};ops.forEach((o,i)=>{if(o.t==='label')ch.labels[o.name]=i;});chapters.push(ch);byId[id]=ch;}
+function chapter(id,title,subtitle,src){const ops=parse(src,id);const ch={id,title,subtitle,ops,labels:{}};ops.forEach((o,i)=>{if(o.t==='label')ch.labels[o.arg]=i;});chapters.push(ch);byId[id]=ch;}
 function parse(src,id){
  const ops=[];let choice=null;
  for(const [n,raw] of src.split('\n').entries()){
@@ -101,6 +96,8 @@ function step(){
    case 'shake':if(op.arg)pendingFx[ALIAS[op.arg]||op.arg]='shake';else fx('shake');S.pc++;paint();break;
    case 'wait':busy=true;setTimeout(()=>{busy=false;S.pc++;step();},+op.arg||600);return;
    case 'choice':return choose(op);
+   case 'credits':return credits();
+   case 'clear':meta.cleared=true;persist();S.pc++;break;
    case 'drill':return drill(op.arg);
    case 'end':return finishChapter(op.arg);
    case 'say':case 'narr':
@@ -182,14 +179,21 @@ function setHidden(v){hidden=v;$('#vn')?.classList.toggle('ui-hidden',v);}
 function fx(kind){const vn=$('#vn');if(!vn)return;vn.classList.remove(kind);void vn.offsetWidth;vn.classList.add(kind);setTimeout(()=>vn.classList.remove(kind),700);}
 function card(kind,a,b){
  paint();busy=true;S.line=null;const c=$('#vnCard');$('#vnBox').classList.add('quiet');
- c.className='vn-card '+kind;c.hidden=false;c.innerHTML=kind==='chapter'?`<small>${esc(a)}</small><h2>${esc(b)}</h2>`:`<p>${esc(a)}</p>`;
+ c.className='vn-card '+kind;c.hidden=false;c.style.backgroundImage=kind==='chapter'&&ART_READY.has('ui_chapter_card.png')?`linear-gradient(#03090f88,#03090fcc),url(${asset('ui_chapter_card.png')})`:'';c.innerHTML=kind==='chapter'?`<small>${esc(a)}</small><h2>${esc(b)}</h2>`:`<p>${esc(a)}</p>`;
  const done=()=>{if(c.hidden)return;c.hidden=true;$('#vnBox')?.classList.remove('quiet');busy=false;S.pc++;step();};
  c.onclick=e=>{e.stopPropagation();done();};setTimeout(done,skip?150:kind==='chapter'?2600:1700);
 }
 function alarm(text){
  S.line=null;paint();busy=true;S.flags.alarms=(S.flags.alarms||0)+1;
- const f=$('#vnFx');f.innerHTML=`<div class="vn-alarm"><b>비상</b><span>${esc(text||'EMERGENCY CALL')}</span></div>`;$('#vn').classList.add('alarming');fx('shake');
+ const f=$('#vnFx'),again=S.flags.alarms>=2;f.innerHTML=`<div class="vn-alarm"><b>비상</b><span>${esc(text||'EMERGENCY CALL')}</span>${again?(ART_READY.has('ui_ttott_stamp.png')?`<img class="vn-stamp" src="${asset('ui_ttott_stamp.png')}" alt="또?!">`:'<i class="vn-stamp">또?!</i>'):''}</div>`;$('#vn').classList.add('alarming');fx('shake');
  setTimeout(()=>{f.innerHTML='';$('#vn')?.classList.remove('alarming');busy=false;S.pc++;step();},skip?200:1500);
+}
+function credits(){
+ S.line=null;paint();busy=true;const c=$('#vnCard');$('#vnBox').classList.add('quiet');c.className='vn-card credits';c.hidden=false;
+ const roll=[['ORPHEIA','電脳侍女의 비상관제 일지'],['출연','오르페이아 · 신상철 · 서도희 · 유하린 · 류지안'],['그리고','하늘선과 한빛선의 모든 기관사·역장·현장 담당자'],['원작 교재','철도 비상시 조치 실무 · 교재 74개 사고 432개 교신'],['시나리오·연출','Claude'],['일러스트','이미지 생성 AI와 주인님'],['기획','주인님'],['THANK YOU FOR PLAYING','들은 건 복창하고, 한 일은 기록한다.']];
+ c.innerHTML=`<div class="credit-roll">${roll.map(([a,b])=>`<small>${esc(a)}</small><p>${esc(b)}</p>`).join('')}</div>`;
+ const done=()=>{if(c.hidden)return;c.hidden=true;$('#vnBox').classList.remove('quiet');busy=false;S.pc++;step();};
+ c.onclick=e=>{e.stopPropagation();done();};setTimeout(done,skip?300:16000);
 }
 function choose(op){
  S.line=null;paint();stopAuto();skip=false;const box=$('#vnChoices');box.hidden=false;$('#vnBox').classList.add('quiet');
@@ -274,7 +278,7 @@ function title(){
  stopAuto();clearTimeout(typing?.t);typing=null;busy=false;skip=false;auto=false;S=null;
  if(run){cancelStory();stopMedia();run=null;}document.body.classList.remove('in-drill');document.body.classList.add('vn-mode');closeDialogs();
  const cont=latest();
- $('#main').innerHTML=`<section class="vn-title"><img class="vn-title-bg" src="${asset(art('title_key_visual.png','bg_control_room_night.png'))}" alt=""><img class="vn-title-chr" src="${asset(art('title_key_visual.png','')?'':'orpheia_sd_maid_v2.png')}" alt="" ${art('title_key_visual.png','')?'hidden':''}><div class="vn-title-body"><small>RAILWAY DISPATCH VISUAL NOVEL</small><h1>오르페이아<span>電脳侍女의 비상관제 일지</span></h1><nav>
+ $('#main').innerHTML=`<section class="vn-title"><img class="vn-title-bg" src="${asset(meta.cleared?art('title_key_visual_clear.png',art('title_key_visual.png',art('bg_spring_cherry.png','bg_control_room_night.png'))):art('title_key_visual.png','bg_control_room_night.png'))}" alt=""><img class="vn-title-chr" src="${asset(art('title_key_visual.png','')?'':'orpheia_sd_maid_v2.png')}" alt="" ${art('title_key_visual.png','')?'hidden':''}><div class="vn-title-body"><small>RAILWAY DISPATCH VISUAL NOVEL</small>${ART_READY.has('title_logo.png')?`<img class="vn-title-logo" src="${asset('title_logo.png')}" alt="오르페이아 — 電脳侍女의 비상관제 일지">`:'<h1>오르페이아<span>電脳侍女의 비상관제 일지</span></h1>'}${meta.cleared?'<p class="vn-cleared">ALL CLEAR · 회상과 갤러리가 모두 열렸어요</p>':''}<nav>
  <button class="primary" data-t="new">처음부터</button><button data-t="continue" ${cont?'':'disabled'}>이어하기</button><button data-t="load" ${Object.keys(meta.saves).length?'':'disabled'}>불러오기</button><button data-t="recall">회상 · 사건 기록부</button><button data-t="gallery">갤러리</button><button data-t="config">설정</button></nav>
  <p class="vn-title-note">교재 기반 74개 사고 · 432개 교신. 이야기 속에서 겪은 사건은 회상에서 다시 연습할 수 있어요.</p></div></section>`;
  const go={new:()=>{if(Object.keys(meta.saves).length&&!confirm('처음부터 시작할까요? 기존 세이브는 그대로 남습니다.'))return;S=fresh(chapters[0].id);log=[];shell();paint();step();},continue:()=>loadFrom(cont),load:()=>slotsDialog('load'),recall:()=>catalog(),gallery:()=>openCG(),config};
@@ -297,5 +301,5 @@ document.addEventListener('keydown',e=>{
 document.addEventListener('keyup',e=>{if(e.key==='Control'&&skip){skip=false;if($('#vn'))paint();}});
 
 ready.then(()=>{if($('.vn-title'))title();else if(S&&$('#vn'))paint();});
-return {chapter,title,ready,afterDrill,markSeen,markScene,isUnlocked:id=>meta.settings.unlockAll||sceneSet.has(id),isSeen:f=>meta.settings.unlockAll||seenSet.has(f),inStory:()=>!!S,_pick:null,chapters};
+return {flag:k=>S?.flags?.[k],cleared:()=>!!meta.cleared,chapter,title,ready,afterDrill,markSeen,markScene,isUnlocked:id=>meta.settings.unlockAll||meta.cleared||sceneSet.has(id),isSeen:f=>meta.settings.unlockAll||meta.cleared||seenSet.has(f),inStory:()=>!!S,_pick:null,chapters};
 })();

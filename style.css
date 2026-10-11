@@ -234,3 +234,16 @@ body.vn-mode #main{min-height:100svh}
 @media(max-width:700px){.vn-phone{bottom:205px;width:34vw}}
 @media(prefers-reduced-motion:reduce){.vn-chr img,.adv-scene .cg-character{animation:none!important}}
 .scene-tools .quiet.on{border-color:#ffd27a;color:#ffd27a}
+.vn-stamp{position:absolute;right:12%;top:18%;transform:rotate(-14deg);font-style:normal;font-weight:900;font-size:clamp(48px,9vw,110px);color:#ffe066;text-shadow:0 0 0 #000,4px 4px 0 #a5161a,0 0 30px #ff3030;animation:vn-stamp .35s cubic-bezier(.2,1.6,.4,1)}
+img.vn-stamp{width:min(34vw,360px);text-shadow:none}
+@keyframes vn-stamp{from{transform:rotate(-14deg) scale(2.4);opacity:0}to{transform:rotate(-14deg) scale(1);opacity:1}}
+.vn-card.credits{overflow:hidden;place-content:stretch}
+.credit-roll{display:flex;flex-direction:column;align-items:center;gap:6px;animation:credit-roll 16s linear forwards;padding-top:100svh}
+.credit-roll small{margin-top:34px}.credit-roll p{margin:0;font-size:18px;color:#e6f2f4}
+@keyframes credit-roll{to{transform:translateY(-100%)}}
+.vn-title-logo{display:block;width:min(560px,80vw);margin:6px 0 30px;filter:drop-shadow(0 6px 30px #000)}
+.vn-cleared{color:var(--orange);letter-spacing:2px;font-size:12px;margin:-18px 0 22px}
+.c-jian .vn-name{border-color:#c9b6ff99;background:#1d1733}.c-jian .vn-name b{color:#e0d4ff}
+.partner-line.examiner{border-color:#9fb6c399;background:rgb(16 24 32 / .75)}.partner-line.examiner b{color:#cfe0ea}
+.exam-face{display:grid;place-items:center;font-size:15px;font-weight:900;color:#cfe0ea;background:#1d2b36;border-color:#9fb6c399}
+.vn-card.chapter{background-size:cover;background-position:center}

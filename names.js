@@ -17,8 +17,12 @@ const HAND={ // values the dialogue reads aloud; picked once so retries sound th
 };
 const FIELDS_SKIP_NUMBERS=new Set(['t','why']); // option text and reasons keep template numbers
 let poolAt=0;
+const SHARE={'R-1-02B':'R-1-02A'}; // second half of the same accident keeps the first half's places
+const assigned={};
 function names(sc){
- const text=JSON.stringify(sc),need=['△△','□□','◇◇'].filter(k=>text.includes(k));
+ const text=JSON.stringify(sc);
+ if(SHARE[sc.id]&&assigned[SHARE[sc.id]]){const map={...assigned[SHARE[sc.id]]};for(const k of ['◇◇'])if(text.includes(k)&&!map[k]){let n;do{n=POOL[poolAt++%POOL.length];}while(text.includes(n)||Object.values(map).includes(n));map[k]=n;}return map;}
+ const need=['△△','□□','◇◇'].filter(k=>text.includes(k));
  if(/(?<!○)○○(?=역|터널|~| 부근| 지진계측기|, 동경)/.test(text)||/○○~/.test(text))need.unshift('○○');
  const map={};
  for(const k of need){let n;do{n=POOL[poolAt++%POOL.length];}while(text.includes(n)||Object.values(map).includes(n));map[k]=n;}
@@ -42,7 +46,7 @@ for(const sc of DATA){
  if(!/[○△□◇]/.test(JSON.stringify(sc)))continue;
  const h=[...sc.id].reduce((a,c)=>a*31+c.charCodeAt(0)>>>0,7);
  const num={k:20+h%60,no:10+h%80};
- sc.places=names(sc);
+ sc.places=names(sc);assigned[sc.id]=sc.places;
  walk(sc,sc,sc.places,num,'');
 }
 })();

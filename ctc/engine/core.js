@@ -1,0 +1,175 @@
+(function(root){
+ 'use strict';
+ function create(config=null){
+ // A visible route path is evidence about geometry, not an interlocking table.
+ const {sources,routes,points,signals}=config;
+ const Parts=typeof module!=='undefined'?require('./point-parts'):root.SimPointParts,partInfo=Parts.forStation(config.id),pointParts=partInfo.parts,pointPartLabels=partInfo.labels;
+ const IL=typeof module!=='undefined'?require('./interlocking.js'):root.SimInterlocking;
+ const MENUS=typeof module!=='undefined'?require('./route-menus.js'):root.SimRouteMenus;
+ // Routes the real LS popup offers for a signal. Verified stations use the transcribed list; others fall back to every derived route.
+ const lsMenu=sig=>{const list=MENUS?.[config.id]?.[sig];return list?list.map(d=>sig+'-'+d).filter(id=>routes[id]):Object.keys(routes).filter(id=>routes[id].signal===sig);};
+ const menuVerified=!!MENUS?.[config.id]&&Object.keys(signals).every(sig=>MENUS[config.id][sig]);
+ const menuVerifiedFor=sig=>!!MENUS?.[config.id]?.[sig];
+ // A rule-derived overlap is already given when an exit route from the destination track is set: the overrun then follows that route.
+ const overlapOf=(id,s)=>{const ov=IL.rulesFor(config.id,id);if(!ov||!s||!ov.derived)return ov;return Object.keys(s.routes||{}).some(o=>o!==id&&ov.exits.includes(routes[o]?.signal))?null:ov;};
+ const lockSeconds=signal=>IL.approach.seconds[signals[signal]?.kind]||0;
+ const remaining=(s,r)=>Math.max(0,Math.ceil(r.lock.until-s.clock));
+ function overlapBlocker(s,id,skip){
+  const requested=overlapOf(id,s),candidate=routes[id];
+  // 전환기는 출발신호기에서 가까운 순서(order)로, 실물에서 확인한 오버랩(checked)을 계산한 것보다 먼저 본다 — 실제 문구가 가리키는 전환기와 같게
+  const pts=ov=>{const e=Object.entries(ov?.points||{});return ov?.order?e.sort((a,b)=>(ov.order.indexOf(a[0])+99)%99-(ov.order.indexOf(b[0])+99)%99):e;};
+  for(const pass of [true,false])for(const other of Object.keys(s.routes)){
+   if(other===skip)continue;
+   const active=routes[other],existing=overlapOf(other,s);
+   if(!!existing?.checked===pass)for(const [pid,pos]of pts(existing)){
+    if((candidate.pointLocks||[]).includes(pid)&&candidate.pointPositions[pid]!==pos)return {route:other,point:existing.parts?.[pid]||pid};
+   }
+   if(!!requested?.checked===pass)for(const [pid,pos]of pts(requested)){
+    if((active.pointLocks||[]).includes(pid)&&active.pointPositions[pid]!==pos)return {route:other,point:requested.parts?.[pid]||pid};
+    if(existing?.points[pid]&&existing.points[pid]!==pos)return {route:other,point:requested.parts?.[pid]||existing.parts?.[pid]||pid};
+   }
+   if(pass&&existing?.clearSignals?.includes(candidate.signal))return {route:other,point:''};
+  }
+  return null;
+ }
+ function initial(){return {mode:'AUTO',pending:null,clock:0,points:Object.fromEntries(Object.keys(points).map(id=>[id,'N'])),signals:Object.fromEntries(Object.keys(signals).map(id=>[id,'STOP'])),routes:{},approach:{},occupied:{},blockedPoints:[],faults:{signals:[],points:[]},ttb:[],logs:[],events:[],scans:{current:0,all:0},scanUntil:0,inspected:[]};}
+ function dispatch(s,a){
+  const log=(ok,message)=>{s.logs.unshift({time:s.clock,source:a.source||'안내',action:a.type,result:ok?'완료':'보류',message});if(ok)s.events.push({...a,time:s.clock});return{ok,message};};
+  if(['point','pointLock','inspectPoint'].includes(a.type)||a.type==='fault'&&a.kind==='point'){if(pointParts[a.id])a={...a,pointPart:a.id,id:pointParts[a.id]};}
+  if(config?.controlled===false&&['mode','route','withdraw','stop','point'].includes(a.type))return log(false,'비연동역입니다. 연결 연동역에서 진로를 제어하세요.');
+  // 설비 고장·TTB 설정은 교육용 상황 설정이라 제어권이 필요 없다 (실기3 3.4 자동제어 조건 ④⑤⑥)
+  if(a.type==='fault'){
+   const list=a.kind==='signal'?signals:points;if(!list[a.id])return log(false,'신호기 또는 전환기를 확인하세요.');
+   const arr=(s.faults??={signals:[],points:[]})[a.kind==='signal'?'signals':'points'],at=arr.indexOf(a.id);
+   if(a.on&&at<0)arr.push(a.id);if(!a.on&&at>=0)arr.splice(at,1);
+   return log(true,a.id+(a.kind==='signal'?' 신호기 ':' 전환기 ')+(a.on?'고장':'고장 복구'));
+  }
+  if(a.type==='ttb'){
+   if(!routes[a.id])return log(false,'등록되지 않은 진로입니다.');
+   const arr=(s.ttb??=[]),at=arr.indexOf(a.id);if(a.on&&at<0)arr.push(a.id);if(!a.on&&at>=0)arr.splice(at,1);
+   return log(true,a.id+' 연속통과진로(TTB) '+(a.on?'설정':'해제'));
+  }
+  if(a.type==='tick'){const seconds=a.seconds??1;if(!Number.isFinite(seconds)||seconds<0)return log(false,'시간 진행 값은 0 이상의 유한한 초여야 합니다.');s.clock+=seconds;for(const [id,r] of Object.entries(s.routes))if(r.lock&&s.clock>=r.lock.until){delete s.routes[id];s.signals[routes[id].signal]='STOP';s.logs.unshift({time:s.clock,source:'연동장치',action:'approachRelease',result:'완료',message:id+' 접근쇄정 '+r.lock.seconds+'초 경과 · 진로 해정'});s.events.push({type:'approachRelease',id,time:s.clock});}return{ok:true};}
+  if(a.type==='approach'){
+   const sig=signals[a.signal];if(!sig||!lockSeconds(a.signal))return log(false,'접근쇄정은 장내·출발신호기에만 적용됩니다.');
+   const present=a.present!==false,active=Object.keys(s.routes).find(id=>routes[id].signal===a.signal);
+   if(present&&s.approach[a.signal])return log(false,a.signal+' 외방에 이미 접근 열차가 있습니다.');
+   if(!present&&!s.approach[a.signal])return log(false,a.signal+' 외방에 접근 열차가 없습니다.');
+   if(!present&&active&&s.routes[active].lock)return log(false,'접근쇄정 중에는 접근 열차를 제거할 수 없습니다. 남은 '+remaining(s,s.routes[active])+'초');
+   if(present)s.approach[a.signal]=true;else delete s.approach[a.signal];
+   return log(true,present?a.signal+' 외방 접근구간에 열차 진입 · 이후 신호를 정지하면 접근쇄정 '+lockSeconds(a.signal)+'초':a.signal+' 접근 열차 제거');
+  }
+  if(a.type==='cancel'){a={...a,activeRoutes:Object.keys(s.routes)};return log(true,'확인 취소 · 제어명령 전송 없음');}
+  if(a.type==='mode'){
+   if(!['AUTO','CCM','LOCAL'].includes(a.value))return log(false,'제어모드를 확인하세요.');
+   if(s.pending)return log(false,'현장 인계 응답을 먼저 처리하세요.');
+   if(s.mode===a.value)return log(false,'이미 '+a.value+' 모드입니다.');
+   if(a.value==='AUTO'&&s.mode!=='CCM')return log(false,'AUTO는 CCM에서만 전환할 수 있습니다.');
+   if(a.emergency&&s.mode==='LOCAL'&&a.value==='CCM'){s.mode='CCM';s.pending=null;return log(true,'비상 CTC 전환 · 현장 응답 없이 CCM 모드 전환 완료');}
+   if(a.value==='LOCAL'||s.mode==='LOCAL'){s.pending=a.value;return log(true,a.value+' 전환 요청 · 현장 응답 대기');}
+   s.mode=a.value;return log(true,a.value+' 모드 전환 완료');
+  }
+  if(a.type==='handover'){
+   if(!s.pending)return log(false,'진행 중인 인계 요청이 없습니다.');
+   const target=s.pending;s.pending=null;if(a.accept)s.mode=target;
+   return log(true,a.accept?'현장 수락 · '+s.mode+' 전환 완료':'현장 거절 · '+s.mode+' 유지');
+  }
+  if(a.type==='scan'){
+   if(!['current','all'].includes(a.scope))return log(false,'범위를 선택하세요.');
+   s.scans[a.scope]++;s.scanUntil=s.clock+3;return log(true,(a.scope==='all'?'전체 제어역':'현재역')+' 베이스스캔 · 가상 상태 재수신');
+  }
+  // 열차자동제어(실기3 3.4): in AUTO the schedule software requests routes (a.auto); a person still needs CCM
+  if(['route','withdraw','stop','stopAll','point','pointLock'].includes(a.type)&&!(a.auto&&a.type==='route'&&s.mode==='AUTO'&&!s.pending)&&(s.mode!=='CCM'||s.pending))return log(false,'CCM 모드와 제어권을 확인하세요.');
+  if(a.type==='route'){
+   const r=routes[a.id];if(!r)return log(false,'등록되지 않은 진로입니다.');
+   if(s.routes[a.id])return log(false,s.routes[a.id].lock?a.id+' 접근쇄정 중 · 남은 '+remaining(s,s.routes[a.id])+'초 후 해정됩니다.':'이미 설정된 진로입니다.');
+   if((r.resources||[]).some(t=>s.occupied[t]))return log(false,'진로 안에 점유된 구간이 있습니다.');
+   // 본선 신호(1A·2B …)는 열차가 있는 도착 선로로 진행을 내지 않는다. 입환표지(숫자 신호)는 구원연결 등으로 들어갈 수 있다.
+   if(/^\d+[A-Z]$/.test(r.signal)&&s.platformOccupied?.[r.destination]?.length)return log(false,`도착 선로(${r.destination})에 열차 ${s.platformOccupied[r.destination].join('·')}이(가) 있어 진행 신호를 낼 수 없습니다.`);
+   if(s.exitBlocked?.[r.destination])return log(false,'전방 폐색 구간('+r.destination+')에 열차 '+s.exitBlocked[r.destination]+'이(가) 있어 진로를 설정할 수 없습니다.');
+   if((s.faults?.signals||[]).includes(r.signal))return log(false,r.signal+' 신호기가 고장입니다.');
+   const badPoint=[...new Set([...(r.pointLocks||[]),...Object.keys(r.pointPositions||{})])].find(id=>(s.faults?.points||[]).includes(id));
+   if(badPoint)return log(false,'진로 내 전환기 '+badPoint+'가 고장입니다.');
+   if((r.pointLocks||[]).some(id=>s.blockedPoints.includes(id)))return log(false,'진로 내 전환기가 쇄정되어 있습니다.');
+   const conflict=Object.keys(s.routes).find(id=>{
+    const other=routes[id];
+    // A switch group may serve independent straight tracks in N. Holding N twice is not movement.
+    // Shared reverse/unknown requirements remain exclusive; track and overlap conflicts are checked separately.
+    const pointConflict=(other.pointLocks||[]).some(pid=>(r.pointLocks||[]).includes(pid)&&!(r.pointPositions?.[pid]==='N'&&other.pointPositions?.[pid]==='N'));
+    return other.signal===r.signal||(other.resources||[]).some(t=>(r.resources||[]).includes(t))||pointConflict;
+   });
+   if(conflict)return log(false,s.routes[conflict].lock?conflict+' 접근쇄정 중 · 남은 '+remaining(s,s.routes[conflict])+'초 후에 설정하세요.':conflict+' 진로와 경합합니다. 먼저 정지·해정하세요.');
+   const ov=overlapOf(a.id,s);
+   if(ov?.clearSignals){const open=Object.keys(s.routes).find(id=>ov.clearSignals.includes(routes[id].signal));if(open)return log(false,'오버랩 구간의 '+routes[open].signal+' 신호를 먼저 해정하세요. ('+ov.note+')');}
+   // 실제 MMI 문구 그대로: 「안양(010100)역 RT_4A_B984T진로22 요구중 SW_55선로전환기 오방향 쇄정 상태[수동진로설정불가]」 (어느 진로 때문인지는 알려 주지 않는다)
+   const ob=overlapBlocker(s,a.id);if(ob)return log(false,ob.point?`${config.name}(${config.code})역 RT_${a.id.replace('-','_')}진로 22 요구중 SW_${ob.point}선로전환기 오방향 쇄정 상태[수동진로설정불가]`:'오버랩 쇄정 전환기가 '+ob.route+' 진로와 충돌합니다.');
+   // 대향진로: 같은 선에 반대 방향에서 들어오는 진로는 함께 서지 못한다 (실물 2026-11-11 · 금천구청 2B-4T 중 1B-4T)
+   const facing=Object.keys(s.routes).find(id=>routes[id].destination===r.destination&&signals[routes[id].signal]?.dir!==signals[r.signal]?.dir&&!/^B\d/.test(r.destination));
+   if(facing)return log(false,`${config.name}(${config.code})역 RT_${a.id.replace('-','_')}진로 요구중 대향진로( ) 설정상태 [수동진로설정불가]`);
+   for(const [pid,pos] of Object.entries(ov?.points||{}))if(s.blockedPoints.includes(pid)&&s.points[pid]!==pos)return log(false,'오버랩 전환기 '+pid+'이 수동 쇄정되어 있습니다.');
+   for(const [id,position]of Object.entries({...(r.pointPositions||{}),...(ov?.points||{})}))s.points[id]=position;
+   s.routes[a.id]={status:'SET',control:a.control||'single',occupied:false};s.signals[r.signal]='GO';
+   return log(true,a.id+' 진로 설정 · '+r.signal+' 진행');
+  }
+  if(a.type==='withdraw'||a.type==='stop'||a.type==='stopAll'){
+   const ids=a.type==='withdraw'?[a.id]:Object.keys(s.routes).filter(id=>a.type==='stopAll'||routes[id].signal===a.id);
+   if(!ids.length||!s.routes[ids[0]])return log(false,'설정된 진로가 없습니다.');
+   if(ids.every(id=>s.routes[id]?.lock))return log(false,ids.join(', ')+' 이미 접근쇄정 중 · 남은 '+Math.max(...ids.map(id=>remaining(s,s.routes[id])))+'초');
+   let waiting=Math.max(0,...ids.filter(id=>s.routes[id]?.lock).map(id=>remaining(s,s.routes[id])));
+   for(const id of ids){if(s.routes[id].lock)continue;const sig=routes[id].signal,seconds=lockSeconds(sig);s.signals[sig]='STOP';s.routes[id].control='single';
+    if(s.routes[id].occupied)s.routes[id].status='LOCKED';
+    else if((s.approach[sig]||IL.approachTrain(config.id,sig,s))&&seconds){s.routes[id].status='APPROACH_LOCK';s.routes[id].lock={start:s.clock,seconds,until:s.clock+seconds};waiting=Math.max(waiting,seconds);}
+    else delete s.routes[id];}
+   if(waiting)return log(true,'신호 정지 · 접근 열차가 있어 접근쇄정 '+waiting+'초 후 진로 해정');
+   if(ids.some(id=>s.routes[id]?.occupied))return log(true,'신호 정지 · 점유 구간의 진로 쇄정 유지');
+   return log(true,ids.join(', ')+' 신호 정지 · 진로 해정 완료 (접근 열차 없는 기본 연습)');
+  }
+  if(a.type==='point'){
+   if(!points[a.id]||!['N','R'].includes(a.value))return log(false,'전환기와 정·반위를 선택하세요.');
+   if(s.blockedPoints.includes(a.id))return log(false,'수동 쇄정된 전환기입니다.');
+   if((s.faults?.points||[]).includes(a.id))return log(false,'고장 상태의 선로전환기는 전환할 수 없습니다.');
+   const using=Object.keys(s.routes).find(id=>(routes[id].pointLocks||[]).includes(a.id));
+   if(using)return log(false,s.routes[using].lock?'접근쇄정 중 · 남은 '+remaining(s,s.routes[using])+'초 후 조작하세요.':'이 전환기를 사용하는 진로를 먼저 해정하세요.');
+   const ovUse=Object.keys(s.routes).find(id=>overlapOf(id,s)?.points[a.id]);
+   if(ovUse)return log(false,ovUse+' 진로의 오버랩 쇄정 전환기입니다. 진로를 해정한 뒤 조작하세요.');
+   s.points[a.id]=a.value;return log(true,(a.pointPart||a.id)+' 전환기 '+(a.value==='N'?'정위':'반위')+' 조작 연습 완료');
+  }
+  if(a.type==='pointLock'){
+   if(!points[a.id])return log(false,'전환기를 확인하세요.');
+   if(a.lock&&!s.blockedPoints.includes(a.id))s.blockedPoints.push(a.id);
+   if(!a.lock)s.blockedPoints=s.blockedPoints.filter(id=>id!==a.id);
+   return log(true,a.id+' 전환기 '+(a.lock?'수동 쇄정':'수동 쇄정 해제'));
+  }
+  if(a.type==='occupy'){
+   const r=routes[a.id],active=s.routes[a.id];if(!r||!active)return log(false,'설정된 진로를 선택하세요.');
+   if(active.occupied)return log(false,'이미 점유된 진로입니다.');
+   if(s.exitBlocked?.[r.destination]&&s.exitBlocked[r.destination]!==a.number)return log(false,'전방 폐색 구간('+r.destination+')에 열차 '+s.exitBlocked[r.destination]+'이(가) 있어 진입할 수 없습니다.');
+   if(active.lock)return log(false,'접근쇄정 중에는 정지신호입니다. 남은 '+remaining(s,active)+'초');
+   delete s.approach[r.signal];active.occupied=true;active.status='OCCUPIED';s.signals[r.signal]='STOP';
+   const travelSeconds=Number(a.seconds);active.train={from:s.clock,to:s.clock+(Number.isFinite(travelSeconds)&&travelSeconds>0?travelSeconds:20)};       // 열차가 진로를 지나는 구간(LS의 붉은 점유 표시가 따라 움직임)
+   for(const t of r.resources)s.occupied[t]=a.id;
+   return log(true,a.id+' 모의 열차 진입 · 신호 정지 · 진로 쇄정');
+  }
+  if(a.type==='clear'){
+   const r=routes[a.id],active=s.routes[a.id];if(!r||!active?.occupied)return log(false,'점유된 진로를 선택하세요.');
+   for(const t of r.resources)delete s.occupied[t];
+   if(active.control==='continuous'&&s.mode==='CCM'&&!s.pending&&!r.pointLocks.some(id=>s.blockedPoints.includes(id))){active.occupied=false;delete active.train;active.status='SET';s.signals[r.signal]='GO';}
+   else delete s.routes[a.id];
+   return log(true,a.id+' 모의 열차 통과 · '+(s.routes[a.id]?'연속진로 재설정':'진로 해정'));
+  }
+  if(a.type==='inspectPoint'){
+   if(!points[a.id])return log(false,'원본에 없는 전환기 번호입니다.');
+   if(!s.inspected.includes(a.id))s.inspected.push(a.id);
+   return log(true,a.id+' 전환기 확인 · 구성 '+points[a.id].parts.join(' / ')+' · 정·반위는 미확인');
+  }
+  if(a.type==='inspectSignal'&&signals[a.id])return log(true,a.id+' '+signals[a.id].kind+' 위치 확인 · 진로목록 검증 보류');
+  return log(false,'근거가 확인되지 않은 조작입니다.');
+ }
+ function lockTable(s){return Object.entries(s.routes).map(([id,r])=>{const ov=overlapOf(id,s);return {id,signal:routes[id].signal,status:r.status,remaining:r.lock?remaining(s,r):0,total:r.lock?.seconds||0,overlap:ov?{points:ov.points,note:ov.note,clearSignals:ov.clearSignals||[]}:null};});}
+ return {initial,dispatch,routes,points,pointParts,pointPartLabels,signals,sources,lockTable,lockSeconds,overlapOf,lsMenu,menuVerified,menuVerifiedFor};
+ }
+ const network=typeof module!=='undefined'?require('./network.js'):root.SimNetwork;
+ const api=create(network.catalog['underground-seoul']);
+ api.forStation=id=>{if(!network.catalog[id])throw new RangeError('Unknown station');return create(network.catalog[id]);};
+ if(typeof module!=='undefined')module.exports=api;else root.SimCore=api;
+})(typeof window!=='undefined'?window:globalThis);

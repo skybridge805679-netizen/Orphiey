@@ -1,0 +1,202 @@
+'use strict';
+const $=id=>SimDOM.document.getElementById(id),N=window.SimNetwork;
+const session=window.SimSession.create(),stationStates=session.states;
+let C=session.core(session.selected),selectedStation=session.selected;
+let selectedView=window.SimLSPresets.get(new URLSearchParams(location.search).get('lsStation'))?.id||selectedStation;
+const lsViews=window.SimLSPresets.list();
+let state=stationStates[selectedStation],paused=window.SimRemote.snapshot.clock.paused,practice='guided',activeTask=null,taskIndex=0,taskStart=0,taskTimerKey=null,dialogAction=null,toastTimer,completed=[];
+try{completed=JSON.parse(localStorage.getItem('ctclab-v03-completed')||'[]');if(!Array.isArray(completed))completed=[];}catch{}
+const escapeHTML=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const time=t=>`${Math.floor(t/60).toString().padStart(2,'0')}:${(t%60).toString().padStart(2,'0')}`;
+const tasks=window.SimPractice.tasks;
+completed=[...new Set(completed.filter(i=>Number.isInteger(i)&&i>=0&&i<tasks.length))];
+function toast(msg,error=false){$('toast').textContent=msg;$('toast').className='show'+(error?' error':'');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').className='',5000);}
+function run(a){let r;if(['route','occupy','stop','withdraw','stopAll'].includes(a.type)&&window.SimLine)window.SimLine.refresh(stationStates,window.SimLSUI?.getModel?.());if(window.SimMMI?.replaying?.()){toast('로그재생 중에는 조작할 수 없습니다. 재생 창의 ■ 종료를 누르세요.',true);return {ok:false,message:'로그재생 중'};}if(a.type==='tick'){session.tick(a.seconds);window.SimScenarioUI?.stepMotion();window.SimAutoUI?.step();r={ok:true};}else if(a.type==='scan'&&a.scope==='all'){for(const [id,st]of Object.entries(stationStates))session.core(id).dispatch(st,a);r={ok:true,message:'전체 15개 취급역 상태 재수신'};}else if(a.type==='lsOperation'){r=window.SimLSUI.dispatch(a.operation);}else r=session.dispatch(selectedStation,a);if(window.SimMMI){if(a.type==='tick')window.SimMMI.syncAll(stationStates);else window.SimMMI.sync(selectedStation,state,a,r);}render();if(a.type!=='tick')toast(r.message,!r.ok);return r;}
+// variant: '' = 기본 대화상자, 'route' = 신호기 옆 진로 제어 팝업(사진), 'confirm' = 윈도 스타일 제어 확인 상자(사진: 해정 하시겠습니까?)
+function openAction(title,body,action,label='예 · 실행',variant='',at=null){
+ const d=$('actionDialog');$('dialogConfirm').hidden=false;$('dialogTitle').textContent=title;$('dialogBody').innerHTML=body;dialogAction=action;d.returnValue='';
+ $('dialogConfirm').textContent=label;d.querySelector('[value="cancel"]').textContent=variant==='confirm'?'아니요(N)':'아니오 · 취소';d.dataset.variant=variant;d.classList.toggle('mode-confirm',variant==='confirm');
+ if(at){d.style.setProperty('--dx',Math.max(4,Math.min(at.x,innerWidth-200))+'px');d.style.setProperty('--dy',Math.max(4,Math.min(at.y,innerHeight-120))+'px');}
+ d.showModal();
+ if(variant==='confirm')$('dialogConfirm').focus();   // 원본 확인창처럼 기본 단추는 「예」: 엔터로 바로 실행
+ if(variant==='route'&&at){const box=d.getBoundingClientRect();d.style.setProperty('--dx',Math.max(4,Math.min(at.x,innerWidth-box.width-4))+'px');d.style.setProperty('--dy',Math.max(4,Math.min(at.y,innerHeight-box.height-4))+'px');}
+}
+function routeDetails(id){const r=C.routes[id];return `<div class="route-detail"><b>${escapeHTML(id)}</b><p>${r.pathTracks.join(' → ')}</p><p class="evidence">${r.evidence}</p><p>${r.source.map(escapeHTML).join('<br>')}</p><p class="pending-note">배선 연결 연습 모델 · 경로의 공유 구간·전환기를 쇄정합니다. 실설비 진로표와 세부 연동조건은 별도 검증 대상입니다</p></div>`;}
+const statusLabel={SET:'설정',OCCUPIED:'점유',LOCKED:'쇄정',APPROACH_LOCK:'접근쇄정'};
+function boardTrains(){const ids=[...new Set(Object.values(C.routes).filter(r=>C.lockSeconds(r.signal)).map(r=>r.signal))];return ids.map(id=>{const on=!!state.approach?.[id],sec=C.lockSeconds(id);return `<button class="train-chip ${on?'on':''}" data-approach-toggle="${id}" aria-pressed="${on}" title="${id} 외방 접근구간 열차 ${on?'제거':'투입'}">${id}<small>${on?'접근 열차 있음':'열차 없음'} · ${sec}초</small></button>`;}).join('');}
+function drawBoard(){
+ const rows=C.lockTable(state),active=Object.keys(state.routes);
+ const head='<div class="board-head"><h3>진로 · 쇄정 현황</h3><span>접근쇄정은 접근 열차가 있을 때만 걸립니다 · 장내 90초 / 출발 30초</span></div>';
+ const trains=C.lockSeconds&&Object.keys(C.routes).length?`<div class="board-trains"><b>접근 열차 투입</b><div>${boardTrains()}</div></div>`:'';
+ const list=rows.length?rows.map(r=>{const a=state.routes[r.id],pct=r.total?Math.round((r.total-r.remaining)/r.total*100):0;
+  return `<article class="lock-row ${a.occupied?'occupied':a.lock?'locked':'set'}" data-lock-row="${r.id}"><header><b>${escapeHTML(r.id)}</b><span class="chip ${a.occupied?'occupied':a.lock?'locked':'set'}">${statusLabel[a.status]||a.status}</span><span class="muted">${a.control==='continuous'?'연속제어':'단일제어'}</span></header>`
+  +(a.lock?`<div class="lock-timer" role="progressbar" aria-valuemin="0" aria-valuemax="${r.total}" aria-valuenow="${r.total-r.remaining}"><i style="width:${pct}%"></i><span>접근쇄정 남은 <b data-lock-remaining>${r.remaining}</b>초 / ${r.total}초</span></div>`:'')
+  +(r.overlap?`<p class="overlap-note"><span class="chip overlap">오버랩</span> ${escapeHTML(r.overlap.note)}${Object.keys(r.overlap.points).length?' · 전환기 '+Object.entries(r.overlap.points).map(([p,v])=>p+(v==='N'?' 정위':' 반위')).join(', ')+' 쇄정':''}</p>`:'')
+  +`<div class="route-run-controls"><button data-sim-enter="${r.id}" ${a.occupied||a.lock?'disabled':''}>모의 열차 진입</button><button data-sim-clear="${r.id}" ${a.occupied?'':'disabled'}>모의 열차 통과</button></div>${routeDetails(r.id)}</article>`;}).join(''):'<p class="evidence-empty">설정된 진로가 없습니다. 취급역의 CCM → 신호기 → 진로를 선택하세요.</p>';
+ $('routeEvidence').innerHTML=head+trains+`<div class="lock-list">${list}</div>`;
+}
+// 열번창에 열차번호가 서 있는 궤도회로 = 열차 점유 (FTS는 이 구간을 붉게 표시)
+// a train is still running over a route: the red occupied part moves with the clock, so redraw every tick
+function trainOccupied(id){const st=window.SimLSUI?.getModel?.().stations?.[id],set=new Set(Object.keys(stationStates[id]?.circuitOccupied||{}));if(st)for(const [slot,rows] of Object.entries(st.windows))if(rows.some(t=>!window.SimScenarioMotion?.inTransit(stationStates[id],t.uid)&&!window.SimLine?.journeys.has(t.number)))set.add(slot);return set;}
+function drawTracks(){
+ const monitor=!!window.SimLSPresets.get(selectedView).monitor,stage=$('lsStage'),aspect=stage.clientWidth/Math.max(160,stage.clientHeight-(stage.querySelector('.ls-head')?.offsetHeight||56)-14);
+ const st=N.catalog[selectedStation],at=lsViews.findIndex(v=>v.id===selectedView),view=window.SimLS.render(st,window.SimWiring.data[selectedStation],C,state,{aspect,preset:selectedView,left:lsViews[at-1],right:lsViews[at+1],occupied:trainOccupied(selectedStation)});
+ const controls=monitor?'':`<div class="ls-controls"><div class="ls-modes" role="group" aria-label="${st.name} 역제어모드">${['AUTO','CCM','LOCAL'].map(m=>`<button type="button" class="mode-btn ${m.toLowerCase()} ${state.mode===m?'on':''}" data-mode="${m}" aria-pressed="${state.mode===m}">${m}</button>`).join('')}</div><button type="button" class="stop-all" data-stop-all="true" aria-label="신호기 일괄정지"><span>신호기</span><span>일괄정지</span></button><div class="ls-name ${['cheongnyangni','dongmyo','jonggak','underground-seoul'].includes(selectedStation)?'metro':''}"><b>${escapeHTML(monitor?window.SimLSPresets.get(selectedView).name:window.SimMMI?.stationInfo(selectedStation).name||st.name)}</b><span>${st.code}</span></div><div class="ls-equipment" aria-label="원본 장치 표시">${['N1','N2','C','REC','UPS','ShP','EIS1','EIS2','DTS1','DTS2','RC'].map(name=>`<span data-equipment="${name}" title="${name} · 장치 통신 상태 미연결">${name}</span>`).join('')}</div></div>`;
+ const head=`<div class="ls-head"><div class="ls-nav ls-nav-left">${view.navigation.left}</div>${controls||'<div class="ls-controls"></div>'}<div class="ls-nav ls-nav-right">${view.navigation.right}</div></div>`;
+ $('lsStage').dataset.controlStation=monitor?'':selectedStation;$('lsStage').dataset.preset=selectedView;$('lsStage').dataset.monitor=String(monitor);
+ if(window.SimExtraLS)document.title='ORPHEIA · LS · '+window.SimLSPresets.get(selectedView).name;
+ $('lsStage').innerHTML=head+`<svg id="trackSvg" class="ls-svg" data-monitor="${monitor}" viewBox="0 0 ${view.width} ${view.height}" role="img" aria-label="${escapeHTML(window.SimLSPresets.get(selectedView).name)} LS 선로 배선">${view.svg}</svg>`;
+ window.SimLSUI.decorate();drawBoard();if(!monitor)window.SimEquipment?.paint(selectedStation);
+ fitControls();
+}
+// 무대가 좁으면(옆 패널을 연 경우 등) 위 제어 단추 줄을 칸에 맞게 줄인다: 넘치면 양옆 노란 화살표를 덮어 누를 수 없었다
+function fitControls(){const c=$('lsStage').querySelector('.ls-controls');if(!c||!c.children.length)return;c.style.zoom='';const gap=parseFloat(getComputedStyle(c).columnGap)||0,need=[...c.children].reduce((s,e)=>s+e.getBoundingClientRect().width,0)+gap*(c.children.length-1);if(need>c.clientWidth+1)c.style.zoom=String(Math.max(.5,(c.clientWidth-2)/need));}
+$('routeEvidence').onclick=e=>{const tg=e.target.closest('[data-approach-toggle]');if(tg){run({type:'approach',signal:tg.dataset.approachToggle,present:!state.approach?.[tg.dataset.approachToggle],source:'모의운행'});return;}const enter=e.target.closest('[data-sim-enter]'),clear=e.target.closest('[data-sim-clear]');if(enter)run({type:'occupy',id:enter.dataset.simEnter,source:'모의운행'});if(clear)run({type:'clear',id:clear.dataset.simClear,source:'모의운행'});};
+function selectStation(id,scroll=true){
+ const view=window.SimLSPresets.get(id);if(!view)return;id=view.station;
+ if(!N.catalog[id]?.controlled)return;
+ if($('actionDialog').open){toast('제어 확인창을 닫은 뒤 역을 변경하세요.',true);$('stationSelect').value=selectedStation;return;}
+ window.SimLSUI.stationChanged();stationStates[selectedStation]=state;
+ selectedStation=id;selectedView=view.id;state=session.select(id);C=session.core(id);
+ $('stationSelect').value=id;
+ fields();render();taskView();
+}
+const stationOptions=N.stations.filter(st=>st.controlled).map(st=>`<option value="${st.id}">${st.id==='cheongnyangni'?'지하청량리':st.name}[${st.code}]</option>`).join('');
+$('stationSelect').innerHTML=stationOptions;
+$('stationSelect').value=selectedStation;
+$('stationSelect').onchange=e=>selectStation(e.target.value);
+$('stationTabs').innerHTML=lsViews.filter(v=>!v.monitor).map(v=>`<button data-station="${v.station}" data-view="${v.id}"><i class="tab-dot auto" aria-hidden="true"></i>${v.name}<b class="tab-count"></b></button>`).join('');
+window.SimPreferred&&window.SimPreferred.apply();
+$('stationTabs').onclick=e=>{const button=e.target.closest('[data-view]');if(button)selectStation(button.dataset.view);};
+function renderLogs(){$('logCount').textContent=state.logs.length+' events';$('logList').innerHTML=state.logs.length?state.logs.slice(0,100).map(l=>`<div class="log-row"><span class="log-time">${time(l.time)}</span><div><p>${escapeHTML(l.message)}</p><div class="log-meta">${escapeHTML(l.source)} · <span class="${['완료','접수'].includes(l.result)?'result-ok':'result-bad'}">${l.result}</span></div></div></div>`).join(''):'<p class="empty">첫 조작을 기다리고 있습니다.</p>';}
+var drawnVersion=-1;   // 마지막으로 그린 엔진 상태 (그 뒤 바뀐 것이 없으면 1초 주기에서 다시 그리지 않는다)
+function render(){
+ drawnVersion=window.SimRemote.version;
+ // 일시정지 표시는 언제나 엔진 시계를 따른다 (시나리오·FTS 시작이 시계를 다시 움직일 수 있다)
+ paused=window.SimRemote.snapshot.clock.paused;$('pauseBtn').textContent=paused?'▶ 계속':'Ⅱ 일시정지';
+ const task=window.SimAssessmentUI?.snapshot()?.task;
+ const st=N.catalog[selectedStation];
+ const viewInfo=window.SimLSPresets.get(selectedView),hostedCorridor=window.SimLSPresets.CORRIDORS.find(c=>c.host===selectedStation),ownIntermediate=st.map.view.intermediate.filter(name=>!(hostedCorridor&&window.SimLSPresets.get(hostedCorridor.id).plates.includes(name)));
+ $('stationScope').textContent=viewInfo.monitor?`${viewInfo.name} · ${viewInfo.plates.join(' · ')}`:`${st.name} · ${ownIntermediate.join(' · ')||'구내 및 역간'}`;
+ SimDOM.document.querySelectorAll('#stationTabs [data-station]').forEach(b=>{const s=stationStates[b.dataset.station],monitor=!!window.SimLSPresets.get(b.dataset.view).monitor,n=monitor?0:Object.keys(s.routes).length;b.classList.toggle('selected',b.dataset.view===selectedView);b.querySelector('.tab-dot').className='tab-dot '+(monitor?'monitor':s.mode.toLowerCase());b.querySelector('.tab-count').textContent=n?n:'';b.title=monitor?window.SimLSPresets.get(b.dataset.view).name+' · 역간 운행 감시':`${N.catalog[b.dataset.station].name} · ${s.mode} · ${n}개 진로`;});
+ SimDOM.document.querySelector('.window-caption').textContent=window.SimMMI?.stationInfo?.(st.id).name||st.name;
+ const monitor=!!window.SimLSPresets.get(selectedView).monitor;$('topStation').textContent=window.SimLSPresets.get(selectedView).name;$('topCode').textContent=monitor?'':st.code;
+ if($('drawerBtn'))$('drawerBtn').hidden=monitor;if(monitor&&window.SimShell)window.SimShell.drawer(false);
+ window.SimAssessmentUI?.render();$('stateMode').textContent=st.controlled?state.mode:'비연동';$('stateOwner').textContent=state.mode==='LOCAL'?'현장역':'관제실';$('stateRoutes').textContent=Object.keys(state.routes).length+'개 설정';$('stateScan').textContent=state.clock<state.scanUntil?'재수신 완료':'정상';
+ $('lsStatus').textContent=monitor?'역간 운행 감시 · 열번창: 열차번호 제어 · 폐색·점유 표시':'CCM → 신호기 클릭 → 진로 선택 · 우클릭: 화면 메뉴 · 열번창: 열차번호 제어';
+ $('mmiState').textContent=`현재 ${state.mode} · LS와 같은 상태 · ${Object.keys(state.routes).length}개 진로 설정`;
+ $('handoverBar').hidden=monitor||!state.pending;if(state.pending)$('handoverBar').innerHTML=`<span>${state.pending} 요청 · 가상 현장 응답 대기</span><button data-handover="yes">현장 수락</button><button data-handover="no">현장 거절</button>`;
+ $('completedCount').textContent=`${completed.length} / ${tasks.length} 완료`;drawTracks();$('routeEvidence').innerHTML+='<p class="point-states">전환기 조작 상태: '+Object.entries(state.points).map(([id,v])=>id+' '+(v==='N'?'정위':'반위')).join(' · ')+'</p>';renderLogs();window.SimDiagram?.render();window.SimMMI?.refresh();
+}
+// [CA014_01] 현장설비제어 (사진 2026-11-11): 네 가지 제어 중 하나를 고르면 그 묶음만 살아나고, 신호기·진로·선로전환기는 목록에서 고른다
+function routeOptions(){$('mmiRoute').innerHTML=Object.keys(C.routes).filter(id=>C.routes[id].signal===$('mmiSignal').value).map(id=>`<option value="${id}">RT_${id.replace('-','_')}</option>`).join('');if($('mmiRoute').options.length)$('mmiRoute').selectedIndex=0;}
+function fields(){
+ const type=$('controlSelect').value,doc=SimDOM.document,nat=(a,b)=>a.localeCompare(b,'en',{numeric:true});
+ $('mmiApply').disabled=!N.catalog[selectedStation].controlled&&type!=='scan';
+ for(const r of doc.querySelectorAll('input[name="fcKind"]'))r.checked=r.value===type;
+ for(const box of doc.querySelectorAll('.fc-win [data-fc]')){const on=box.dataset.fc===type;box.classList.toggle('off',!on);for(const el of box.querySelectorAll('input:not([name="fcKind"]),select'))el.disabled=!on;}
+ const station=$('mmiSignal').dataset.station!==selectedStation;$('mmiSignal').dataset.station=selectedStation;
+ const sig=$('mmiSignal').value,signals=[...new Set(Object.values(C.routes).map(r=>r.signal))];
+ $('mmiSignal').innerHTML=signals.map(id=>`<option>${id}</option>`).join('');if(!station&&signals.includes(sig))$('mmiSignal').value=sig;else if(signals.length)$('mmiSignal').selectedIndex=0;
+ const route=$('mmiRoute').value;routeOptions();if(!station&&[...$('mmiRoute').options].some(o=>o.value===route))$('mmiRoute').value=route;
+ const point=$('mmiPoint').value,parts=Object.keys(C.pointParts),whole=Object.keys(C.points).filter(id=>!parts.some(p=>C.pointParts[p]===id));
+ const list=[...parts,...whole].sort(nat);$('mmiPoint').innerHTML=list.map(id=>`<option value="${id}" data-sw="${C.pointParts[id]||id}">SW_${id}</option>`).join('');if(!station&&list.includes(point))$('mmiPoint').value=point;else if(list.length)$('mmiPoint').selectedIndex=0;
+ // 제어 종류나 역을 바꾸면 고른 값은 처음 상태로 돌아간다 (설정 · 정위 · 선택역)
+ const key=type+'|'+selectedStation;if(fields.key!==key){fields.key=key;$('mmiSignalStop').checked=false;for(const [n,v] of [['routeAction','select'],['pointPosition','N'],['mmiScope','current']])doc.querySelector(`input[name="${n}"][value="${v}"]`).checked=true;$('routeControl').value='single';}
+}
+function signalAction(id,at){
+ const active=Object.keys(state.routes).find(key=>C.routes[key].signal===id);
+ if(active){openAction('제어 확인','<span class="q-icon" aria-hidden="true">?</span><span class="q-text">해정 하시겠습니까?</span>',{type:'stop',id,source:'LS'},'예(Y)','confirm');return;}
+ const entries=C.lsMenu(id);
+ if(!entries.length){toast(id+' 입환신호기의 진로목록은 아직 구현하지 않았습니다.',true);return;}
+ // 실제 LS는 신호기 옆에 "[ 진로 제어 ]" 제목과 RT_<신호기>_<도착> 목록만 보여 준다. 목록의 출처(원본/배선 도출)는 마우스를 올리면 나온다.
+ openAction('[ 진로 제어 ]',entries.map(key=>`<button type="button" class="route-choice" data-route-choice="${key}" title="${C.menuVerifiedFor(id)?'원본 LS 목록':C.routes[key].geometryDerived?'배선 연결으로 도출한 경로 (실제 LS 목록은 확인되지 않음)':'교재·대본·LS 확인 경로'}">RT_${key.replace('-','_')}</button>`).join(''),null,'예 · 실행','route',at);
+ $('dialogConfirm').hidden=true;
+ SimDOM.document.querySelectorAll('[data-route-choice]').forEach(button=>button.onclick=()=>{$('actionDialog').close();$('dialogConfirm').hidden=false;run({type:'route',id:button.dataset.routeChoice,source:'LS'});});
+}
+function taskView(){const t=tasks[taskIndex];$('taskSelect').value=taskIndex;$('taskBody').innerHTML=practice==='free'?'<div class="task-card"><div class="task-heading"><span class="task-num">∞</span><h3>원본 배선도와 경로 대조</h3></div><p>1A·2A·3A·4A를 눌러 경로 근거를 확인하고, 전환기 구성을 대조하세요. 설정한 신호기를 다시 눌러 정지·해정할 수 있습니다.</p></div>':`<div class="task-card"><div class="task-heading"><span class="task-num">${String(taskIndex+1).padStart(2,'0')}</span><h3>${t.title}</h3><span class="task-badge">${completed.includes(taskIndex)?'✓ 달성':activeTask===taskIndex?'진행 중':'시작 전'}</span></div><p>${t.desc}</p>${practice==='guided'?`<p class="task-hint">↳ ${t.hint}</p>`:''}<p>근거: ${t.source}</p><p id="taskResult"></p></div>`;for(const id of ['startTask','checkTask','nextTask'])$(id).hidden=practice==='free';}
+function startTask(){if(state.logs.length&&!confirm('현재 상태와 기록을 초기화하고 과제를 시작할까요?'))return;selectStation('underground-seoul');window.SimRemote.reset(selectedStation);state=stationStates[selectedStation];window.SimMMI?.rebase?.(selectedStation);   // 초기화는 해정이 아니다 — 로그에 남기지 않는다
+window.SimLSUI.reset(selectedStation);window.SimMMI?.syncAll(stationStates);taskStart=0;activeTask=taskIndex;paused=false;window.SimRemote.command({type:'clock',paused:false});$('pauseBtn').textContent='Ⅱ 일시정지';$('controlSelect').value='mode';fields();render();taskView();taskTimerKey='practice:'+taskIndex+':'+Date.now();window.SimAssessmentUI.beginTask(taskTimerKey,tasks[taskIndex].title,'operation',taskIndex);toast('과제 시작 · '+tasks[taskIndex].title);}
+$('taskSelect').innerHTML=tasks.map((t,i)=>`<option value="${i}">${String(i+1).padStart(2,'0')} · ${t.title}</option>`).join('');$('taskSelect').onchange=e=>{taskIndex=+e.target.value;taskView();};
+SimDOM.document.querySelectorAll('[data-practice]').forEach(b=>b.onclick=()=>{practice=b.dataset.practice;SimDOM.document.querySelectorAll('[data-practice]').forEach(x=>x.classList.toggle('selected',x===b));taskView();});
+$('lsDisplay').onclick=e=>{
+ const nav=e.target.closest('[data-nav-view]');if(nav){selectStation(nav.dataset.navView);return;}   // 원본 노란 화살표: 이웃 화면으로
+ if(window.SimLSPresets.get(selectedView).monitor)return;
+ const mode=e.target.closest('[data-mode]'),signal=e.target.closest('[data-signal]'),stop=e.target.closest('[data-stop-all]'),point=e.target.closest('[data-point-control]');
+ if(mode&&state.mode==='LOCAL'&&mode.dataset.mode==='CCM'&&!state.pending){
+  // 표준화 프로토콜(교통관제운영 4권 p.383): LOCAL에서 CTC를 누르면 비상 CTC 대화상자가 뜨고, 선택하면 현장 응답 없이 바로 전환된다
+  openAction('제어확인','<span class="q-icon" aria-hidden="true">?</span><div class="q-text" data-mode-confirm>역 운행모드를 CCM 모드로 전환하시겠습니까?<label class="nt-check"><input type="checkbox" id="emgCtc"> 비상 CTC (현장 응답 없이 즉시 전환)</label></div>',()=>({type:'mode',value:'CCM',source:'LS',emergency:$('emgCtc').checked}),'예(Y)','confirm');
+ }else if(mode)openAction('제어확인','<span class="q-icon" aria-hidden="true">?</span><span class="q-text" data-mode-confirm>역 운행모드를 '+mode.dataset.mode+' 모드로 전환하시겠습니까?</span>',{type:'mode',value:mode.dataset.mode,source:'LS'},'예(Y)','confirm');
+ else if(signal)signalAction(signal.dataset.signal,{x:e.clientX,y:e.clientY});
+ else if(point){const id=point.dataset.pointControl,group=C.pointParts[id]||id,value=state.points[group]==='R'?'N':'R';if(state.mode!=='CCM'){toast('선로전환기 직접 제어는 CCM 모드에서 가능합니다.',true);return;}openAction('제어 확인','<span class="q-icon" aria-hidden="true">?</span><span class="q-text">선로전환기 SW_'+id+' 를 '+(value==='R'?'반위':'정위')+' 제어를 하시겠습니까?</span>',{type:'point',id,value,source:'LS'},'예(Y)','confirm');}
+ else if(stop)openAction('신호기 일괄정지',N.catalog[selectedStation].name+'의 설정 신호기를 모두 정지합니다. 점유 중인 진로는 쇄정을 유지합니다.',{type:'stopAll',source:'LS'});
+};
+$('actionDialog').addEventListener('click',e=>{const d=$('actionDialog');if(d.dataset.variant==='route'&&e.target===d)d.close();});      // 팝업 밖을 누르면 닫힘
+$('actionDialog').addEventListener('keydown',e=>{const d=$('actionDialog');if(d.dataset.variant!=='confirm')return;if(e.key==='Enter'&&e.target!==d.querySelector('[value="cancel"]')){e.preventDefault();$('dialogConfirm').click();}else if(/^y$/i.test(e.key)){e.preventDefault();$('dialogConfirm').click();}else if(/^n$/i.test(e.key)){e.preventDefault();d.querySelector('[value="cancel"]').click();}});
+$('lsStage').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();e.target.dispatchEvent(new MouseEvent('click',{bubbles:true}));}};
+
+$('actionDialog').addEventListener('close',()=>{if(!dialogAction||$('actionDialog').open)return;const a=typeof dialogAction==='function'?dialogAction():dialogAction;dialogAction=null;if($('actionDialog').returnValue==='confirm')run(a);else run({type:'cancel',target:a.type,id:a.id,source:'LS'});});
+$('handoverBar').onclick=e=>{const b=e.target.closest('[data-handover]');if(b)run({type:'handover',accept:b.dataset.handover==='yes',source:'현장'});};
+$('controlSelect').onchange=fields;$('mmiSignal').onchange=routeOptions;
+for(const r of SimDOM.document.querySelectorAll('input[name="fcKind"]'))r.onchange=()=>{$('controlSelect').value=r.value;fields();};
+$('mmiClose').onclick=()=>window.SimMMI.close('field');
+$('mmiApply').onclick=()=>{const type=$('controlSelect').value,checked=n=>SimDOM.document.querySelector(`input[name="${n}"]:checked`).value;
+ if(type==='mode'){const v=checked('mmiMode');run(v==='ECTC'?{type,value:'CCM',emergency:true,source:'MMI'}:{type,value:v,source:'MMI'});}
+ if(type==='route'){if($('mmiSignalStop').checked)run({type:'stop',id:$('mmiSignal').value,source:'MMI'});else run({type:checked('routeAction')==='select'?'route':'withdraw',id:$('mmiRoute').value,control:$('routeControl').value,source:'MMI'});}
+ if(type==='point')run({type:'point',id:$('mmiPoint').value,value:checked('pointPosition'),source:'MMI'});
+ if(type==='stopAll'){
+  // LS may change stations while this MMI dialog remains open. Keep its target.
+  const target=selectedStation;
+  window.SimMMI.confirmBox(N.catalog[target].name+' 신호기를 모두 정지하시겠습니까?',()=>{
+   const action={type:'stopAll',source:'MMI'};
+   if(target===selectedStation){run(action);return;}
+   if(window.SimMMI.replaying()){toast('로그재생 중에는 조작할 수 없습니다.',true);return;}
+   const result=session.dispatch(target,action);
+   window.SimMMI.sync(target,stationStates[target],action,result);render();toast(result.message,!result.ok);
+  },{title:'신호기 일괄정지'});
+ }
+ if(type==='scan')run({type,scope:checked('mmiScope'),source:'MMI'});
+};
+$('pauseBtn').onclick=()=>{paused=!window.SimRemote.snapshot.clock.paused;   /* 엔진의 지금 상태 기준 (시나리오 시작 직후 화면 변수가 아직 안 바뀐 때 반대로 눌리던 것) */window.SimRemote.command({type:'clock',paused});$('pauseBtn').textContent=paused?'▶ 계속':'Ⅱ 일시정지';};$('skipBtn').onclick=()=>run({type:'tick',seconds:10});
+$('resetBtn').onclick=async()=>{
+ if(!confirm('프로그램을 완전히 초기화할까요?\n\n모든 역의 진로·열차번호·설비, 교육 진행·결과, 추가한 문제·상황·시나리오·스케줄, 사용자·환경설정을 삭제합니다. 시간표와 진행 중인 교육이 없는 빈 상태로 돌아가며 저장된 자동 복구 백업도 새 상태로 교체합니다. FTS 선택용 프리셋은 유지합니다. 이 작업은 되돌릴 수 없습니다.'))return;
+ const button=$('resetBtn');button.disabled=true;window.SimResetting=true;
+ try{const r=await window.OrpheiaEngine.reset();if(!r?.ok)throw Error(r?.message||'초기화하지 못했습니다.');}
+ catch(error){window.SimResetting=false;button.disabled=false;toast('전체 초기화 실패: '+error.message,true);}
+};
+$('startTask').onclick=startTask;$('nextTask').onclick=()=>{taskIndex=(taskIndex+1)%tasks.length;taskView();};
+$('checkTask').onclick=()=>{if(selectedStation!=='underground-seoul')return toast('지하서울로 전환해 과제를 확인하세요.',true);if(activeTask!==taskIndex)return toast('먼저 이 과제를 시작하세요.',true);const ok=tasks[taskIndex].check(state.events.slice(taskStart),state);if(ok){window.SimAssessmentUI.complete(taskTimerKey);if(!completed.includes(taskIndex))completed.push(taskIndex);try{localStorage.setItem('ctclab-v03-completed',JSON.stringify(completed));}catch{}taskView();$('taskResult').className='complete-banner';$('taskResult').textContent='✓ 목표 조작과 경로 확인을 완료했습니다.';render();}else $('taskResult').textContent='필수 조작과 경로 확인을 다시 확인하세요.';toast(ok?'과제 달성':'아직 과제를 완료하지 않았습니다.',!ok);};
+
+$('fieldMenu').onclick=()=>toast('현장제어 · 확인된 경로 및 설비 구성');$('systemMenu').onclick=()=>window.SimShell?.drawer(true);
+// 화면은 엔진(데스크톱: 별도 프로세스, 브라우저: page-engine)의 상태를 1초마다 받아 그린다. 시계는 엔진이 진행한다.
+setInterval(()=>{if(window.SimResetting)return;try{window.SimRemote.poll();}catch(error){if(error.message==='Engine offline')return;throw error;}   // 종료 중 엔진이 먼저 멈추면 조용히 넘어간다
+ window.SimScenarioUI?.stepMotion();
+ if(window.SimRemote.version===drawnVersion)return;drawnVersion=window.SimRemote.version;   // 엔진 상태가 그대로면 다시 그리지 않는다
+ window.SimAutoUI?.step();window.SimMMI.syncAll(stationStates);render();window.SimDiagram.render();},1000);
+window.SimLSUI.init({context:()=>({station:selectedStation,C,state,stationStates,monitor:!!window.SimLSPresets.get(selectedView).monitor,viewName:window.SimLSPresets.get(selectedView).name}),run,render,openAction,toast,selectStation});
+window.SimAssessmentUI.init({context:()=>({state,paused}),resume:()=>{paused=false;window.SimRemote.command({type:'clock',paused:false});$('pauseBtn').textContent='Ⅱ 일시정지';},openAction,render});
+fields();render();taskView();
+
+window.SimField={ // 교육용 설비 상태 설정(고장·TTB)이 역 상태에 접근하는 통로
+ dispatch:(id,a)=>{const r=session.dispatch(id,{...a,source:'설비'});render();return r;},
+ core:id=>session.core(id),state:id=>stationStates[id],session:()=>session.snapshot()
+};
+window.SimDiagram.init({clock:()=>state.clock,selectStation:id=>{selectStation(id);$('lsDisplay').scrollIntoView({block:'start'});}});
+window.SimMMI?.connect({context:()=>({station:selectedStation,C,state,stationStates}),run,render,selectStation,openAction,toast});
+window.SimMMI?.syncAll(stationStates);
+
+$('graphSpeed').value=String(window.SimRemote.snapshot.clock.speed);$('graphSpeed').addEventListener('change',()=>window.SimRemote.command({type:'clock',speed:Number($('graphSpeed').value)}));
+
+// Re-layout in logical desktop coordinates when the window or side drawer changes.
+let lsResizeFrame;new ResizeObserver(()=>{cancelAnimationFrame(lsResizeFrame);lsResizeFrame=requestAnimationFrame(()=>drawTracks());}).observe($('lsStage'));
+
+$('extraLSBtn').hidden=!window.OrpheiaEngine;
+$('extraLSBtn').onclick=()=>window.OrpheiaEngine?.openView('ls',selectedView);
+if(window.SimExtraLS){
+ document.body.classList.add('workspace-split');
+ window.addEventListener('DOMContentLoaded',()=>{
+ $('ftsWinBtn').onclick=()=>window.OrpheiaEngine.openView('fts');
+ window.SimWorkspace.detach=()=>window.OrpheiaEngine.openView('mmi');
+ window.SimWorkspace.openGraph=()=>window.OrpheiaEngine.openView('graph');
+ },{once:true});
+}

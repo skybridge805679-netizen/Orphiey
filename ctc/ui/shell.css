@@ -1,0 +1,83 @@
+/* LS 창 셸: 상단 얇은 바 + 한 화면에 맞춘 LS + 하단 역 바로가기. MMI 도킹 영역은 같은 창일 때만 아래로 이어진다. */
+html,body{height:100%}
+body.app-ls{display:flex;flex-direction:column;overflow:hidden;min-width:0;background:#e9f1ee}
+.ls-topbar{flex:none;margin:0;height:46px;display:flex;align-items:center;gap:18px;padding:0 14px;background:#173b40;color:#d9efed;border-bottom:2px solid #bee3e3}
+.ls-topbar .brand{display:flex;align-items:center;gap:8px;color:#bee3e3;font-size:15px;letter-spacing:2.4px;text-decoration:none;white-space:nowrap}
+.ls-topbar .brand small{font-size:10px;letter-spacing:1.6px;color:#9fc5c5}
+.ls-topbar .brand-icon,.ls-topbar .brand-icon img{width:28px;height:28px;display:block}
+.top-station{display:flex;align-items:center;gap:8px;font-size:13px;white-space:nowrap}.top-station b{font-weight:600;color:#fff}.top-station .muted{color:#9fc5c5;font-size:11px}
+.top-clock{display:flex;align-items:center;gap:8px;font-size:11px;margin-left:auto;white-space:nowrap}.top-clock .muted{color:#9fc5c5}.top-clock .mono{font-size:15px;letter-spacing:1.2px;color:#fff}
+.top-actions{display:flex;gap:6px}
+.ls-topbar button{background:#ffffff14;color:#e7f6f5;border:1px solid #ffffff2e;border-radius:5px;padding:5px 10px;font-size:11.5px;cursor:pointer;white-space:nowrap}
+.ls-topbar button:hover{background:#ffffff26}.ls-topbar button[aria-pressed="true"],.ls-topbar button[aria-expanded="true"]{background:#bee3e3;color:#173c3d}
+body.app-ls .ls-viewport>main{flex:1;min-height:0;overflow:auto;padding:0;margin:0;max-width:none;width:100%}
+.ls-panel{height:100%;min-height:420px;display:flex;flex-direction:row;margin:0;padding:0;border:0;border-radius:0;box-shadow:none;background:transparent}
+.ls-panel .ls-display{flex:1 1 0;min-width:0;min-height:0;margin:0;border-radius:0;display:flex;flex-direction:column}
+.ls-display .ls-stage{flex:1;min-height:0;padding:8px 0 0;display:flex;flex-direction:column;overflow:hidden}
+.ls-display .ls-head{padding:0 12px;flex:none;display:grid;grid-template-columns:150px minmax(0,1fr) 150px;align-items:center;height:56px;margin-bottom:6px;gap:0 12px}
+.ls-controls{display:flex;align-items:center;justify-content:center;gap:16px;min-width:0}
+.ls-nav{width:150px;height:56px}.ls-nav-arrow{display:block;width:150px;height:56px;overflow:visible}
+.ls-nav .nb-arrow{cursor:pointer}.ls-nav .nb-arrow-shape{fill:#f4f000;stroke:#7a7400;stroke-width:1}
+.ls-nav .nb-arrow-dir,.ls-nav .nb-arrow-to{fill:#111;font-size:12px;font-weight:700;letter-spacing:.5px}
+.ls-nav .nb-arrow:hover .nb-arrow-shape,.ls-nav .nb-arrow:focus .nb-arrow-shape{fill:#fffb6a}
+.ls-nav .nb-arrow:focus{outline:none}.ls-nav .nb-arrow:focus .nb-arrow-shape{stroke:#173b40;stroke-width:2}
+.ls-display .mode-btn{min-height:44px;font-size:15px}.ls-display .stop-all{min-height:44px;padding:4px 14px;font-size:14px}.ls-display .ls-name{min-height:46px;min-width:170px;padding:2px 18px}.ls-display .ls-name b{font-size:19px;letter-spacing:5px}
+.ls-display .ls-svg{flex:1;min-height:0;min-width:0;width:100%;height:100%}
+/* 하단 역 바로가기 (원본 LS처럼 화면 아래) */
+.ls-bottom{flex:none;margin:0;display:flex;align-items:center;gap:8px;padding:6px 10px;background:#dbe8e4;border-top:1px solid #a9c6bf;color:#2f5651;font-size:11.5px;overflow:hidden}
+.ls-bottom .text-btn{color:#173b40;font-weight:600}
+.ls-bottom .station-tabs{display:flex;flex:1 1 0;min-width:0;gap:4px;padding:0;margin:0;overflow-x:auto;scrollbar-width:thin}
+.ls-bottom .station-tabs button{padding:5px 9px;font-size:11.5px;white-space:nowrap;flex:none}
+.ls-bottom .ls-jump{color:#4f7771}.ls-bottom select,.ls-bottom .ls-jump,.ls-bottom #stationScope{flex:none}.ls-bottom select{width:150px;padding:3px 6px;font-size:11.5px}
+.ls-bottom #stationScope{color:#5f7f79;max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ls-bottom #lsStatus{display:none}
+/* MMI 도킹 영역: 같은 창에서만 보이는 대체 위치 */
+.mmi-slot{min-height:100vh;padding:16px 20px 24px}
+.workspace-split .mmi-slot{display:none}
+/* 우측 드로어: 진로·쇄정 현황, 범례, 연습·기록 */
+.side-drawer{flex:none;width:420px;height:100%;overflow:auto;padding:12px 14px 20px;background:#f6faf8;border-left:2px solid #9fc5c5;}
+.side-drawer[hidden]{display:none}
+.side-drawer .drawer-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;color:#173b40}
+.side-drawer .legend{padding:6px 0;font-size:10.5px}
+.side-drawer .lowergrid,.side-drawer .practice-panel,.side-drawer .log-panel{display:block;margin-top:12px}
+.mmi-detached .ls-topbar{display:none}
+/* 독립 T/G 창 */
+body.tg-detached{display:block;margin:0;min-width:900px;background:#1e1e1e}
+.tg-detached .graph-panel{margin:0;border-radius:0;min-height:100vh;box-shadow:none}
+
+/* Uniform desktop window scaling; dialogs and context menus remain viewport-local. */
+.ls-viewport{position:absolute;left:0;top:0;display:flex;flex-direction:column;overflow:hidden}
+
+dialog{max-width:calc(100vw - 16px);max-height:calc(100vh - 16px);overflow:auto}
+.ls-topbar{gap:12px;padding-left:10px;padding-right:10px}
+
+/* Edge ports align by main-line identity across neighboring LS windows. */
+.ls-svg .screen-continuations{pointer-events:none}.ls-svg .seam-link path{fill:none;stroke-linejoin:round;stroke-linecap:butt}.ls-svg .seam-clearance{stroke:#686d68;stroke-width:26}.ls-svg .seam-rail{stroke:#f4f4ef;stroke-width:18}.ls-svg .seam-name{fill:#d6e7e5;font-size:11px;letter-spacing:.5px}
+
+.ls-svg .seam-link.set .seam-rail{stroke:#35dc82}.ls-svg .seam-link.occupied .seam-rail{stroke:#ff5c50}.ls-svg .seam-link.locked .seam-rail{stroke:#ffbd55}
+
+.ls-svg .block-indicator{pointer-events:none}.ls-svg .block-body{fill:#111811;stroke:#26332c;stroke-width:.7}.ls-svg .block-stem{fill:none;stroke:#111811;stroke-width:2}.ls-svg .block-number{fill:#fff;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;stroke:none;letter-spacing:0}
+.ls-stage[data-monitor="true"] .ls-train-slot{cursor:default}.ls-stage[data-monitor="true"] .ls-train-slot:hover rect{stroke:#b5b9ac;stroke-width:1}.tab-dot.monitor{background:#bee3e3;border-color:#49716c}
+.ls-topbar button[hidden]{display:none!important}
+
+.assessment-clock{display:grid;grid-template-columns:auto auto;column-gap:8px;align-items:center;background:transparent;color:#d9efed;border:0;text-align:left;padding:1px 4px}.assessment-clock #clockLabel{font-size:10px}.assessment-clock #clock{font-size:17px;letter-spacing:1px}.assessment-clock small{grid-column:1/-1;font-size:8px;max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#bee3e3}.assessment-clock[data-status="expired"]{color:#ffb9ac}#scTimerStatus{font-size:11px;color:#245b60}
+
+.assessment-clock[data-status="expired"] #clock{color:#ffb9ac}
+.platform-legend{display:inline-flex;gap:12px;align-items:center;white-space:nowrap;margin-left:auto;color:#365854}.platform-legend>span{display:inline-flex;gap:5px;align-items:center}.platform-key{display:inline-block;width:18px;height:8px;border-radius:2px;flex:none}.platform-key.orange{background:#edae3b}.platform-key.cyan{background:#3ec9cf}.ls-svg .platform[role=button]{cursor:help}.ls-svg .platform[role=button]:hover,.ls-svg .platform[role=button]:focus{stroke:#f4ffff;stroke-width:2;outline:none}.platform-detail{display:flex;align-items:center;gap:10px;padding:12px;background:#edf7f5;border:1px solid #bee3e3;border-radius:6px;margin-bottom:12px}.platform-result{padding:12px;border-left:3px solid #69978f;background:#edf7f5;margin:12px 0!important}.platform-result[data-status=mismatch]{border-color:#b37336;background:#fff0dc;color:#804b23}
+
+/* Larger, direct station controls; yellow on-diagram arrows handle corridor navigation. */
+.ls-bottom{padding:10px 12px;gap:10px;min-height:68px}
+.ls-bottom .station-tabs{gap:6px;align-items:stretch}
+.ls-bottom .station-tabs button{min-width:84px;min-height:46px;padding:10px 14px;font-size:15px;line-height:1.3;display:flex;align-items:center;justify-content:center;gap:7px}
+.ls-bottom .station-tabs .tab-dot{width:12px;height:12px;flex:none}
+.ls-bottom #stationScope{display:none}
+.ls-bottom #extraLSBtn{min-height:44px;padding:8px 10px;font-size:13px}
+
+/* Fill the complete station strip rather than leaving fixed-width buttons at the left. */
+.ls-bottom .station-tabs{overflow:hidden;gap:6px}
+.ls-bottom .station-tabs button{flex:1 1 0;min-width:0;min-height:50px;padding:8px 2px;font-size:clamp(12px,1vw,18px);gap:5px;position:relative}
+.ls-bottom .station-tabs .tab-dot{width:10px;height:10px;flex:0 0 10px}
+.ls-bottom .station-tabs .tab-count:not(:empty){position:absolute;right:3px;top:2px;font-size:9px;line-height:1}
+/* Keep the top-level MMI menu at native menu-bar density; dropdowns retain their spacing. */
+.mmi-menubar{padding:0 8px;gap:2px;min-height:0}
+.mmi-menubar .mmi-top-btn{padding:2px 12px;line-height:18px;min-height:24px;font-size:12px;border-radius:3px}

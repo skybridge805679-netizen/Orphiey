@@ -263,3 +263,49 @@ img.vn-stamp{width:min(34vw,360px);text-shadow:none}
 .c-instructor .vn-face{border-color:#ffbc76aa;background:#2a2016}.c-harin .vn-face{border-color:#a8e6b4aa;background:#16281d}.c-jian .vn-face{border-color:#c9b6ffaa;background:#1d1733}
 .vn-face.crop-instructor img{top:-6%}
 .sfx-preview{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.sfx-preview small{width:100%}.sfx-preview button{font-size:12px;padding:6px 10px}
+
+/* ── CTC drill: real LS/MMI (iframe) above, the radio role-play console below. Desktop layout only. */
+#ctcDrill{position:fixed;inset:0;z-index:60;display:grid;grid-template-rows:1fr 250px;background:#02080e}
+#ctcDrill[hidden]{display:none}
+#ctcDrill.mini{grid-template-rows:1fr 44px}
+#ctcDrill.mini .ctc-face,#ctcDrill.mini .ctc-talk,#ctcDrill.mini .ctc-progress,#ctcDrill.mini .ctc-title small{display:none}
+.ctc-stage{position:relative;min-height:0}
+.ctc-stage iframe{width:100%;height:100%;border:0;display:block;background:#6b6f6e}
+.ctc-loading{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#06121c;color:#bff4ea;font-size:17px}
+.ctc-loading[hidden]{display:none}.ctc-loading img{width:96px;height:96px;border-radius:50%;border:2px solid #f3b9d0aa;animation:ctcPulse 1.2s ease-in-out infinite alternate}
+@keyframes ctcPulse{to{transform:scale(1.06);filter:brightness(1.15)}}
+.ctc-console{display:grid;grid-template-columns:150px 1fr 270px;gap:16px;padding:14px 18px;background:linear-gradient(180deg,#081a27,#050f17);border-top:1px solid #78eadb55;min-height:0}
+.ctc-face{position:relative;width:150px;height:170px;align-self:center;border-radius:14px;overflow:hidden;background:#0c2433;border:1px solid #78eadb66}
+.ctc-face[hidden]{visibility:hidden}.ctc-face img{width:100%;height:100%;object-fit:cover}
+.ctc-face.crop img{position:absolute;width:210%;height:auto;max-width:none;left:50%;top:-3%;transform:translateX(-50%);object-fit:initial}
+.ctc-face.crop-instructor img,.ctc-face.crop-jian img{width:230%;top:-4%}
+.ctc-talk{position:relative;min-width:0;overflow:auto;cursor:pointer}
+.ctc-name{display:inline-block;margin-bottom:6px;padding:3px 14px;border-radius:16px;background:#0c2433;border:1px solid #78eadb88;color:#bff4ea;font-weight:700;letter-spacing:.5px}
+.ctc-name small{margin-left:6px;font-weight:400;color:#9fb8c0;font-size:12px}
+.ctc-name.c-orpheia{background:#2a1626;border-color:#f3b9d0aa;color:#f9cfe0}
+.ctc-name.c-harin{background:#16281d;border-color:#a8e6b499;color:#c8f3d0}
+.ctc-name.c-jian{background:#1d1733;border-color:#c9b6ffaa;color:#ddd2ff}
+.ctc-name.c-instructor{background:#2a2016;border-color:#ffbc76aa;color:#ffd9ad}
+.ctc-name.c-sangcheol{background:#10233a;border-color:#8ec5ffaa;color:#cfe6ff}
+.ctc-text{font-size:17px;line-height:1.75;color:#f2f7f8;white-space:pre-wrap}
+.ctc-next{position:absolute;right:6px;bottom:2px;color:#78eadb;animation:ctcPulse .7s infinite alternate}.ctc-next[hidden]{display:none}
+.ctc-choices{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+.ctc-choice{text-align:left;padding:5px 12px;border-radius:8px;border:1px solid #78eadb66;background:#0c2433;color:#e6f6f4;font-size:13.5px;line-height:1.45;cursor:pointer}
+.ctc-choice:hover:not(:disabled){background:#123548;border-color:#78eadb}
+.ctc-choice:disabled{opacity:.35;text-decoration:line-through;cursor:not-allowed}
+.ctc-choice.hinted{border-color:#ffd166;box-shadow:0 0 0 1px #ffd16688 inset;background:#2b2610}
+.ctc-hint{margin:2px 0 0;padding:6px 10px;border-left:3px solid #ffd166;background:#ffd16614;color:#ffe6a3;font-size:13px}
+.ctc-peek{align-self:flex-start;padding:5px 12px;border-radius:8px;border:1px dashed #ffd16699;background:transparent;color:#ffe6a3;cursor:pointer}
+.ctc-side{display:flex;flex-direction:column;gap:8px;min-width:0;color:#bfd3d8;font-size:13px}
+.ctc-title b{display:block;color:#e6f6f4;font-size:14px;line-height:1.35}.ctc-title small{color:#8fa9b0}
+.ctc-progress{height:6px;border-radius:3px;background:#12303f;overflow:hidden}.ctc-progress span{display:block;height:100%;background:linear-gradient(90deg,#78eadb,#f3b9d0);transition:width .4s}
+.ctc-wait{color:#ffd166;animation:ctcPulse .8s infinite alternate}.ctc-ok{color:#78eadb}
+.ctc-tools{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto;align-items:center}
+.ctc-tools button,.ctc-tools label{padding:4px 10px;border-radius:7px;border:1px solid #78eadb55;background:#0c2433;color:#cfe9e5;font-size:12px;cursor:pointer}
+.ctc-forecast{position:fixed;inset:0;z-index:70;display:flex;align-items:center;justify-content:center;background:#1a0008cc;backdrop-filter:blur(3px)}
+.ctc-forecast[hidden]{display:none}
+.ctc-fc-box{width:min(720px,90vw);padding:28px 32px;border-radius:16px;background:#14060c;border:1px solid #ff6b8a88;color:#f8dfe5;box-shadow:0 0 60px #ff2d5544}
+.ctc-fc-box small{letter-spacing:3px;color:#ff8fa8}.ctc-fc-box h3{margin:6px 0 14px;font-size:22px}
+.ctc-fc-box p{line-height:1.8;margin:8px 0}.ctc-said{color:#ffd1dc;font-weight:700}
+.ctc-fc-box button{margin-top:12px}
+#ctcLogDlg{width:min(760px,90vw);max-height:80vh}.ctc-loglist{max-height:60vh;overflow:auto}.ctc-loglist p{margin:6px 0;line-height:1.6}.ctc-loglist b{color:#78eadb;margin-right:6px}

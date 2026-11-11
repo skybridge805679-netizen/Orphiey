@@ -101,6 +101,7 @@ function step(){
    case 'credits':return credits();
    case 'clear':meta.cleared=true;persist();S.pc++;break;
    case 'drill':return drill(op.arg);
+   case 'ctc':return ctcDrill(op.arg);
    case 'end':return finishChapter(op.arg);
    case 'say':case 'narr':
     if(op.t==='say'&&op.expr&&S.chars[op.who]){if(S.chars[op.who].expr!==op.expr&&EXPR_FX[op.expr])pendingFx[op.who]=EXPR_FX[op.expr];S.chars[op.who].expr=op.expr;}
@@ -228,6 +229,21 @@ function afterDrill(R){
  c.querySelector('button').onclick=e=>{e.stopPropagation();c.hidden=true;$('#vnBox').classList.remove('quiet');busy=false;S.pc++;step();};
 }
 
+// ── CTC drills: the real LS/MMI (CTC LAB) with the radio role-play (ctc-drill.js).
+function ctcDrill(id){
+ autosave('실습 시작 직전');busy=true;stopAuto();skip=false;auto=false;
+ CTCDrill.start(id,R=>{
+  markScene('ctc:'+id);markSeen('cg_training_clear.png');BGM.scene(S.bg);
+  if(R.error){busy=false;S.pc++;return step();}
+  S.flags.ctcRewinds=(S.flags.ctcRewinds||0)+R.rewinds;
+  if(!R.rewinds&&!R.peeks)S.flags.study=(S.flags.study||0)+1;
+  SFX.play('clear');
+  const c=$('#vnCard');$('#vnBox').classList.add('quiet');c.className='vn-card drill-done';c.hidden=false;
+  c.innerHTML=`<small>실습 종료 · CTC LAB</small><h2>${esc(R.title)}</h2><p>무전 첫 시도 정답 ${R.firstTry} / ${R.asks} · LS·MMI 조작 ${R.ops}건${R.rewinds?` · 예측 되감기 ${R.rewinds}회`:''}${R.peeks?` · 힌트 ${R.peeks}회`:''}</p><button class="primary">이야기로 돌아가기 ▶</button>`;
+  c.querySelector('button').onclick=e=>{e.stopPropagation();c.hidden=true;$('#vnBox').classList.remove('quiet');busy=false;S.pc++;step();};
+ });
+}
+
 function finishChapter(next){
  const i=chapters.indexOf(curCh()),nx=next?byId[next]:chapters[i+1];persist();
  if(nx){S={...fresh(nx.id),flags:S.flags,day:S.day,phone:S.phone};autosave('장 시작');paint();return step();}
@@ -295,15 +311,15 @@ function title(){
  if(run){cancelStory();stopMedia();run=null;}document.body.classList.remove('in-drill');document.body.classList.add('vn-mode');closeDialogs();
  const cont=latest();
  $('#main').innerHTML=`<section class="vn-title"><img class="vn-title-bg${ART_READY.has(meta.cleared?'title_key_visual_clear.png':'title_key_visual.png')?' kv'+(meta.cleared?' kv-clear':''):''}" src="${asset(meta.cleared?art('title_key_visual_clear.png',art('title_key_visual.png',art('bg_spring_cherry.png','bg_control_room_night.png'))):art('title_key_visual.png','bg_control_room_night.png'))}" alt=""><img class="vn-title-chr" src="${asset(art('title_key_visual.png','')?'':'orpheia_sd_maid_v2.png')}" alt="" ${art('title_key_visual.png','')?'hidden':''}><div class="vn-title-body"><small>RAILWAY DISPATCH VISUAL NOVEL</small>${ART_READY.has('title_logo.png')?`<img class="vn-title-logo" src="${asset('title_logo.png')}" alt="오르페이아 — 電脳侍女의 비상관제 일지">`:'<h1>오르페이아<span>電脳侍女의 비상관제 일지</span></h1>'}${meta.cleared?'<p class="vn-cleared">ALL CLEAR · 회상과 갤러리가 모두 열렸어요</p>':''}<nav>
- <button class="primary" data-t="new">처음부터</button><button data-t="continue" ${cont?'':'disabled'}>이어하기</button><button data-t="load" ${Object.keys(meta.saves).length?'':'disabled'}>불러오기</button><button data-t="recall">회상 · 사건 기록부</button><button data-t="gallery">갤러리</button><button data-t="config">설정</button></nav>
- <p class="vn-title-note">교재 기반 74개 사고 · 432개 교신. 이야기 속에서 겪은 사건은 회상에서 다시 연습할 수 있어요.</p></div></section>`;
+ <button class="primary" data-t="new">처음부터</button><button data-t="continue" ${cont?'':'disabled'}>이어하기</button><button data-t="load" ${Object.keys(meta.saves).length?'':'disabled'}>불러오기</button><button data-t="recall">부록 · 교재 문제집</button><button data-t="gallery">갤러리</button><button data-t="config">설정</button></nav>
+ <p class="vn-title-note">관제교육장 실전 시나리오를 실제 LS·MMI(CTC LAB)로 연습해요. 교재 74문제는 부록에서 언제든 풀 수 있어요.</p></div></section>`;
  const go={new:()=>{if(Object.keys(meta.saves).length&&!confirm('처음부터 시작할까요? 기존 세이브는 그대로 남습니다.'))return;S=fresh(chapters[0].id);log=[];shell();paint();step();},continue:()=>loadFrom(cont),load:()=>slotsDialog('load'),recall:()=>catalog(),gallery:()=>openCG(),config};
  document.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>go[b.dataset.t]());
 }
 
 // ── Keyboard (only while the VN surface is active).
 document.addEventListener('keydown',e=>{
- if(!$('#vn')||document.body.classList.contains('in-drill')||document.querySelector('dialog[open]'))return;
+ if(!$('#vn')||document.body.classList.contains('in-drill')||document.body.classList.contains('in-ctc')||document.querySelector('dialog[open]'))return;
  const box=$('#vnChoices');
  if(box&&!box.hidden&&/^[1-9]$/.test(e.key)){e.preventDefault();VN._pick?.(+e.key-1);return;}
  if(e.key==='Enter'||e.key===' '){e.preventDefault();if(!e.repeat)advance();}
@@ -317,5 +333,5 @@ document.addEventListener('keydown',e=>{
 document.addEventListener('keyup',e=>{if(e.key==='Control'&&skip){skip=false;if($('#vn'))paint();}});
 
 ready.then(()=>{if($('.vn-title'))title();else if(S&&$('#vn'))paint();});
-return {flag:k=>S?.flags?.[k],cleared:()=>!!meta.cleared,chapter,title,ready,afterDrill,markSeen,markScene,isUnlocked:id=>meta.settings.unlockAll||meta.cleared||sceneSet.has(id),isSeen:f=>meta.settings.unlockAll||meta.cleared||seenSet.has(f),inStory:()=>!!S,_pick:null,chapters};
+return {flag:k=>S?.flags?.[k],cleared:()=>!!meta.cleared,chapter,title,ready,afterDrill,markSeen,markScene,isUnlocked:id=>!String(id).startsWith('ctc:')||meta.settings.unlockAll||meta.cleared||sceneSet.has(id),isSeen:f=>meta.settings.unlockAll||meta.cleared||seenSet.has(f),inStory:()=>!!S,_pick:null,chapters};
 })();

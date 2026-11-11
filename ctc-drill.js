@@ -72,15 +72,29 @@ const CTCDrill=(()=>{
  // ── Reference order (FTS "조치사항"): which operations come before each communication.
  function order(p){
   const seq=[...String(p.actions||'').matchAll(/^\d+\.\s*\[(통보|조작)\]\s*(.*)$/gm)].map(m=>({kind:m[1],text:m[2]}));
-  const nc=seq.filter(s=>s.kind==='통보').length,no=seq.filter(s=>s.kind==='조작').length;
-  const ok=nc===p.communications.length&&no===p.objectives.length;let ci=0,oi=0;
-  for(const s of seq){if(s.kind==='통보')s.comm=ok?p.communications[ci++]:null;else s.obj=ok?p.objectives[oi++]:null;}
-  return {seq,ok};
+  const ok=seq.filter(s=>s.kind==='통보').length===p.communications.length,byId=id=>p.objectives.find(o=>o.id===id);
+  const names=Object.fromEntries(W.SimNetwork.stations.map(x=>[x.name,x.id])),home=p.setup?.reset?.[0]||p.setup?.trains?.[0]?.station||'';
+  let ci=0;const taken=new Set();
+  for(const s of seq){
+   if(s.kind==='통보'){s.comm=ok?p.communications[ci++]:null;continue;}
+   const t=s.text,st=names[(t.match(/([가-힣]+)역/)||[])[1]]||home,ids=[];let m;
+   if(/CCM 전환/.test(t))ids.push('ccm-'+st);
+   else if(/AUTO/.test(t))ids.push('auto-'+st);
+   else if((m=t.match(/열차번호 \w+ → (\w+) 수정/)))ids.push('rename-'+m[1]);
+   else if((m=t.match(/열차번호 (\w+) 삭제/)))ids.push('delete-'+m[1]);
+   else if((m=t.match(/^(\w+) 열차번호 .*이동/)))ids.push('move-'+m[1]);
+   else if(/스케줄/.test(t))ids.push(...p.objectives.filter(o=>o.id.startsWith('schedule-')).map(o=>o.id));
+   else if(/접근쇄정 \d+초가 지나/.test(t))ids.push(...(t.match(/\d+[A-Z]/g)||[]).map(x=>`free-${st}-${x}`));
+   else if((m=t.match(/([0-9A-Z]+-[0-9A-Z]+)/)))ids.push(`route-${st}-${m[1]}`);
+   else if(/정지|해정/.test(t))ids.push(...(t.replace(/\(.*/,'').match(/\d+[A-Z]?(?=[\s·]|$)/g)||[]).map(x=>`stop-${st}-${x}`));
+   s.objs=ids.map(byId).filter(o=>o&&!taken.has(o.id));s.objs.forEach(o=>taken.add(o.id));
+  }
+  return {seq,ok,rest:p.objectives.filter(o=>!taken.has(o.id))};
  }
  const GO=/신호 확인|진입하|발차|출발하|운행 재개|운행하세요/;
  function unmetBefore(c){
   if(!G.order.ok)return null;const it=item();
-  for(const s of G.order.seq){if(s.comm?.id===c.id)return null;if(s.obj&&!s.obj.final&&it.obj?.[s.obj.id]==null&&it.missed?.[s.obj.id]==null)return s.obj;}
+  for(const s of G.order.seq){if(s.comm?.id===c.id)return null;const o=(s.objs||[]).find(o=>!o.final&&it.obj?.[o.id]==null&&it.missed?.[o.id]==null);if(o)return o;}
   return null;
  }
 
@@ -104,7 +118,7 @@ const CTCDrill=(()=>{
  // ── Screen.
  function build(){
   el=document.createElement('section');el.id='ctcDrill';el.hidden=true;
-  el.innerHTML=`<div class="ctc-screens"><iframe id="ctcFrame" title="LS 대형표시반"></iframe><iframe id="ctcMMI" title="MMI 관제 단말"></iframe></div>
+  el.innerHTML=`<div class="ctc-screens"><iframe id="ctcFrame" title="LS 대형표시반"></iframe><iframe id="ctcMMI" title="MMI (원본, 숨김)"></iframe><div class="ctc-mmi" id="ctcTerm"></div></div>
   <div class="ctc-loading" hidden><img src="${asset(FACE.orpheia_smile)}" alt=""><p>LS 기동 중이에요… 잠시만요, 주인님!</p></div>
   <div class="ctc-hud"><button type="button" id="ctcRadio" class="ctc-radio" title="무전 (R)">📻 무전 <kbd>R</kbd></button>
    <span class="ctc-view" role="tablist"><button type="button" data-view="ls" class="on" title="앞쪽 대형표시반 (Tab)">▲ LS 표시반</button><button type="button" data-view="mmi" title="책상 위 관제 단말 (Tab)">▼ MMI 단말<i hidden>!</i></button></span>
@@ -135,7 +149,48 @@ const CTCDrill=(()=>{
   else if(e.key==='Escape'&&!$('#ctcRadioPanel').hidden){toggleRadio(false);}
  }
  // Two screens, as in a control room: the LS wall display ahead, the MMI terminal on the desk. Tab looks up or down.
- function look(v){if(!G)return;G.view=v;el.classList.toggle('show-mmi',v==='mmi');el.querySelectorAll('.ctc-view button').forEach(b=>b.classList.toggle('on',b.dataset.view===v));if(v==='mmi')$('.ctc-view i').hidden=true;SFX.play('select');(v==='mmi'?M:W)?.focus();}
+ function look(v){if(!G)return;G.view=v;el.classList.toggle('show-mmi',v==='mmi');el.querySelectorAll('.ctc-view button').forEach(b=>b.classList.toggle('on',b.dataset.view===v));if(v==='mmi')$('.ctc-view i').hidden=true;SFX.play('select');if(v==='mmi')mmi(true);else W?.focus();}
+ // ── MMI terminal, drawn for the game: the same engine commands as the simulator's MMI (source "MMI").
+ const SIG={GO:'go',STOP:'stop'};
+ function mmiStations(){const s=W.SimRemote.snapshot.states;return W.SimNetwork.stations.map(x=>x.id).filter(id=>G.used.has(id)&&s[id]);}
+ function alarms(){return [...(M?.document||W.document).querySelectorAll('.mmi-alarm #alarmText p')].map(x=>x.textContent.replace(/\s+/g,' ').trim()).filter(t=>!/열차번호 중복/.test(t));}
+ function mmi(force){
+  const box=$('#ctcTerm');if(!G||!W||(G.view!=='mmi'&&!force))return;
+  const snap=W.SimRemote.snapshot,list=mmiStations(),mm=G.mm;if(!list.includes(mm.station))mm.station=list[0]||'';
+  const st=mm.station,state=snap.states[st],core=st&&W.SimCore.forStation(st),nm=id=>W.SimNetwork.catalog[id]?.name||id;
+  if(!st){box.innerHTML='<p class="mm-empty">이 문제에는 취급역이 없어요.</p>';return;}
+  const sig=JSON.stringify([st,mm.signal,mm.form,mm.msg,list.map(id=>snap.states[id].mode),state.signals,Object.keys(state.routes),snap.ls.stations[st]?.windows,state.logs.length,alarms()]);
+  if(sig===mm.sig)return;if(mm.form&&box.contains(document.activeElement)&&document.activeElement.matches('input,select')&&!force)return;mm.sig=sig;
+  const kinds={};for(const [id,g] of Object.entries(core.signals))(kinds[g.kind]??=[]).push(id);
+  const routes=mm.signal?Object.keys(core.routes).filter(r=>core.routes[r].signal===mm.signal):[];
+  const wins=Object.entries(snap.ls.stations[st]?.windows||{}).flatMap(([slot,rows])=>rows.map(r=>({slot,...r})));
+  const al=alarms(),f=mm.form;
+  const form=f?.type==='rename'?`<div class="mm-form">열차번호 수정 <b>${esc(f.number)}</b> → <input id="mmNew" value="${esc(f.number)}" maxlength="6"><button data-do="rename">적용</button><button data-do="cancel">취소</button></div>`
+   :f?.type==='move'?`<div class="mm-form">열차번호 이동 <b>${esc(f.number)}</b> → <select id="mmSt">${W.SimNetwork.stations.filter(x=>W.SimTrainWindows.data[x.id]&&snap.ls.stations[x.id]).map(x=>`<option value="${x.id}"${x.id===(f.to||st)?' selected':''}>${esc(x.name)}</option>`).join('')}</select><select id="mmSlot">${(W.SimTrainWindows.data[f.to||st]||[]).map(w=>`<option>${esc(w.slot)}</option>`).join('')}</select><button data-do="move">이동</button><button data-do="cancel">취소</button></div>`:'';
+  box.innerHTML=`<nav class="mm-side"><h4>취급역</h4>${list.map(id=>`<button data-st="${id}" class="${id===st?'on':''}">${esc(nm(id))}<i class="m-${snap.states[id].mode}">${snap.states[id].mode}</i></button>`).join('')}<p>고개를 들면 LS 표시반 (Tab)</p></nav>
+  <section class="mm-main"><header><h3>${esc(nm(st))}역 <small>현장설비제어</small></h3><div class="mm-mode">${['AUTO','CCM','LOCAL'].map(m=>`<button data-mode="${m}" class="${state.mode===m?'on':''}">${m}</button>`).join('')}</div></header>
+   ${Object.entries(kinds).map(([k,ids])=>`<div class="mm-sigs"><b>${esc(k)}</b>${ids.map(id=>`<button data-sig="${esc(id)}" class="${SIG[state.signals[id]]||'go'}${id===mm.signal?' on':''}">${esc(id)}</button>`).join('')}</div>`).join('')}
+   <div class="mm-detail">${mm.signal?`<h4>신호기 ${esc(mm.signal)} <small>${esc(core.signals[mm.signal]?.kind||'')} · 현재 ${state.signals[mm.signal]==='STOP'?'정지':'진행'}</small></h4><button data-do="stop" class="mm-stop">■ 신호 정지</button><div class="mm-routes">${routes.map(r=>`<button data-route="${esc(r)}" class="${state.routes[r]?'set':''}">${esc(r)}</button>`).join('')||'<span>이 신호기에서 시작하는 진로가 없어요.</span>'}</div>`:'<p>신호기를 고르면 정지 취급과 진로 설정을 할 수 있어요. (CCM 모드에서만)</p>'}</div>
+   <div class="mm-set"><b>설정된 진로</b>${Object.keys(state.routes).map(r=>`<span>${esc(r)}</span>`).join('')||'<span class="none">없음</span>'}</div></section>
+  <aside class="mm-right"><h4>열차번호 <small>${esc(nm(st))}역 열번창</small></h4><div class="mm-trains">${wins.map(w=>`<div><b>${esc(w.number)}</b><small>${esc(w.slot)}</small><button data-edit="rename" data-uid="${w.uid}" data-slot="${esc(w.slot)}" data-n="${esc(w.number)}">수정</button><button data-edit="move" data-uid="${w.uid}" data-slot="${esc(w.slot)}" data-n="${esc(w.number)}">이동</button><button data-edit="delete" data-uid="${w.uid}" data-slot="${esc(w.slot)}" data-n="${esc(w.number)}">삭제</button></div>`).join('')||'<p>이 역 열번창에 열차가 없어요.</p>'}</div>${form}
+   <h4>알람 <small>${al.length}건</small>${al.length?'<button data-do="ack" class="mm-ack">확인</button>':''}</h4><div class="mm-alarms">${al.map(a=>`<p>${esc(a)}</p>`).join('')||'<p class="none">미확인 알람 없음</p>'}</div>
+   <h4>이벤트 로그</h4><div class="mm-log">${state.logs.slice(0,7).map(l=>`<p class="${l.result==='완료'?'':'bad'}">${esc(l.message||'')}</p>`).join('')}</div>
+   <div class="mm-msg ${mm.bad?'bad':''}">${esc(mm.msg||'')}</div></aside>`;
+  const said=r=>{mm.msg=r?.message||'';mm.bad=r?.ok===false;SFX.play(mm.bad?'wrong':'confirm');if(mm.bad)toast('거부됐어요: '+mm.msg,'worry');mm.sig='';mmi(true);update();};
+  const ctl=a=>said(W.SimRemote.command({type:'control',station:st,action:{...a,source:'MMI'}})),num=a=>said(W.SimRemote.command({type:'numbers',action:a}));
+  box.querySelectorAll('[data-st]').forEach(b=>b.onclick=()=>{mm.station=b.dataset.st;mm.signal='';mm.form=null;SFX.play('select');mmi(true);});
+  box.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>ctl({type:'mode',value:b.dataset.mode}));
+  box.querySelectorAll('[data-sig]').forEach(b=>b.onclick=()=>{mm.signal=b.dataset.sig;SFX.play('select');mmi(true);});
+  box.querySelectorAll('[data-route]').forEach(b=>b.onclick=()=>ctl({type:'route',id:b.dataset.route}));
+  box.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>{const d=b.dataset;if(d.edit==='delete'){if(confirm(`${d.n} 열차번호를 삭제할까요? (지적확인환호)`))num({op:'delete',station:st,slot:d.slot,uid:d.uid});}else{mm.form={type:d.edit,uid:d.uid,slot:d.slot,number:d.n,to:st};mmi(true);}});
+  box.querySelector('#mmSt')?.addEventListener('change',e=>{mm.form.to=e.target.value;mmi(true);});
+  box.querySelectorAll('[data-do]').forEach(b=>b.onclick=()=>{const d=b.dataset.do,f=mm.form;
+   if(d==='stop')ctl({type:'stop',id:mm.signal});
+   else if(d==='cancel'){mm.form=null;mmi(true);}
+   else if(d==='rename'){const v=box.querySelector('#mmNew').value.trim().toUpperCase();mm.form=null;num({op:'rename',station:st,slot:f.slot,uid:f.uid,number:v});}
+   else if(d==='move'){const to=box.querySelector('#mmSt').value,slot=box.querySelector('#mmSlot').value;mm.form=null;num({op:'move',station:st,slot:f.slot,uid:f.uid,targetStation:to,targetSlot:slot});}
+   else if(d==='ack'){const d2=(M?.document||W.document);d2.querySelectorAll('.mmi-alarm #alarmText input[type=checkbox]').forEach(x=>{if(!x.checked)x.click();});d2.querySelector('.mmi-alarm [data-alarm-ok]')?.click();said({ok:true,message:'알람 확인'});}});
+ }
  function dlg(html){$('.ctc-dlg-body').innerHTML=html;$('#ctcDlg').showModal();}
  function face(box,who,mood=''){
   const f=who==='orpheia'?FACE['orpheia'+(mood?'_'+mood:'')]||FACE.orpheia:FACE[who],wrap=box.querySelector('.ctc-face')||box,img=box.querySelector('img');
@@ -174,10 +229,10 @@ const CTCDrill=(()=>{
  }
  function hintPanel(){
   const box=$('#ctcHintPanel');box.hidden=!records.hint||!G;if(box.hidden)return;
-  const it=item(),p=view(),done=s=>s.comm?it.comm?.[s.comm.id]!=null:s.obj?it.obj?.[s.obj.id]!=null:false;
-  const rows=G.order.ok?G.order.seq:[...p.objectives.map(o=>({kind:'조작',obj:o})),...p.communications.map(c=>({kind:'통보',comm:c}))];
+  const it=item(),p=view(),od=o=>it.obj?.[o.id]!=null,done=s=>s.comm?it.comm?.[s.comm.id]!=null:s.objs?.length?s.objs.every(od):!!s.obj&&od(s.obj);
+  const rows=G.order.ok?[...G.order.seq,...G.order.rest.map(o=>({kind:'조작',obj:o}))]:[...p.objectives.map(o=>({kind:'조작',obj:o})),...p.communications.map(c=>({kind:'통보',comm:c}))];
   const firstOpen=rows.find(s=>!done(s));
-  const html=`<h4>조치사항 (참고 순서)</h4><ol>${rows.map(s=>`<li class="${done(s)?'done':''}${s===firstOpen?' now':''}"><i>${s.kind==='조작'?'🖱':'📻'}</i>${esc(s.obj?s.obj.label:s.comm?label(s.comm):s.text)}</li>`).join('')}</ol><p>순서는 예시예요. 상황을 보고 주인님이 정하세요.</p>`;
+  const html=`<h4>조치사항 (참고 순서)</h4><ol>${rows.map(s=>`<li class="${done(s)?'done':''}${s===firstOpen?' now':''}"><i>${s.kind==='조작'?'🖱':'📻'}</i>${esc(s.comm?label(s.comm):s.obj?s.obj.label:s.text)}</li>`).join('')}</ol><p>순서는 예시예요. 상황을 보고 주인님이 정하세요.</p>`;
   if(box.dataset.html!==html){box.dataset.html=html;box.innerHTML=html;}
  }
 
@@ -213,19 +268,39 @@ const CTCDrill=(()=>{
   }
   await play(c,r);G.busy=false;
  }
+ // The clock stops while people talk. A stop order asks where: the answer is on the LS (or in 📋 상황).
  async function play(c,r){
-  for(const line of exchange(c,r)){SFX.play(line.who==='sangcheol'?'transmit':'radio');await say(line.who,line.name,line.text);}
-  hush();W.SimRemote.command({type:'fts',op:'manual',key:'comm:'+c.id,checked:true});update();
+  clock(true);
+  const lines=exchange(c,r),stops=lines.filter(l=>l.who==='sangcheol').map(l=>l.text.match(/^([A-Z]\d{3,4})\s*열차\s*([가-힣]+역)\s*정차/)).filter(Boolean),places=[...new Set(stops.map(m=>m[2]))];
+  for(const line of lines){
+   const m=line.who==='sangcheol'&&places.length>1&&line.text.match(/^([A-Z]\d{3,4})\s*열차\s*([가-힣]+역)\s*정차/);
+   if(m)await ask(`${m[1]}열차를 어디에 세울까요?`,places,m[2]);
+   SFX.play(line.who==='sangcheol'?'transmit':'radio');await say(line.who,line.name,line.text);
+  }
+  hush();clock(false);W.SimRemote.command({type:'fts',op:'manual',key:'comm:'+c.id,checked:true});update();
+ }
+ async function ask(question,options,answer){
+  const opts=[...options].sort((a,b)=>hash(a+question)-hash(b+question));
+  for(;;){
+   const got=await new Promise(res=>{
+    const box=$('.ctc-dialogue');box.hidden=false;face(box,'orpheia','serious');advanceFn=null;
+    $('.ctc-name').innerHTML='오르페이아';$('.ctc-name').className='ctc-name c-orpheia';$('.ctc-next').hidden=true;
+    $('.ctc-text').innerHTML=`${esc(question)} <small>(LS에서 열차 위치를 확인하세요)</small><span class="ctc-ask">${opts.map(o=>`<button type="button" class="${records.hint&&o===answer?'hinted':''}">${esc(o)}</button>`).join('')}</span>`;
+    $('.ctc-text').querySelectorAll('button').forEach(b=>b.onclick=e=>{e.stopPropagation();res(b.textContent);});
+   });
+   if(got===answer){SFX.play('correct');return;}
+   G.wrong++;SFX.play('wrong');await say('orpheia','오르페이아',`${got}이 아니에요, 주인님. 그 열차가 지금 어디 있는지 LS를 다시 봐요!`,'worry');
+  }
  }
 
  // ── Watch the FTS: recognised operations, situation changes, the end.
  function update(){
   if(!G||!W?.SimRemote?.snapshot?.fts)return;const s=session(),it=item();if(!s||!it)return;
-  hud();hintPanel();
+  hud();hintPanel();mmi();
   if(W.SimFTSUI?.problemOpen?.())W.SimFTSUI.closeProblem();
   // the scripted cast starts stacked in one train window, which the MMI reports as "열차번호 중복": not the player's doing
   const ps=[...(M?.document||W.document).querySelectorAll('.mmi-alarm:not([hidden]) #alarmText p')];if(ps.length&&ps.every(x=>/열차번호 중복/.test(x.textContent)))W.SimMMI.clearAlarms();
-  else if(ps.length&&G.view!=='mmi'&&$('.ctc-view i').hidden){$('.ctc-view i').hidden=false;if(!G.busy)toast('MMI 단말에 알람이 떴어요! (Tab)','worry');}
+  else if(ps.some(x=>!/열차번호 중복/.test(x.textContent))&&G.view!=='mmi'&&$('.ctc-view i').hidden){$('.ctc-view i').hidden=false;if(!G.busy)toast('MMI 단말에 알람이 떴어요! (Tab)','worry');}
   const p=view();
   for(const o of p.objectives){const done=it.obj?.[o.id]!=null;if(done&&!G.seen.has(o.id)){G.seen.add(o.id);if(!G.busy&&!G.ending){SFX.play('correct');toast('조작 확인! '+o.label);}}else if(!done&&o.final)G.seen.delete(o.id);}
   for(const b of G.p0.branches||[])if(it.branch?.[b.id]!=null&&!G.branches.has(b.id)){G.branches.add(b.id);branch(b);}
@@ -243,7 +318,7 @@ const CTCDrill=(()=>{
   const R={id:G.id,title:p.name,score:it.score??0,status,seconds:Math.round((it.endedAt??0)-(it.startedAt??0)),limit:p.limit,
    ops:[p.objectives.length-mo.length,p.objectives.length],comms:[p.communications.length-mc.length,p.communications.length],
    missed:[...mo.map(o=>'🖱 '+o.label),...mc.map(c=>'📻 '+label(c))],deductions:(p.deductions||[]).filter((d,i)=>it.deducted?.[i]).map(d=>d.label),
-   rewinds:G.rewinds,early:G.early,hint:!!records.hint};
+   rewinds:G.rewinds,early:G.early,wrong:G.wrong,hint:!!records.hint};
   SFX.play(status==='완료'?'clear':'wrong');
   await say('instructor','서도희 교수',status==='완료'?`거기까지. ${R.score}점.`:status==='시간초과'?`시간 종료. ${R.score}점. 빠뜨린 항목을 확인해요.`:`제출 확인. ${R.score}점.`);
   await say('orpheia','오르페이아',R.score>=90?'완벽해요, 주인님! 무전도 조작도 빠짐없이 해내셨어요♪':R.score>=60?'수고하셨어요! 빠뜨린 항목은 채점표에서 같이 봐요.':'괜찮아요, 주인님. 처음엔 누구나 그래요. 채점표를 보고 다시 해 봐요!',R.score>=60?'smile':'worry');
@@ -281,16 +356,16 @@ const CTCDrill=(()=>{
   if(!r?.ok)throw Error(r?.message||'교육을 시작하지 못했어요.');
   clock(true);
   const run=W.SimRemote.snapshot.ftsRunLibrary||lib,s=W.SimRemote.snapshot.fts.session,p0=run.problems.find(p=>p.id===s.items[0].problem);
-  G={id,view:'ls',index:0,p0,order:order(p0),log:[],seen:new Set(),branches:new Set(),rewinds:0,early:0,busy:true,ending:false,radioKey:''};
+  G={id,view:'ls',index:0,p0,order:order(p0),wrong:0,mm:{station:'',signal:'',form:null,msg:''},log:[],seen:new Set(),branches:new Set(),rewinds:0,early:0,busy:true,ending:false,radioKey:''};
   const station=p0.setup?.trains?.[0]?.station||p0.setup?.reset?.[0];
   if(station)W.document.querySelector(`#stationTabs [data-view="${station}"]`)?.click();
   const onKey=e=>{if(!e.target.closest?.('input:not([type=checkbox]),textarea,select,[contenteditable]'))keys(e);};
   W.document.addEventListener('keydown',onKey,true);
   // The simulator can move its MMI into another window (its LS/MMI split); here that window is the second screen.
   M=$('#ctcMMI').contentWindow;W.open=()=>M;W.SimWorkspace.detach();M.document.addEventListener('keydown',onKey,true);
-  const ms=M.document.createElement('style');ms.textContent='body.mmi-detached{min-width:0}';M.document.head.appendChild(ms);
+  
   // Game skin: the HUD above replaces the simulator's own top bar, and only this problem's stations keep a tab.
-  const used=new Set([...JSON.stringify(p0).matchAll(/"(?:station|targetStation)":"([\w-]+)"/g)].map(m=>m[1]));
+  const used=G.used=new Set([...JSON.stringify(p0).matchAll(/"(?:station|targetStation)":"([\w-]+)"/g)].map(m=>m[1]));
   const st=W.document.createElement('style');st.textContent='.ls-topbar,#extraLSBtn{display:none!important}'+(used.size<2?'.ctc-one-station{display:none!important}':'')+(used.size?`#stationTabs [data-view]${[...used].map(x=>`:not([data-view="${x}"])`).join('')}{display:none!important}`:'');W.document.head.appendChild(st);W.document.querySelector('.ls-bottom')?.classList.add('ctc-one-station');
   $('.ctc-title').textContent=p0.name;
   $('.ctc-loading').hidden=true;$('.ctc-hud').hidden=false;hud();hintPanel();

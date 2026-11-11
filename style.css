@@ -270,8 +270,43 @@ img.vn-stamp{width:min(34vw,360px);text-shadow:none}
 #ctcDrill[hidden]{display:none}
 .ctc-screens{position:absolute;inset:46px 0 0 0;overflow:hidden}
 .ctc-screens iframe{position:absolute;left:0;top:0;width:100%;height:100%;border:0;display:block;background:#6b6f6e;transition:transform .45s cubic-bezier(.3,.8,.3,1)}
-.ctc-screens #ctcMMI{transform:translateY(100%);background:#e6efec}
-#ctcDrill.show-mmi #ctcFrame{transform:translateY(-100%)}#ctcDrill.show-mmi #ctcMMI{transform:none}
+.ctc-screens #ctcMMI{visibility:hidden;pointer-events:none;transform:none;z-index:-1}
+#ctcDrill.show-mmi #ctcFrame{transform:translateY(-100%)}
+/* MMI terminal drawn for the game (desk monitor): stations · field control · train numbers, alarms and the log */
+.ctc-mmi{position:absolute;inset:0;transform:translateY(100%);transition:transform .45s cubic-bezier(.3,.8,.3,1);display:grid;grid-template-columns:190px 1fr 400px;gap:14px;padding:16px;background:radial-gradient(1200px 600px at 30% 0,#0e2a3a,#050f17);color:#d9ecef;font-size:14px;overflow:hidden}
+#ctcDrill.show-mmi .ctc-mmi{transform:none}
+.ctc-mmi h3{margin:0;font-size:22px;color:#e6f6f4}.ctc-mmi h3 small,.ctc-mmi h4 small{font-size:12px;font-weight:400;color:#8fa9b0;margin-left:6px}
+.ctc-mmi h4{margin:0 0 8px;font-size:14px;color:#bff4ea;display:flex;align-items:center;gap:6px}
+.ctc-mmi button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid #78eadb55;background:#0c2433;color:#d9ecef;padding:6px 10px}
+.ctc-mmi button:hover{border-color:#78eadb;background:#123548}
+.mm-side,.mm-main,.mm-right{min-height:0;border:1px solid #78eadb33;border-radius:14px;background:#06121cb8;padding:14px;overflow:auto}
+.mm-side{display:flex;flex-direction:column;gap:8px}.mm-side p{margin-top:auto;font-size:12px;color:#7f98a0}
+.mm-side button{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;font-size:15px}
+.mm-side button.on{background:#123f4d;border-color:#78eadb;color:#fff;font-weight:700}
+.mm-side i{font-style:normal;font-size:11px;padding:1px 7px;border-radius:9px;background:#1d5c33;color:#b8f5c6}.mm-side i.m-CCM{background:#6b4a12;color:#ffe0a1}.mm-side i.m-LOCAL{background:#5c1d2c;color:#ffc2cf}
+.mm-main{display:flex;flex-direction:column;gap:12px}
+.mm-main header{display:flex;justify-content:space-between;align-items:center}
+.mm-mode{display:flex;gap:6px}.mm-mode button{min-width:84px;padding:10px 0;font-weight:800;letter-spacing:1px;font-size:15px}
+.mm-mode button.on{background:#19c24a;border-color:#7dffa0;color:#04210d}.mm-mode button.on[data-mode=CCM]{background:#ffb93b;border-color:#ffe0a1;color:#2b1c00}.mm-mode button.on[data-mode=LOCAL]{background:#ff6b8a;border-color:#ffc2cf;color:#2b0010}
+.mm-sigs{display:flex;flex-wrap:wrap;align-items:center;gap:6px}.mm-sigs b{width:44px;color:#8fa9b0;font-size:12px}
+.mm-sigs button{min-width:52px;padding:6px 8px;font-weight:700;border-left-width:6px}
+.mm-sigs button.stop{border-left-color:#ff4d6d}.mm-sigs button.go{border-left-color:#2fe06b;background:#0f3320}
+.mm-sigs button.on{outline:2px solid #ffd166;outline-offset:1px}
+.mm-detail{flex:1;min-height:120px;border:1px dashed #78eadb44;border-radius:12px;padding:12px;overflow:auto}.mm-detail p{color:#8fa9b0;margin:0}
+.mm-stop{background:#4a1220!important;border-color:#ff6b8a!important;color:#ffd1dc!important;font-weight:800;margin-bottom:10px}
+.mm-routes{display:flex;flex-wrap:wrap;gap:6px}.mm-routes button{font-variant-numeric:tabular-nums}.mm-routes button.set{background:#0f3320;border-color:#2fe06b;color:#b8f5c6}
+.mm-set{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.mm-set b{color:#8fa9b0;font-size:12px;margin-right:4px}.mm-set span{padding:3px 9px;border-radius:12px;background:#0f3320;border:1px solid #2fe06b88;color:#b8f5c6;font-size:13px}.mm-set .none,.ctc-mmi .none{background:none;border:0;color:#6f8890}
+.mm-right{display:flex;flex-direction:column;gap:8px}
+.mm-trains{display:flex;flex-direction:column;gap:5px}.mm-trains>div{display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:9px;background:#0c2433}
+.mm-trains b{font-size:15px;color:#fff;min-width:64px}.mm-trains small{color:#8fa9b0;flex:1}.mm-trains button{padding:3px 8px;font-size:12px}
+.mm-form{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px;border-radius:9px;background:#2b2610;border:1px solid #ffd16688}.mm-form input,.mm-form select{font:inherit;padding:4px 6px;border-radius:6px;border:1px solid #ffd16688;background:#0c2433;color:#fff;max-width:110px}
+.mm-ack{margin-left:auto;background:#4a1220!important;border-color:#ff6b8a!important;padding:2px 10px!important}
+.mm-alarms p{margin:3px 0;padding:5px 8px;border-left:3px solid #ff6b8a;background:#ff6b8a18;font-size:13px}
+.mm-log{flex:1;min-height:60px;overflow:auto;font-size:12.5px;color:#a9c2c8}.mm-log p{margin:2px 0}.mm-log .bad,.mm-msg.bad{color:#ff9db0}
+.mm-msg{min-height:20px;padding-top:6px;border-top:1px solid #78eadb33;color:#bff4ea;font-size:13px}
+.mm-empty{grid-column:1/-1;text-align:center;color:#8fa9b0}
+.ctc-ask{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.ctc-ask button{padding:7px 16px;border-radius:9px;border:1px solid #f3b9d088;background:#2a1626;color:#fbe9f0;font-size:15px;cursor:pointer}.ctc-ask button:hover{border-color:#f3b9d0;background:#3a1f36}.ctc-ask button.hinted{border-color:#ffd166;background:#2b2610}
+.ctc-text small{font-size:13px;color:#9fb8c0}
 .ctc-view{display:flex;border:1px solid #78eadb55;border-radius:9px;overflow:hidden}
 .ctc-hud .ctc-view button{border:0;border-radius:0;background:transparent;color:#9fb8c0;position:relative}
 .ctc-hud .ctc-view button.on{background:#78eadb;color:#06222a;font-weight:700}

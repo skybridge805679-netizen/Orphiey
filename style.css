@@ -268,7 +268,14 @@ img.vn-stamp{width:min(34vw,360px);text-shadow:none}
    that shows only while someone speaks. Desktop layout only. */
 #ctcDrill{position:fixed;inset:0;z-index:60;background:#02080e}
 #ctcDrill[hidden]{display:none}
-#ctcDrill iframe{position:absolute;inset:46px 0 0 0;width:100%;height:calc(100% - 46px);border:0;display:block;background:#6b6f6e}
+.ctc-screens{position:absolute;inset:46px 0 0 0;overflow:hidden}
+.ctc-screens iframe{position:absolute;left:0;top:0;width:100%;height:100%;border:0;display:block;background:#6b6f6e;transition:transform .45s cubic-bezier(.3,.8,.3,1)}
+.ctc-screens #ctcMMI{transform:translateY(100%);background:#e6efec}
+#ctcDrill.show-mmi #ctcFrame{transform:translateY(-100%)}#ctcDrill.show-mmi #ctcMMI{transform:none}
+.ctc-view{display:flex;border:1px solid #78eadb55;border-radius:9px;overflow:hidden}
+.ctc-hud .ctc-view button{border:0;border-radius:0;background:transparent;color:#9fb8c0;position:relative}
+.ctc-hud .ctc-view button.on{background:#78eadb;color:#06222a;font-weight:700}
+.ctc-view i{position:absolute;top:-2px;right:2px;font-style:normal;font-weight:800;color:#fff;background:#ff4d6d;border-radius:8px;padding:0 5px;font-size:11px;animation:ctcPulse .5s infinite alternate}.ctc-view i[hidden]{display:none}
 .ctc-loading{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#06121c;color:#bff4ea;font-size:17px}
 .ctc-loading[hidden]{display:none}.ctc-loading img{width:96px;height:96px;border-radius:50%;border:2px solid #f3b9d0aa;animation:ctcPulse 1.2s ease-in-out infinite alternate}
 @keyframes ctcPulse{to{transform:scale(1.06);filter:brightness(1.15)}}

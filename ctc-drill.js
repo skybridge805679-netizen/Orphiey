@@ -15,7 +15,7 @@ const CTCDrill=(()=>{
  const ACTOR={harin:'하린',jian:'지안',instructor:'서 교수',orpheia:'오르페이아'};
  const FACE={harin:'chr_harin_neutral.png',jian:'chr_jian_neutral.png',instructor:'chr_instructor_neutral.png',
   orpheia:'ui/face_neutral.png',orpheia_smile:'ui/face_smile.png',orpheia_worry:'ui/face_worry.png',orpheia_serious:'ui/face_serious.png'};
- let el=null,frame=null,W=null,G=null,onDone=null,tick=0,typer=null,advanceFn=null,toastTimer=0;
+ let el=null,frame=null,W=null,M=null,G=null,onDone=null,tick=0,typer=null,advanceFn=null,toastTimer=0;
  const $=s=>el.querySelector(s);
 
  // ── Script text → utterances. "(기)" / "(관)" / "(석수역)" open an utterance; indented lines continue it;
@@ -104,9 +104,10 @@ const CTCDrill=(()=>{
  // ── Screen.
  function build(){
   el=document.createElement('section');el.id='ctcDrill';el.hidden=true;
-  el.innerHTML=`<iframe id="ctcFrame" title="CTC LAB LS·MMI"></iframe>
+  el.innerHTML=`<div class="ctc-screens"><iframe id="ctcFrame" title="LS 대형표시반"></iframe><iframe id="ctcMMI" title="MMI 관제 단말"></iframe></div>
   <div class="ctc-loading" hidden><img src="${asset(FACE.orpheia_smile)}" alt=""><p>LS 기동 중이에요… 잠시만요, 주인님!</p></div>
   <div class="ctc-hud"><button type="button" id="ctcRadio" class="ctc-radio" title="무전 (R)">📻 무전 <kbd>R</kbd></button>
+   <span class="ctc-view" role="tablist"><button type="button" data-view="ls" class="on" title="앞쪽 대형표시반 (Tab)">▲ LS 표시반</button><button type="button" data-view="mmi" title="책상 위 관제 단말 (Tab)">▼ MMI 단말<i hidden>!</i></button></span>
    <span class="ctc-title"></span><span class="ctc-score" title="FTS 채점"></span><span class="ctc-time" title="문제 제한시간"></span><span class="ctc-count"></span>
    <button type="button" id="ctcSkip" title="시간을 10초 넘깁니다 (접근쇄정 대기 등)">+10초</button><button type="button" id="ctcSit">📋 상황</button><label><input type="checkbox" id="ctcHint"> 힌트</label><button type="button" id="ctcLog">기록</button><button type="button" id="ctcSubmit">제출</button></div>
   <aside class="ctc-panel" id="ctcRadioPanel" hidden></aside>
@@ -119,6 +120,7 @@ const CTCDrill=(()=>{
   $('.ctc-dialogue').addEventListener('click',()=>advanceFn?.());
   $('#ctcHint').onchange=e=>{records.hint=e.target.checked;save();hintPanel();if(!$('#ctcRadioPanel').hidden)radio(G.radioKey);};
   $('#ctcRadio').onclick=()=>toggleRadio();
+  el.querySelectorAll('.ctc-view button').forEach(b=>b.onclick=()=>look(b.dataset.view));
   $('#ctcSkip').onclick=()=>{if(G&&!G.busy&&!G.ending)W.SimRemote.command({type:'tick',seconds:10});};
   $('#ctcSit').onclick=()=>dlg(`<h3>${esc(G.p0.name)}</h3><pre>${esc(G.p0.situation||G.p0.voice||'')}</pre><p class="ctc-hint">제한시간 ${Math.round(G.p0.limit/60)}분 · 조작과 통보의 순서는 관제사가 상황을 보고 정합니다. 빠뜨린 항목은 감점됩니다.</p>`);
   $('#ctcLog').onclick=()=>dlg('<h3>무전 기록</h3>'+(G.log.map(l=>`<p><b>${esc(l.name)}</b> ${esc(l.text)}</p>`).join('')||'<p>아직 무전이 없어요.</p>'));
@@ -129,8 +131,11 @@ const CTCDrill=(()=>{
   if(!el||el.hidden||!G||document.querySelector('dialog[open]')||e.target.closest?.('input:not([type=checkbox]),textarea,select,[contenteditable]'))return;
   if((e.key===' '||e.key==='Enter')&&advanceFn){e.preventDefault();e.stopPropagation();advanceFn();}
   else if((e.key==='r'||e.key==='R'||e.key==='ㄱ')&&!e.ctrlKey&&!e.metaKey&&!advanceFn){e.preventDefault();toggleRadio();}
+  else if(e.key==='Tab'){e.preventDefault();look(G.view==='mmi'?'ls':'mmi');}
   else if(e.key==='Escape'&&!$('#ctcRadioPanel').hidden){toggleRadio(false);}
  }
+ // Two screens, as in a control room: the LS wall display ahead, the MMI terminal on the desk. Tab looks up or down.
+ function look(v){if(!G)return;G.view=v;el.classList.toggle('show-mmi',v==='mmi');el.querySelectorAll('.ctc-view button').forEach(b=>b.classList.toggle('on',b.dataset.view===v));if(v==='mmi')$('.ctc-view i').hidden=true;SFX.play('select');(v==='mmi'?M:W)?.focus();}
  function dlg(html){$('.ctc-dlg-body').innerHTML=html;$('#ctcDlg').showModal();}
  function face(box,who,mood=''){
   const f=who==='orpheia'?FACE['orpheia'+(mood?'_'+mood:'')]||FACE.orpheia:FACE[who],wrap=box.querySelector('.ctc-face')||box,img=box.querySelector('img');
@@ -219,7 +224,8 @@ const CTCDrill=(()=>{
   hud();hintPanel();
   if(W.SimFTSUI?.problemOpen?.())W.SimFTSUI.closeProblem();
   // the scripted cast starts stacked in one train window, which the MMI reports as "열차번호 중복": not the player's doing
-  const ps=[...W.document.querySelectorAll('.mmi-alarm:not([hidden]) #alarmText p')];if(ps.length&&ps.every(x=>/열차번호 중복/.test(x.textContent)))W.SimMMI.clearAlarms();
+  const ps=[...(M?.document||W.document).querySelectorAll('.mmi-alarm:not([hidden]) #alarmText p')];if(ps.length&&ps.every(x=>/열차번호 중복/.test(x.textContent)))W.SimMMI.clearAlarms();
+  else if(ps.length&&G.view!=='mmi'&&$('.ctc-view i').hidden){$('.ctc-view i').hidden=false;if(!G.busy)toast('MMI 단말에 알람이 떴어요! (Tab)','worry');}
   const p=view();
   for(const o of p.objectives){const done=it.obj?.[o.id]!=null;if(done&&!G.seen.has(o.id)){G.seen.add(o.id);if(!G.busy&&!G.ending){SFX.play('correct');toast('조작 확인! '+o.label);}}else if(!done&&o.final)G.seen.delete(o.id);}
   for(const b of G.p0.branches||[])if(it.branch?.[b.id]!=null&&!G.branches.has(b.id)){G.branches.add(b.id);branch(b);}
@@ -246,14 +252,15 @@ const CTCDrill=(()=>{
  function close(R){
   clearInterval(tick);clearInterval(typer);clearTimeout(toastTimer);el.hidden=true;document.body.classList.remove('in-ctc');
   try{W?.SimRemote.command({type:'fts',op:'stop'});}catch{}
-  frame.src='about:blank';W=null;G=null;advanceFn=null;onDone?.(R);
+  frame.src='about:blank';W=null;M=null;G=null;advanceFn=null;el.classList.remove('show-mmi');onDone?.(R);
  }
 
  // ── Start: a fresh simulator, then the FTS problem.
  // `id` is a script id (yongsan-5, em-05-1 …), a problem id (P-…) or an FTS scenario id (SC-…).
  function start(id,done){
   if(!el)build();onDone=done;el.hidden=false;document.body.classList.add('in-ctc');
-  $('#ctcHint').checked=!!records.hint;$('.ctc-loading').hidden=false;
+  $('#ctcHint').checked=!!records.hint;$('.ctc-loading').hidden=false;el.classList.remove('show-mmi');el.querySelectorAll('.ctc-view button').forEach(b=>b.classList.toggle('on',b.dataset.view==='ls'));$('.ctc-view i').hidden=true;
+  const old=$('#ctcMMI'),fresh=document.createElement('iframe');fresh.id='ctcMMI';fresh.title=old.title;old.replaceWith(fresh);
   for(const s of ['.ctc-dialogue','#ctcRadioPanel','#ctcHintPanel','.ctc-toast','.ctc-forecast','.ctc-hud'])$(s).hidden=true;
   if(typeof BGM!=='undefined')BGM.play('bgm_emergency');
   frame.onload=()=>{
@@ -274,10 +281,14 @@ const CTCDrill=(()=>{
   if(!r?.ok)throw Error(r?.message||'교육을 시작하지 못했어요.');
   clock(true);
   const run=W.SimRemote.snapshot.ftsRunLibrary||lib,s=W.SimRemote.snapshot.fts.session,p0=run.problems.find(p=>p.id===s.items[0].problem);
-  G={id,index:0,p0,order:order(p0),log:[],seen:new Set(),branches:new Set(),rewinds:0,early:0,busy:true,ending:false,radioKey:''};
+  G={id,view:'ls',index:0,p0,order:order(p0),log:[],seen:new Set(),branches:new Set(),rewinds:0,early:0,busy:true,ending:false,radioKey:''};
   const station=p0.setup?.trains?.[0]?.station||p0.setup?.reset?.[0];
   if(station)W.document.querySelector(`#stationTabs [data-view="${station}"]`)?.click();
-  W.document.addEventListener('keydown',e=>{if(!e.target.closest?.('input:not([type=checkbox]),textarea,select,[contenteditable]'))keys(e);},true);
+  const onKey=e=>{if(!e.target.closest?.('input:not([type=checkbox]),textarea,select,[contenteditable]'))keys(e);};
+  W.document.addEventListener('keydown',onKey,true);
+  // The simulator can move its MMI into another window (its LS/MMI split); here that window is the second screen.
+  M=$('#ctcMMI').contentWindow;W.open=()=>M;W.SimWorkspace.detach();M.document.addEventListener('keydown',onKey,true);
+  const ms=M.document.createElement('style');ms.textContent='body.mmi-detached{min-width:0}';M.document.head.appendChild(ms);
   // Game skin: the HUD above replaces the simulator's own top bar, and only this problem's stations keep a tab.
   const used=new Set([...JSON.stringify(p0).matchAll(/"(?:station|targetStation)":"([\w-]+)"/g)].map(m=>m[1]));
   const st=W.document.createElement('style');st.textContent='.ls-topbar,#extraLSBtn{display:none!important}'+(used.size<2?'.ctc-one-station{display:none!important}':'')+(used.size?`#stationTabs [data-view]${[...used].map(x=>`:not([data-view="${x}"])`).join('')}{display:none!important}`:'');W.document.head.appendChild(st);W.document.querySelector('.ls-bottom')?.classList.add('ctc-one-station');
@@ -289,11 +300,11 @@ const CTCDrill=(()=>{
   const first=p0.communications[0],fr=first&&recipient(first),train=p0.setup?.trains?.[0]?.number;
   if(!fr?.incoming&&train&&/고장/.test(p0.voice||''))await say('harin',`${train} 기관사`,`철도관제, ${train}열차 이상! 차량고장으로 정상 운행이 어렵습니다. 이상!`);
   await say('instructor','서도희 교수',`문제. 「${p0.name}」 제한시간 ${Math.round(p0.limit/60)}분. 관계 열차는 LS와 📋 상황에서 확인하세요.`);
-  await say('orpheia','오르페이아','무전은 📻 버튼이나 R 키, 조작은 LS에서 직접이에요. 순서는 주인님이 정하세요. 시작할게요!','serious');
+  await say('orpheia','오르페이아','무전은 📻 버튼이나 R 키예요. 앞쪽 LS 표시반과 책상 위 MMI 단말은 Tab 키로 오가요. 순서는 주인님이 정하세요. 시작할게요!','serious');
   hush();clock(false);G.busy=false;
   if(fr?.incoming){G.busy=true;await play(first,fr);G.busy=false;}
  }
  function fail(msg){$('.ctc-loading').hidden=true;G=G||{log:[]};say('orpheia','오르페이아',msg+' 이야기로 돌아갈게요.','worry').then(()=>close({id:'',error:msg}));}
  // Test helpers.
- return {start,debug:()=>G&&{p:view(),item:item(),order:G.order,busy:G.busy,ending:G.ending,talking:!!advanceFn},frame:()=>W,recipient,label,send:id=>send(view().communications.find(c=>c.id===id))};
+ return {start,look,mmi:()=>M,debug:()=>G&&{view:G.view,p:view(),item:item(),order:G.order,busy:G.busy,ending:G.ending,talking:!!advanceFn},frame:()=>W,recipient,label,send:id=>send(view().communications.find(c=>c.id===id))};
 })();

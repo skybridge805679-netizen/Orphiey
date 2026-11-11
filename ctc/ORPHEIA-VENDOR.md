@@ -5,7 +5,5 @@
 
 | 파일 | 수정 |
 |---|---|
-| engine/scenario-controller.cjs | `start(id,train,ui,opts)`의 `opts.manualSay`가 켜지면 통보(say) 단계를 시계로 자동 완료하지 않음 — VN이 대사를 진행한 뒤 `scenario:say`로 완료 |
-| engine/runtime.cjs | `scenario:start`가 `action.manualSay`를 넘김 |
 | ui/page-engine.js | 전체 초기화가 `localStorage.clear()` 대신 `orpheia.*`·`ctclab-*` 키만 지움 (VN 세이브 보호) |
 | index.html | `?embed=1`이면 전체 초기화·FTS 버튼을 숨김 |

@@ -39,7 +39,7 @@ const ctx=()=>({state:station(),model:root.SimDiagram.getModel(),states:host.con
 function evaluate(){
  if(mmi().replaying())return;
  if(!run){motion.step();return;}       // FTS data problems move trains without a script run
- SC().advance(run,ctx());if(!run.manualSay)Flow.advance(run,station().clock);   // ORPHEIA VN: spoken steps wait for the story
+ SC().advance(run,ctx());Flow.advance(run,station().clock);
  if(isSch(run.sc)){const k=run.sc.steps.findIndex((x,i)=>x.kind==='do'&&!run.done[i]);run.explain=k>=0&&run.sc.steps[k].explain?run.sc.steps[k].explain(ctx()):'';}
  if(isEm(run.sc)){EM().applyAutos(run.sc,run,a=>a.op==='move'||a.op==='delete'?motion.request(a):root.SimLSUI.dispatch(a),lsm);}
  else{fireBeats();runQueue();}
@@ -58,7 +58,7 @@ function actualPosition(train){
  return {station:f.station,order:from.order,status:j&&j.phase!=='waiting'?'진행':j?'진로 대기':'정차',actual:true};
 }
 
-function start(id,train='',ui={},opts={}){
+function start(id,train='',ui={}){
  motion.reset();if(run)clearNumbers(isEm(run.sc)?EM().numbersOf(run.sc):run.cast.map(c=>c.id));lastUI=ui;
  let parameters=null;
  let sc=SC().list.concat(EM().list,SS().list).find(s=>s.id===id);if(!sc)return {ok:false,message:'시나리오를 확인하세요.'};
@@ -71,7 +71,7 @@ function start(id,train='',ui={},opts={}){
   if(sc.steps.some(s=>s.kind==='do'&&/스케줄 수정/.test(s.text))&&!model.trains.some(t=>t.id===train&&t.calls.some(c=>c.station===sc.station)))return {ok:false,message:'스케줄 수정에 사용할 시간표 열차를 선택하세요.'};
   SC().seed(sc,host.context().stationStates[sc.station]);
  }
- run=SC().newRun(sc,train);run.manualSay=!!opts.manualSay;run.parameters=parameters;run.fired=new Set();run.queue=[];run.explain='';
+ run=SC().newRun(sc,train);run.parameters=parameters;run.fired=new Set();run.queue=[];run.explain='';
  run.cast=isSch(sc)?[]:isEm(sc)?EM().castFor(sc).map(c=>({key:c.number,id:c.number,dir:c.dir,slot:c.slot,station:c.station})):SC().pickCast(sc,model,train);
  if(!isSch(sc))placeCast();evaluate();return {ok:true,station:sc.station};
 }

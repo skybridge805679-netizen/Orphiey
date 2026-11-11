@@ -160,7 +160,7 @@ const CTCDrill=(()=>{
   <aside class="ctc-panel" id="ctcRadioPanel" hidden></aside>
   <aside class="ctc-panel left" id="ctcHintPanel" hidden></aside>
   <div class="ctc-toast" hidden><img alt=""><span></span></div>
-  <div class="ctc-dialogue" hidden><div class="ctc-face"><img alt=""></div><div class="ctc-talk"><div class="ctc-name"></div><div class="ctc-text"></div></div><div class="ctc-next">▼</div></div>
+  <div class="ctc-dialogue" hidden><div class="ctc-face"><img alt=""></div><div class="ctc-talk"><div class="ctc-name"></div><div class="ctc-text"></div></div><div class="ctc-next">▼</div><small class="ctc-peekhint">H · 대화창 숨기고 LS 보기</small></div>
   <div class="ctc-forecast" hidden><div class="ctc-fc-box"><small>0.3초 예측 연산</small><h3>그 무전이 나간 미래</h3><div class="ctc-fc-body"></div><button type="button" class="primary">↺ 되감기</button></div></div>
   <dialog id="ctcDlg"><div class="ctc-dlg-body"></div><form method="dialog"><button class="primary">닫기</button></form></dialog>`;
   document.body.appendChild(el);frame=$('#ctcFrame');
@@ -176,6 +176,7 @@ const CTCDrill=(()=>{
   if(!el||el.hidden||!G||document.querySelector('dialog[open]')||e.target.closest?.('input:not([type=checkbox]),textarea,select,[contenteditable]'))return;
   if((e.key===' '||e.key==='Enter')&&advanceFn){e.preventDefault();e.stopPropagation();advanceFn();}
   else if(e.key==='Tab'){e.preventDefault();look(G.view==='mmi'?'ls':'mmi');}
+  else if((e.key==='h'||e.key==='H'||e.key==='ㅗ')&&!e.ctrlKey&&!e.metaKey){e.preventDefault();el.classList.toggle('peek');}
  }
  // Two screens, as in a control room: the LS wall display ahead, the MMI terminal on the desk. Tab looks up or down.
  function look(v){if(!G)return;G.view=v;el.classList.toggle('show-mmi',v==='mmi');el.querySelectorAll('.ctc-view button').forEach(b=>b.classList.toggle('on',b.dataset.view===v));if(v==='mmi')$('.ctc-view i').hidden=true;SFX.play('select');if(v==='mmi')mmi(true);else W?.focus();}
@@ -265,7 +266,7 @@ const CTCDrill=(()=>{
   $('.ctc-score').textContent=G.dec?`첫 시도 ${G.first}/${G.dec}`:'';
  }
  function hintPanel(){
-  const box=$('#ctcHintPanel');box.hidden=!records.hint||!G;if(box.hidden)return;
+  const box=$('#ctcHintPanel');box.hidden=!records.hint||!G||!!G.scene;if(box.hidden)return;
   const it=item(),od=o=>it.obj?.[o.id]!=null||it.missed?.[o.id]!=null,done=s=>s.comm?it.comm?.[s.comm.id]!=null:s.objs.every(od);
   const rows=G.steps||[],cur=G.steps?.[G.stepIndex];
   const html=`<h4>조치사항 (참고 순서)</h4><ol>${rows.map(s=>`<li class="${done(s)?'done':''}${s===cur?' now':''}"><i>${s.kind==='op'?'🖱':'📻'}</i>${esc(s.comm?label(s.comm):s.text)}</li>`).join('')}</ol><p>힌트를 켜면 정답에 색이 들어가요.</p>`;
@@ -273,6 +274,7 @@ const CTCDrill=(()=>{
  }
 
  // ── Decisions. One choice at a time in the panel; a wrong pick shows its forecast, is struck out and asked again.
+ const written=(said,bad,why)=>`<p class="ctc-said">「${esc(said)}」</p><p>${esc(bad)}</p>${why?`<p class="ctc-why">💡 ${esc(why)}</p>`:''}`;
  async function choose(prompt,title,options,answer,said,ops,mood='serious'){
   G.dec++;let first=true;const struck=new Set(),opts=[...options].sort((a,b)=>hash(a.text+G.p0.id)-hash(b.text+G.p0.id));
   for(;;){
@@ -289,7 +291,7 @@ const CTCDrill=(()=>{
    G.redraw=null;$('#ctcRadioPanel').hidden=true;
    if(got.key===answer){if(first)G.first++;SFX.play('select');hud();return got;}
    first=false;struck.add(got.key);G.rewinds++;SFX.play('wrong');hush();
-   const fc=$('.ctc-forecast');fc.querySelector('.ctc-fc-body').innerHTML=forecast(said(got),said(options.find(o=>o.key===answer)),ops);
+   const fc=$('.ctc-forecast');fc.querySelector('.ctc-fc-body').innerHTML=got.bad?written(got.text,got.bad,got.why):forecast(said(got),said(options.find(o=>o.key===answer)),ops);
    fc.style.backgroundImage=has('ui_forecast_bg.png')?`url(${asset('ui_forecast_bg.png')})`:'';fc.hidden=false;if(typeof BGM!=='undefined')BGM.play('bgm_forecast');
    await new Promise(res=>fc.querySelector('button').onclick=res);
    fc.hidden=true;SFX.play('rewind');if(typeof BGM!=='undefined')BGM.play('bgm_emergency');
@@ -337,9 +339,9 @@ const CTCDrill=(()=>{
    (c.conditions||[]).forEach(walk);walk(c.condition);};
   for(const o of objs)walk(o.condition);return T;
  }
- async function opStep(s){
+ async function opStep(s,quiz=true){
   const done=()=>{const it=item();return s.objs.every(o=>it.obj?.[o.id]!=null||it.missed?.[o.id]!=null);};
-  if(!done()){
+  if(quiz&&!done()){
    const wrong=mutate(s.text).slice(0,2);
    if(wrong.length)await choose(pick(['LS를 봐요. 이제 손을 쓸 차례예요. 지금 필요한 조작은?','무전만으로는 열차가 멈추지 않아요. 어떤 조작이 필요할까요?','설비를 만질 차례예요. 무엇을 할까요?'],hash(s.text)),'🖱 필요한 조작은?',[{key:'ok',text:s.text},...wrong.map((t,k)=>({key:'x'+k,text:t}))],'ok',o=>o.text,true);
    await say('orpheia','오르페이아',/접근쇄정/.test(s.text)?'접근쇄정이 풀릴 때까지 기다려야 해요. 위쪽 「+10초」로 시간을 넘길 수 있어요.':pick(['좋아요! 그럼 직접 해 주세요. MMI 단말은 Tab이에요.','맞아요. LS나 MMI에서 직접 취급해 주세요!'],hash(s.text)),'smile');hush();
@@ -349,6 +351,57 @@ const CTCDrill=(()=>{
   clock(false);G.busy=false;
   while(G&&!done())await new Promise(r=>setTimeout(r,250));
   if(!G)return;G.busy=true;task.hidden=true;G.target=null;G.mm.sig='';mmi();
+ }
+
+ // ── Written scenes (story/ctc/drill-*.js). A scene replaces the generated steps with authored beats:
+ //  say    {t:'say',lines:[[who,name,text,mood]…]}
+ //  choice {t:'choice',ask,opts:[{text,ok:true,then:[lines]},{text,bad:'what follows',why:'the lesson'}…]}
+ //  board  {t:'board',ask,places:[…],rows:[{train,act:'stop|caution|hold|run',at,bad:{…}}],then:[lines]}  (train control sheet; the LS stays in view)
+ //  ops    {t:'ops',text,objs:[objective ids]}   (done by hand on the LS or the MMI terminal)
+ //  comm   {t:'comm',ids:[…]}                    (records communications in FTS so their reactions happen on the LS)
+ const SCENES={};
+ const NAMES={harin:'기관사',jian:'역',instructor:'서도희 교수',orpheia:'오르페이아',sangcheol:'신상철 · 관제'};
+ async function lines(list){clock(true);for(const [who,name,text,mood] of list||[]){SFX.play(who==='sangcheol'?'transmit':who==='orpheia'&&!name?'select':'radio');await say(who,name||NAMES[who],text,mood);}hush();}
+ const ACTS={stop:'역에 정차',caution:'주의운전',hold:'3분 추가 정차',run:'그대로 운행'};
+ async function board(b){
+  G.dec++;let first=true;hush();clock(true);const panel=$('#ctcRadioPanel'),val={};
+  for(;;){
+   const bad=await new Promise(res=>{
+    panel.hidden=false;panel.classList.add('board');
+    const draw=()=>{panel.innerHTML=`<h4>🚦 열차 통제 지시판</h4><p class="ctc-sub">${esc(b.ask)}</p>${b.rows.map((r,k)=>{const v=val[r.train]||{};return `<div class="ctc-row"><b>${esc(r.train)}</b><select data-k="${k}" data-f="act"><option value="">지시…</option>${Object.entries(ACTS).map(([a,t])=>`<option value="${a}"${v.act===a?' selected':''}>${t}</option>`).join('')}</select><select data-k="${k}" data-f="at"${v.act==='stop'?'':' hidden'}><option value="">어느 역…</option>${b.places.map(x=>`<option${v.at===x?' selected':''}>${esc(x)}</option>`).join('')}</select>${records.hint?`<small>힌트 · ${ACTS[r.act]}${r.at?' · '+esc(r.at):''}</small>`:''}</div>`;}).join('')}<button type="button" class="ctc-opt go">📻 이대로 지시한다</button><button type="button" class="ctc-back">◀▶ 지시판 옮기기</button><p>LS 아래쪽 역 버튼으로 화면을 넘기며 열차 위치를 찾아요.</p>`;
+     panel.querySelectorAll('select').forEach(x=>x.onchange=()=>{const r=b.rows[+x.dataset.k];(val[r.train]??={})[x.dataset.f]=x.value;if(x.dataset.f==='act')draw();});
+     panel.querySelector('.ctc-back').onclick=()=>panel.classList.toggle('left');
+     panel.querySelector('.go').onclick=()=>{
+      const blank=b.rows.find(r=>!val[r.train]?.act||val[r.train].act==='stop'&&!val[r.train].at);if(blank){toast(`${blank.train}열차 지시가 비어 있어요.`,'worry');return;}
+      res(b.rows.find(r=>val[r.train].act!==r.act||r.act==='stop'&&val[r.train].at!==r.at)||null);};};
+    G.redraw=draw;draw();
+   });
+   G.redraw=null;panel.hidden=true;panel.classList.remove('board','left');
+   if(!bad){if(first)G.first++;SFX.play('correct');hud();break;}
+   first=false;G.rewinds++;SFX.play('wrong');
+   const v=val[bad.train],msg=(v.act===bad.act?bad.bad.place:bad.bad[v.act])||bad.bad.other||'',said=`${bad.train}열차 — ${ACTS[v.act]}${v.act==='stop'?' ('+v.at+')':''}`;
+   const fc=$('.ctc-forecast');fc.querySelector('.ctc-fc-body').innerHTML=written(said,msg.replaceAll('{at}',v.at||''),bad.bad.why);
+   fc.style.backgroundImage=has('ui_forecast_bg.png')?`url(${asset('ui_forecast_bg.png')})`:'';fc.hidden=false;if(typeof BGM!=='undefined')BGM.play('bgm_forecast');
+   await new Promise(res=>fc.querySelector('button').onclick=res);
+   fc.hidden=true;SFX.play('rewind');if(typeof BGM!=='undefined')BGM.play('bgm_emergency');delete val[bad.train];
+  }
+  await lines(b.then);
+ }
+ async function runScene(sc){
+  const beats=sc.beats;G.steps=beats.filter(b=>['choice','board','ops'].includes(b.t)).map(b=>({kind:b.t,beat:b}));G.stepIndex=0;hud();
+  for(const b of beats){
+   if(!G)return;while(G.queue.length)await branch(G.queue.shift());
+   const k=G.steps.findIndex(s=>s.beat===b);if(k>=0){G.stepIndex=k;hud();}
+   if(b.t==='say')await lines(b.lines);
+   else if(b.t==='choice'){const opts=b.opts.map((o,i)=>({...o,key:o.ok?'ok':'x'+i}));const got=await choose(b.ask,b.title||'어떻게 할까요?',opts,'ok',o=>o.text,false);await lines(got.then);}
+   else if(b.t==='board')await board(b);
+   else if(b.t==='ops'){const objs=b.objs.map(id=>view().objectives.find(o=>o.id===id)).filter(Boolean);hush();await opStep({text:b.text,objs},false);if(G){SFX.play('correct');}}
+   else if(b.t==='comm'){for(const id of b.ids)W.SimRemote.command({type:'fts',op:'manual',key:'comm:'+id,checked:true});clock(false);await new Promise(r=>setTimeout(r,b.wait??700));update();}
+  }
+  if(!G)return;G.stepIndex=G.steps.length-1;
+  clock(false);for(let k=0;k<24&&G&&item().status==='진행';k++)await new Promise(r=>setTimeout(r,250));
+  if(!G)return;if(item().status==='진행')W.SimRemote.command({type:'fts',op:'next'});
+  await finish(item().status);
  }
 
  // The clock stops while people talk. A stop order asks where: the answer is on the LS (or in 📋 상황).
@@ -415,8 +468,8 @@ const CTCDrill=(()=>{
   G.ending=true;$('#ctcRadioPanel').hidden=true;G.busy=true;clock(true);
   const it=item(),p=view(),mo=p.objectives.filter(o=>it.obj?.[o.id]==null&&it.missed?.[o.id]==null),mc=p.communications.filter(c=>it.comm?.[c.id]==null);
   const ratio=G.dec?G.first/G.dec:1,rank=ratio===1&&!G.hinted?'S':ratio>=.9?'A':ratio>=.75?'B':'C';
-  const R={id:G.id,title:p.name,rank,firstTry:G.first,decisions:G.dec,score:it.score??0,status,rewinds:G.rewinds,wrong:G.wrong,hint:G.hinted,
-   missed:[...mo.map(o=>'🖱 '+o.label),...mc.map(c=>'📻 '+label(c))],deductions:(p.deductions||[]).filter((d,i)=>it.deducted?.[i]).map(d=>d.label)};
+  const R={id:G.id,title:G.scene?.title||p.name,rank,firstTry:G.first,decisions:G.dec,score:it.score??0,status,rewinds:G.rewinds,wrong:G.wrong,hint:G.hinted,
+   missed:G.scene?[]:[...mo.map(o=>'🖱 '+o.label),...mc.map(c=>'📻 '+label(c))],deductions:(p.deductions||[]).filter((d,i)=>it.deducted?.[i]).map(d=>d.label)};
   SFX.play('clear');
   await say('instructor','서도희 교수',rank==='S'?'……한 번도 안 틀렸네요. 거기까지.':rank==='A'?'거기까지. 거의 완벽해요.':rank==='B'?'거기까지. 흐름은 잡았어요. 되감은 곳을 복습해요.':'거기까지. 순서가 아직 몸에 안 붙었어요. 다시 해 봐요.');
   await say('orpheia','오르페이아',rank==='S'?'랭크 S! 완벽해요, 주인님♪ 예측 연산을 한 번도 안 썼어요!':rank==='A'?'랭크 A예요! 거의 다 맞히셨어요♪':rank==='B'?'랭크 B! 되감은 곳만 다시 보면 금방이에요.':'랭크 C…… 괜찮아요. 처음엔 다 그래요. 같이 다시 해요!',rank<'C'?'smile':'worry');
@@ -431,7 +484,7 @@ const CTCDrill=(()=>{
  // ── Start: a fresh simulator, then the FTS problem.
  // `id` is a script id (yongsan-5, em-05-1 …), a problem id (P-…) or an FTS scenario id (SC-…).
  function start(id,done){
-  if(!el)build();onDone=done;el.hidden=false;document.body.classList.add('in-ctc');
+  if(!el)build();onDone=done;el.hidden=false;el.classList.remove('peek');document.body.classList.add('in-ctc');
   $('#ctcHint').checked=!!records.hint;$('.ctc-loading').hidden=false;el.classList.remove('show-mmi');el.querySelectorAll('.ctc-view button').forEach(b=>b.classList.toggle('on',b.dataset.view==='ls'));$('.ctc-view i').hidden=true;
   const old=$('#ctcMMI'),fresh=document.createElement('iframe');fresh.id='ctcMMI';fresh.title=old.title;old.replaceWith(fresh);
   for(const s of ['.ctc-dialogue','#ctcRadioPanel','#ctcHintPanel','.ctc-toast','.ctc-forecast','.ctc-hud','.ctc-task'])$(s).hidden=true;
@@ -470,18 +523,20 @@ const CTCDrill=(()=>{
   // Game skin: the HUD above replaces the simulator's own top bar, and only this problem's stations keep a tab.
   const used=G.used=new Set([...JSON.stringify(p0).matchAll(/"(?:station|targetStation)":"([\w-]+)"/g)].map(m=>m[1]));
   const st=W.document.createElement('style');st.textContent='.ls-topbar,#extraLSBtn{display:none!important}'+(used.size<2?'.ctc-one-station{display:none!important}':'')+(used.size?`#stationTabs [data-view]${[...used].map(x=>`:not([data-view="${x}"])`).join('')}{display:none!important}`:'');W.document.head.appendChild(st);W.document.querySelector('.ls-bottom')?.classList.add('ctc-one-station');
-  $('.ctc-title').textContent=p0.name;
+  $('.ctc-title').textContent=SCENES[id]?.title||p0.name;
   $('.ctc-loading').hidden=true;$('.ctc-hud').hidden=false;$('.ctc-task').hidden=true;hud();hintPanel();
   tick=setInterval(update,300);
   // Briefing with the clock paused: the report, the problem, then the floor is the player's.
   SFX.play('alarm');
   const first=p0.communications[0],fr=first&&recipient(first),train=p0.setup?.trains?.[0]?.number;
-  if(!fr?.incoming&&train&&/고장/.test(p0.voice||''))await say('harin',`${train} 기관사`,`철도관제, ${train}열차 이상! 차량고장으로 정상 운행이 어렵습니다. 이상!`,'urgent');
-  await say('instructor','서도희 교수',`문제. 「${p0.name}」 관계 열차는 LS와 📋 상황에서 확인하세요.`);
+  if(!SCENES[id]){if(!fr?.incoming&&train&&/고장/.test(p0.voice||''))await say('harin',`${train} 기관사`,`철도관제, ${train}열차 이상! 차량고장으로 정상 운행이 어렵습니다. 이상!`,'urgent');
+  await say('instructor','서도희 교수',`문제. 「${p0.name}」 관계 열차는 LS와 📋 상황에서 확인하세요.`);}
+  const scene=SCENES[id];
+  if(scene){G.scene=scene;hush();return runScene(scene).catch(e=>{console.error(e);fail(e.message);});}
   await say('orpheia','오르페이아',`조치는 ${G.steps.length}단계예요. 단계마다 누구에게 무엇을 말할지, 어떤 조작을 할지 골라요. 틀리면 그 미래를 보여 드리고 되감을게요!`,'serious');
   hush();run().catch(e=>{console.error(e);fail(e.message);});
  }
  function fail(msg){$('.ctc-loading').hidden=true;G=G||{log:[]};say('orpheia','오르페이아',msg+' 이야기로 돌아갈게요.','worry').then(()=>close({id:'',error:msg}));}
  // Test helpers.
- return {start,look,mmi:()=>M,debug:()=>G&&{view:G.view,p:view(),item:item(),order:G.order,steps:G.steps,stepIndex:G.stepIndex,busy:G.busy,ending:G.ending,talking:!!advanceFn,choosing:!$('#ctcRadioPanel').hidden,task:!$('.ctc-task').hidden,target:G.target},frame:()=>W,recipient,label,opener};
+ return {start,look,scene:(id,def)=>{SCENES[id]=def;},mmi:()=>M,debug:()=>G&&{view:G.view,p:view(),item:item(),order:G.order,steps:G.steps,stepIndex:G.stepIndex,busy:G.busy,ending:G.ending,talking:!!advanceFn,choosing:!$('#ctcRadioPanel').hidden,task:!$('.ctc-task').hidden,target:G.target},frame:()=>W,recipient,label,opener};
 })();

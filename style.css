@@ -373,3 +373,17 @@ img.vn-stamp{width:min(34vw,360px);text-shadow:none}
 .vn-card .score.rank-S{color:#ffd166;text-shadow:0 0 18px #ffd16699;font-size:54px}.vn-card .score.rank-A{color:#78eadb;font-size:48px}.vn-card .score.rank-B{color:#bfd3d8;font-size:44px}.vn-card .score.rank-C{color:#ff9db0;font-size:44px}
 #ctcDrill.show-mmi #ctcHintPanel{display:none}
 #ctcDrill.show-mmi .ctc-task{top:auto;bottom:22px}
+
+/* written scenes: train control sheet, forecast lesson, peek */
+.ctc-panel.board{width:330px;top:58px}.ctc-panel.board.left{right:auto;left:12px}
+.ctc-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:7px 8px;border-radius:9px;background:#2a1626;border:1px solid #f3b9d044}
+.ctc-row b{min-width:56px;color:#fff;font-size:15px}.ctc-row select{font:inherit;font-size:13px;padding:4px 6px;border-radius:6px;border:1px solid #f3b9d088;background:#140a14;color:#fbe9f0}
+.ctc-row select[hidden]{display:none}.ctc-row small{flex-basis:100%;color:#ffe6a3;font-size:12px}
+.ctc-opt.go{text-align:center;font-weight:800;background:#3a1830;border-color:#f3b9d0;margin-top:4px}
+.ctc-why{margin-top:14px!important;padding:10px 14px;border-left:3px solid #78eadb;background:#78eadb14;color:#c9f3ec;font-size:14.5px}
+.ctc-peekhint{position:absolute;left:22px;bottom:6px;font-size:11px;color:#6f8890}
+#ctcDrill.peek .ctc-dialogue{opacity:.06;pointer-events:none}
+.ctc-dialogue{transition:opacity .15s}
+.ctc-panel.board{width:372px;max-height:calc(100% - 76px);gap:5px}
+.ctc-panel.board .ctc-row{flex-wrap:wrap;padding:5px 8px}.ctc-panel.board .ctc-row select{max-width:132px}
+.ctc-panel.board .ctc-row small{margin-top:-2px}

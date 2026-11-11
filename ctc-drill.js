@@ -192,15 +192,24 @@ const CTCDrill=(()=>{
    else if(d==='ack'){const d2=(M?.document||W.document);d2.querySelectorAll('.mmi-alarm #alarmText input[type=checkbox]').forEach(x=>{if(!x.checked)x.click();});d2.querySelector('.mmi-alarm [data-alarm-ok]')?.click();said({ok:true,message:'알람 확인'});}});
  }
  function dlg(html){$('.ctc-dlg-body').innerHTML=html;$('#ctcDlg').showModal();}
- function face(box,who,mood=''){
-  const f=who==='orpheia'?FACE['orpheia'+(mood?'_'+mood:'')]||FACE.orpheia:FACE[who],wrap=box.querySelector('.ctc-face')||box,img=box.querySelector('img');
+ // Role-play face icons (docs/리부트-에셋-생성지침.md) once delivered; until then the standing's head crop.
+ const ROLE_FACE={harin:'face_harin_driver',jian:'face_jian_station',instructor:'face_instructor_chief',sangcheol:'face_sangcheol_radio'};
+ const has=f=>typeof ART_READY!=='undefined'&&ART_READY.has(f);
+ function roleFace(who,name,mood){
+  const k=who==='orpheia'&&/복구반|검수반|전기/.test(name||'')?'face_orpheia_engineer':ROLE_FACE[who];if(!k)return '';
+  if(mood==='urgent'&&has(k+'_urgent.png'))return k+'_urgent.png';return has(k+'.png')?k+'.png':'';
+ }
+ function face(box,who,mood='',name=''){
+  const icon=roleFace(who,name,mood);
+  if(icon){const wrap=box.querySelector('.ctc-face')||box,img=box.querySelector('img');if(wrap!==box){wrap.className='ctc-face';wrap.style.display='';}img.src=asset(icon);return;}
+  const f=who==='orpheia'?FACE['orpheia'+(mood&&mood!=='urgent'?'_'+mood:'')]||FACE.orpheia:FACE[who],wrap=box.querySelector('.ctc-face')||box,img=box.querySelector('img');
   if(wrap!==box){wrap.className='ctc-face'+(f&&who!=='orpheia'?' crop crop-'+who:'');wrap.style.display=f?'':'none';}
   if(f)img.src=asset(f);
  }
  // One line of dialogue; resolves when the player advances.
  function say(who,name,text,mood){
   return new Promise(done=>{
-   clearInterval(typer);const box=$('.ctc-dialogue');box.hidden=false;face(box,who,mood);
+   clearInterval(typer);const box=$('.ctc-dialogue');box.hidden=false;face(box,who,mood,name);
    const actor=ACTOR[who]&&name!==ACTOR[who]&&!(who==='instructor'&&/교수/.test(name))?` <small>${esc(ACTOR[who])}</small>`:'';
    $('.ctc-name').innerHTML=esc(name)+actor;$('.ctc-name').className='ctc-name c-'+(who||'self');
    const t=$('.ctc-text'),speed=records.textSpeed??28;let i=0;t.textContent='';$('.ctc-next').hidden=true;
@@ -261,7 +270,7 @@ const CTCDrill=(()=>{
   if(need&&r.key==='self'){SFX.play('wrong');G.early++;await say('orpheia','오르페이아','주인님, 그 환호는 조작을 마친 다음에 하는 거예요. LS에서 먼저 취급해 주세요!','worry');hush();G.busy=false;return;}
   if(need&&GO.test(text)){
    G.rewinds++;clock(true);SFX.play('transmit');await say('sangcheol','신상철 · 관제',exchange(c,r)[0].text);hush();SFX.play('wrong');
-   const fc=$('.ctc-forecast');fc.querySelector('.ctc-fc-body').innerHTML=forecast(c,need);fc.hidden=false;if(typeof BGM!=='undefined')BGM.play('bgm_forecast');
+   const fc=$('.ctc-forecast');fc.querySelector('.ctc-fc-body').innerHTML=forecast(c,need);fc.style.backgroundImage=has('ui_forecast_bg.png')?`url(${asset('ui_forecast_bg.png')})`:'';fc.hidden=false;if(typeof BGM!=='undefined')BGM.play('bgm_forecast');
    await new Promise(res=>fc.querySelector('button').onclick=res);
    fc.hidden=true;SFX.play('rewind');if(typeof BGM!=='undefined')BGM.play('bgm_emergency');
    await say('orpheia','오르페이아','예측을 되감았어요. 그 지시는 LS 조작이 끝난 뒤에 내야 해요, 주인님.','worry');hush();clock(false);G.busy=false;return;
@@ -272,10 +281,10 @@ const CTCDrill=(()=>{
  async function play(c,r){
   clock(true);
   const lines=exchange(c,r),stops=lines.filter(l=>l.who==='sangcheol').map(l=>l.text.match(/^([A-Z]\d{3,4})\s*열차\s*([가-힣]+역)\s*정차/)).filter(Boolean),places=[...new Set(stops.map(m=>m[2]))];
-  for(const line of lines){
+  for(const [k,line] of lines.entries()){
    const m=line.who==='sangcheol'&&places.length>1&&line.text.match(/^([A-Z]\d{3,4})\s*열차\s*([가-힣]+역)\s*정차/);
    if(m)await ask(`${m[1]}열차를 어디에 세울까요?`,places,m[2]);
-   SFX.play(line.who==='sangcheol'?'transmit':'radio');await say(line.who,line.name,line.text);
+   SFX.play(line.who==='sangcheol'?'transmit':'radio');await say(line.who,line.name,line.text,line.who!=='sangcheol'&&(k===0&&c===G.p0.communications[0]||/비상|화재|연기|충돌|침수|사상/.test(line.text))?'urgent':'');
   }
   hush();clock(false);W.SimRemote.command({type:'fts',op:'manual',key:'comm:'+c.id,checked:true});update();
  }
@@ -373,7 +382,7 @@ const CTCDrill=(()=>{
   // Briefing with the clock paused: the report, the problem, then the floor is the player's.
   SFX.play('alarm');
   const first=p0.communications[0],fr=first&&recipient(first),train=p0.setup?.trains?.[0]?.number;
-  if(!fr?.incoming&&train&&/고장/.test(p0.voice||''))await say('harin',`${train} 기관사`,`철도관제, ${train}열차 이상! 차량고장으로 정상 운행이 어렵습니다. 이상!`);
+  if(!fr?.incoming&&train&&/고장/.test(p0.voice||''))await say('harin',`${train} 기관사`,`철도관제, ${train}열차 이상! 차량고장으로 정상 운행이 어렵습니다. 이상!`,'urgent');
   await say('instructor','서도희 교수',`문제. 「${p0.name}」 제한시간 ${Math.round(p0.limit/60)}분. 관계 열차는 LS와 📋 상황에서 확인하세요.`);
   await say('orpheia','오르페이아','무전은 📻 버튼이나 R 키예요. 앞쪽 LS 표시반과 책상 위 MMI 단말은 Tab 키로 오가요. 순서는 주인님이 정하세요. 시작할게요!','serious');
   hush();clock(false);G.busy=false;

@@ -1,6 +1,6 @@
 VN.chapter('ch01','제1장','비상제동이 안 풀려요',`
 @chapter 제1장|비상제동이 안 풀려요
-@bg bg_exam_hall
+@bg bg_training_room
 @day 3월 3일 (월) 09:20 · 관제 실습실
 @show instructor neutral right
 @show orpheia explain left
@@ -20,7 +20,10 @@ VN.chapter('ch01','제1장','비상제동이 안 풀려요',`
 [류지안] ……가산디지털단지역, 대기합니다.
 [오르페이아|excited] 기동검수반은 제가 할게요! 작업복도 준비했어요!
 [신상철] (AI가 작업복을 왜 준비해.)
-@hide harin
+@hide all
+@cg cg_ctc_roleplay
+교육장 실습실에 무전기 세 대가 켜졌다. 앞벽의 LS 표시반에서 빨간 구간 하나가 깜빡이기 시작한다.
+@cg off
 @alarm 가산디지털단지역 · 차량고장
 @ctc em-05-1
 @show harin smile center
@@ -82,6 +85,7 @@ VN.chapter('ch01','제1장','비상제동이 안 풀려요',`
 @add affection 1
 @phone off
 @hide all
+@bg bg_training_room_night
 그날 밤, 교육장 실습실의 LS가 아무도 없는데 한 번 깜빡였다는 것을 — 아직 아무도 몰랐다.
 @end
 `);

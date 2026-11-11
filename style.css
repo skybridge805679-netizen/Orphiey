@@ -363,3 +363,13 @@ img.vn-stamp{width:min(34vw,360px);text-shadow:none}
 #ctcDlg{width:min(760px,90vw);max-height:80vh}.ctc-dlg-body{max-height:62vh;overflow:auto}.ctc-dlg-body p{margin:6px 0;line-height:1.6}.ctc-dlg-body b{color:#78eadb;margin-right:6px}.ctc-dlg-body pre{white-space:pre-wrap;font:inherit;line-height:1.7;padding:10px 14px;border-radius:10px;background:#0c2433}
 .vn-card .sheet{margin:8px auto 0;padding:0;list-style:none;text-align:left;max-width:560px;font-size:13.5px;line-height:1.6;color:#ffd9ad}
 .vn-card .sheet li{padding:2px 0}.vn-card .score{font-size:34px;font-weight:800;color:#ffd166;margin:4px 0}
+
+/* decision-step drill */
+.ctc-step{padding:4px 12px;border-radius:8px;background:#3a1830;border:1px solid #f3b9d0;color:#ffe1ec;font-weight:800;white-space:nowrap}
+.ctc-task{position:absolute;z-index:6;top:56px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 22px;border-radius:12px;border:1px solid #ffd166;background:#2b2610e8;color:#ffe6a3;font-size:16px;box-shadow:0 8px 30px #0008;pointer-events:none;animation:ctcIn .25s ease-out}
+.ctc-task[hidden]{display:none}.ctc-task small{font-size:12px;color:#d9c48a}
+.ctc-mmi .target{outline:3px solid #ffd166!important;outline-offset:2px;animation:ctcGlow .7s infinite alternate}
+@keyframes ctcGlow{from{box-shadow:0 0 0 0 #ffd16600}to{box-shadow:0 0 14px 3px #ffd166aa}}
+.vn-card .score.rank-S{color:#ffd166;text-shadow:0 0 18px #ffd16699;font-size:54px}.vn-card .score.rank-A{color:#78eadb;font-size:48px}.vn-card .score.rank-B{color:#bfd3d8;font-size:44px}.vn-card .score.rank-C{color:#ff9db0;font-size:44px}
+#ctcDrill.show-mmi #ctcHintPanel{display:none}
+#ctcDrill.show-mmi .ctc-task{top:auto;bottom:22px}

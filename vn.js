@@ -235,11 +235,10 @@ function ctcDrill(id){
  CTCDrill.start(id,R=>{
   markScene('ctc:'+id);markSeen('cg_training_clear.png');BGM.scene(S.bg);
   if(R.error){busy=false;S.pc++;return step();}
-  S.flags.ctcScore=R.score;S.flags.ctcRewinds=(S.flags.ctcRewinds||0)+R.rewinds;
-  if(R.score>=90&&!R.hint)S.flags.study=(S.flags.study||0)+1;
+  S.flags.ctcScore=R.score;S.flags.ctcRank=({S:4,A:3,B:2,C:1})[R.rank]||0;S.flags.ctcRewinds=(S.flags.ctcRewinds||0)+R.rewinds;
+  if(R.rank==='S')S.flags.study=(S.flags.study||0)+1;
   const c=$('#vnCard');$('#vnBox').classList.add('quiet');c.className='vn-card drill-done';c.hidden=false;
-  const mm=Math.floor(R.seconds/60),ss=String(R.seconds%60).padStart(2,'0');
-  c.innerHTML=`<small>채점표 · CTC LAB FTS</small><h2>${esc(R.title)}</h2><p class="score">${R.score}점</p><p>${esc(R.status)} · ${mm}:${ss} / ${Math.round(R.limit/60)}분 · 조작 ${R.ops[0]}/${R.ops[1]} · 통보 ${R.comms[0]}/${R.comms[1]}${R.rewinds?` · 예측 되감기 ${R.rewinds}회`:''}${R.hint?' · 힌트 사용':''}</p>${R.missed.length||R.deductions.length?`<ul class="sheet">${R.deductions.map(d=>`<li>⚠ 감점 · ${esc(d)}</li>`).join('')}${R.missed.slice(0,8).map(m=>`<li>빠뜨림 · ${esc(m.length>70?m.slice(0,69)+'…':m)}</li>`).join('')}${R.missed.length>8?`<li>… 외 ${R.missed.length-8}건</li>`:''}</ul>`:'<p class="unlock">빠뜨린 항목 없음!</p>'}<button class="primary">이야기로 돌아가기 ▶</button>`;
+  c.innerHTML=`<small>실습 결과 · CTC LAB</small><h2>${esc(R.title)}</h2><p class="score rank-${R.rank}">${R.rank}</p><p>판단 첫 시도 정답 ${R.firstTry} / ${R.decisions}${R.rewinds?` · 예측 되감기 ${R.rewinds}회`:''}${R.hint?' · 힌트 사용':''} · FTS 채점 ${R.score}점</p>${R.missed.length||R.deductions.length?`<ul class="sheet">${R.deductions.map(d=>`<li>⚠ 감점 · ${esc(d)}</li>`).join('')}${R.missed.slice(0,6).map(m=>`<li>남은 항목 · ${esc(m.length>70?m.slice(0,69)+'…':m)}</li>`).join('')}</ul>`:''}<button class="primary">이야기로 돌아가기 ▶</button>`;
   c.querySelector('button').onclick=e=>{e.stopPropagation();c.hidden=true;$('#vnBox').classList.remove('quiet');busy=false;S.pc++;step();};
  });
 }

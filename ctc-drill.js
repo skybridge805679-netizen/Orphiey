@@ -1,13 +1,13 @@
 'use strict';
-// CTC drills — the CTC LAB simulator (ctc/, same-origin iframe) fills the screen and its FTS (the instructor's
-// exam controller) runs the problem: free-order objectives on the real LS/MMI, communications, situation
-// reactions (trains move), the time limit and the score sheet. This layer is the radio and the cast:
-//  · 📻 radio (R): the player decides whom to call and what to say; the cast answers as the other side
-//    (유하린 the drivers, 류지안 the stations, 서도희 the chief controller and operations room, ORPHEIA the
-//    recovery and inspection teams), then FTS records the communication and its reaction happens on the LS.
-//  · A go-ahead ("신호 확인하고 진입…") sent before its operations are done is the dangerous mistake:
-//    it plays out as a 0.3-second forecast and is rewound.
-//  · The dialogue box is translucent, sits over the LS and shows only while someone is speaking.
+// CTC drills — the CTC LAB simulator (ctc/, same-origin iframe) runs the real LS/MMI and its FTS (the instructor's
+// exam controller) scores the problem. The game runs it as a sequence of decisions (the script's reference order):
+//  · a communication step asks whom to call, then what to say; the cast answers in role-play (유하린 the drivers,
+//    류지안 the stations, 서도희 the chief controller and operations room, ORPHEIA the recovery and inspection teams)
+//    and FTS records the communication, so its reaction happens on the LS;
+//  · an operation step asks which operation is needed, then the player does it on the LS or the game MMI terminal
+//    and the engine recognises it;
+//  · a wrong pick plays out as a 0.3-second forecast and is rewound with that option struck out. Only the right
+//    decision moves on, and the result is ranked by first-try decisions.
 const CTCDrill=(()=>{
  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const pick=(a,seed)=>a[Math.abs(seed)%a.length];
@@ -91,11 +91,32 @@ const CTCDrill=(()=>{
   }
   return {seq,ok,rest:p.objectives.filter(o=>!taken.has(o.id))};
  }
- const GO=/신호 확인|진입하|발차|출발하|운행 재개|운행하세요/;
- function unmetBefore(c){
-  if(!G.order.ok)return null;const it=item();
-  for(const s of G.order.seq){if(s.comm?.id===c.id)return null;const o=(s.objs||[]).find(o=>!o.final&&it.obj?.[o.id]==null&&it.missed?.[o.id]==null);if(o)return o;}
-  return null;
+ // The steps: the reference order, then anything left (branch items are added when they appear).
+ function stepsFor(p){
+  const o=G.order,steps=[];
+  if(o.ok){for(const s of o.seq)if(s.kind==='통보'&&s.comm)steps.push({kind:'comm',comm:s.comm});else if(s.objs?.length)steps.push({kind:'op',text:s.text,objs:s.objs});
+   for(const ob of o.rest)steps.push({kind:'op',text:ob.label,objs:[ob]});}
+  else{for(const c of p.communications)steps.push({kind:'comm',comm:c});for(const ob of p.objectives)steps.push({kind:'op',text:ob.label,objs:[ob]});}
+  return steps;
+ }
+ const ACK=t=>/^(철도관제\s*)?(수신\s*)?이상!?$/.test(t.replace(/[.,]/g,'').trim());
+ // what the controller opens with (the line the player picks)
+ function opener(c){const us=utterances(c.text),k=us.findIndex(u=>u.sp==='관'&&!ACK(u.text)),i=k>=0?k:us.findIndex(u=>u.sp==='관');return {i,text:(us[i]?.text||label(c)).replace(/^\([^)]*\)\s*/,'')};}
+ // a situation cue before the choice: what is happening, not who to call
+ function cue(c){
+  const t=label(c)+' '+c.text;
+  return /상황수보|재확인/.test(label(c))?'무전이 들어왔어요. 응답하고 상황을 확인해요.'
+   :/^전 열차|전 열차 · 통보/.test(label(c))?'사고를 알았어요. 그런데 노선 위의 열차들은 아직 몰라요.'
+   :/인접선|후속|선행|열차통제|통과 지시/.test(label(c))?'사고 지점으로 다른 열차들이 다가오고 있어요.'
+   :/^역 ·|역 · 안내|역 · 운행선/.test(label(c))?'현장 역은 아직 아무 지시도 받지 못했어요.'
+   :/전파|보고|센터|본사/.test(label(c))?'관제실 밖에도 이 일을 알아야 할 사람들이 있어요.'
+   :/초기대응|구호|지원요청/.test(label(c))?'현장에 사람이 필요해요.'
+   :/안내방송/.test(label(c))?'승객들은 영문도 모른 채 기다리고 있어요.'
+   :/복구반|검수반|파악|차량상태|상황파악/.test(t)?'현장은 지금 어떤 상태일까요?'
+   :/운행선 변경|변경/.test(t)?'지연이 길어지고 있어요. 열차를 돌릴 방법이 필요해요.'
+   :/정상운행|운행재개|출발 지시|복구완료|회송/.test(t)?'고비를 넘겼어요. 이제 다시 움직일 차례예요.'
+   :/확인!$/.test(c.text.trim())?'방금 한 조작, 그냥 넘어가도 될까요?'
+   :pick(['다음 조치는요, 주인님?','지금 누가 주인님의 무전을 기다리고 있을까요?','다음 한마디를 정해요.'],hash(c.id));
  }
 
  // ── Forecasts.
@@ -109,10 +130,21 @@ const CTCDrill=(()=>{
   plan:['시간표가 바뀌기 전에 지시가 먼저 나갔다. 두 열차는 같은 시각 같은 선로를 서로 양보하다 30분을 보냈고, 승객들은 그사이 끝말잇기 대회를 열었다.'],
  };
  function group(p){const t=p.name+' '+(p.source||'');return /침수/.test(t)?'flood':/충돌|탈선/.test(t)?'collision':/사상/.test(t)?'casualty':/화재/.test(t)?'fire':/차량고장 시/.test(t)?'breakdown':p.subject==='열차 운행 계획'?'plan':'evac';}
- function forecast(c,need){
-  const p=G.p0,place=(p.name.match(/([가-힣]+역)/)||[])[1]||'현장',train=(c.text.match(/([A-Z]\d{3,4})/)||[])[1]||'그 열차',short=t=>t.length>70?t.slice(0,69)+'…':t;
-  const future=pick(FUTURE[group(p)],hash(c.id+p.id+G.rewinds)).replaceAll('{역}',place).replaceAll('{열차}',train);
-  return `<p class="ctc-said">「${esc(short(label(c)))}」</p><p>— 그런데 아직 <b>${esc(need.label)}</b>이(가) 끝나지 않았다.</p><p>${esc(future)}</p>`;
+ const WRONG={
+  breakdown:['후속열차는 아무 연락도 받지 못한 채 다가왔다. 고장열차 뒤 30미터에서 비상제동을 건 기관사는, 그날 이후 커피를 끊었다.','승객들은 「곧 출발합니다」만 들은 채 40분을 기다렸다. 누군가 객실에서 시작한 끝말잇기는 6량 전체로 번졌고, 결국 「관제」에서 끝났다.','{역} 승강장에는 사람이 계속 쌓였다. 역무원은 아무 지시도 받지 못했고, 안내방송 대신 자판기 음료가 매진되었다.'],
+  casualty:['연락이 한 박자 늦었다. 현장은 무엇을 해야 할지 몰랐고, 그날의 녹취록에는 3분 동안 침묵만 남았다.','인접선 열차가 그대로 진입했다. 현장에 있던 사람들은 그 소리를 평생 기억하게 되었다.'],
+  flood:['물은 기다려 주지 않았다. 아무 지시도 받지 못한 열차가 {역}으로 들어섰고, 물보라에 역사 전광판이 「곧 도착」만 영원히 반복했다.','안내방송이 없었다. 승객들은 젖은 계단에서 우산을 들고 셀카를 찍었고, 그 사진이 다음 날 모든 포털 메인을 장식했다.'],
+  fire:['연기를 본 승객이 비상코크를 당겼다. 열차는 하필 터널 한가운데 멈췄고, 그 뒤의 일은 소방 교재의 새 장이 되었다.','반대편 열차를 막지 않았다. 연기 속으로 들어온 열차의 기관사는 무전에 대고 「관제? 관제?」만 열두 번 불렀다.'],
+  collision:['후속열차에 통보가 가지 않았다. 멈춰 선 두 열차 뒤로 세 번째 전조등이 다가왔다.','인접선 지장을 아무도 확인하지 않았다. 반대편 열차 기관사의 비명이 열차무선을 타고 전 노선에 생중계되었다.'],
+  evac:['고장열차는 본선에서 47분간 「관제승인 1호」를 기다렸다. 기관사는 그 사이 자격증 하나를 더 땄다.','후속열차가 세 번 「대피는 언제?」를 물었다. 세 번째 무전은 승객 전원의 단체 민원이 되었다.'],
+  plan:['두 열차는 같은 시각 같은 선로를 서로 양보하다 30분을 보냈고, 승객들은 그사이 끝말잇기 대회를 열었다.'],
+ };
+ const OPWRONG=['연동장치는 침착하게 그 조작을 받아들였다. 문제는 그곳이 엉뚱한 곳이었다는 것. 진로가 열린 것을 본 {열차} 기관사는 「관제가 그러라는데?」 하며 출발했다.','엉뚱한 신호기가 정지했다. 아무 상관 없던 열차가 멈춰 섰고, 그 열차에 탄 면접 응시생 열두 명이 전원 지각했다.','제어권이 엉뚱한 역으로 넘어갔다. 역무원은 매뉴얼을 펼친 채 20분 동안 같은 페이지만 읽었다.','막아야 할 신호는 그대로 진행을 띄우고 있었다. {열차}는 아무것도 모른 채 그 신호를 지나갔다.'];
+ function forecast(said,needed,ops){
+  const p=G.p0,place=(p.name.match(/([가-힣]+역)/)||[])[1]||'현장',train=(needed.match(/([A-Z]\d{3,4})/)||said.match(/([A-Z]\d{3,4})/)||p.setup?.trains?.[0]?.number?[0,p.setup.trains[0].number]:[])[1]||'그 열차';
+  const short=t=>t.length>80?t.slice(0,79)+'…':t,pool=ops?OPWRONG:WRONG[group(p)]||WRONG.breakdown;
+  const future=pick(pool,hash(said+needed+G.rewinds)).replaceAll('{역}',place).replaceAll('{열차}',train);
+  return `<p class="ctc-said">「${esc(short(said))}」</p><p>— 그 순간 정말 필요했던 건 <b>「${esc(short(needed))}」</b>였다.</p><p>${esc(future)}</p>`;
  }
 
  // ── Screen.
@@ -120,10 +152,11 @@ const CTCDrill=(()=>{
   el=document.createElement('section');el.id='ctcDrill';el.hidden=true;
   el.innerHTML=`<div class="ctc-screens"><iframe id="ctcFrame" title="LS 대형표시반"></iframe><iframe id="ctcMMI" title="MMI (원본, 숨김)"></iframe><div class="ctc-mmi" id="ctcTerm"></div></div>
   <div class="ctc-loading" hidden><img src="${asset(FACE.orpheia_smile)}" alt=""><p>LS 기동 중이에요… 잠시만요, 주인님!</p></div>
-  <div class="ctc-hud"><button type="button" id="ctcRadio" class="ctc-radio" title="무전 (R)">📻 무전 <kbd>R</kbd></button>
+  <div class="ctc-hud"><span class="ctc-step"></span>
    <span class="ctc-view" role="tablist"><button type="button" data-view="ls" class="on" title="앞쪽 대형표시반 (Tab)">▲ LS 표시반</button><button type="button" data-view="mmi" title="책상 위 관제 단말 (Tab)">▼ MMI 단말<i hidden>!</i></button></span>
-   <span class="ctc-title"></span><span class="ctc-score" title="FTS 채점"></span><span class="ctc-time" title="문제 제한시간"></span><span class="ctc-count"></span>
-   <button type="button" id="ctcSkip" title="시간을 10초 넘깁니다 (접근쇄정 대기 등)">+10초</button><button type="button" id="ctcSit">📋 상황</button><label><input type="checkbox" id="ctcHint"> 힌트</label><button type="button" id="ctcLog">기록</button><button type="button" id="ctcSubmit">제출</button></div>
+   <span class="ctc-title"></span><span class="ctc-score" title="판단 첫 시도"></span>
+   <button type="button" id="ctcSkip" title="시간을 10초 넘깁니다 (접근쇄정 대기 등)">+10초</button><button type="button" id="ctcSit">📋 상황</button><label><input type="checkbox" id="ctcHint"> 힌트</label><button type="button" id="ctcLog">기록</button></div>
+  <div class="ctc-task" hidden></div>
   <aside class="ctc-panel" id="ctcRadioPanel" hidden></aside>
   <aside class="ctc-panel left" id="ctcHintPanel" hidden></aside>
   <div class="ctc-toast" hidden><img alt=""><span></span></div>
@@ -132,21 +165,17 @@ const CTCDrill=(()=>{
   <dialog id="ctcDlg"><div class="ctc-dlg-body"></div><form method="dialog"><button class="primary">닫기</button></form></dialog>`;
   document.body.appendChild(el);frame=$('#ctcFrame');
   $('.ctc-dialogue').addEventListener('click',()=>advanceFn?.());
-  $('#ctcHint').onchange=e=>{records.hint=e.target.checked;save();hintPanel();if(!$('#ctcRadioPanel').hidden)radio(G.radioKey);};
-  $('#ctcRadio').onclick=()=>toggleRadio();
+  $('#ctcHint').onchange=e=>{records.hint=e.target.checked;save();hintPanel();G?.redraw?.();if(G)G.mm.sig='';mmi();};
   el.querySelectorAll('.ctc-view button').forEach(b=>b.onclick=()=>look(b.dataset.view));
   $('#ctcSkip').onclick=()=>{if(G&&!G.busy&&!G.ending)W.SimRemote.command({type:'tick',seconds:10});};
-  $('#ctcSit').onclick=()=>dlg(`<h3>${esc(G.p0.name)}</h3><pre>${esc(G.p0.situation||G.p0.voice||'')}</pre><p class="ctc-hint">제한시간 ${Math.round(G.p0.limit/60)}분 · 조작과 통보의 순서는 관제사가 상황을 보고 정합니다. 빠뜨린 항목은 감점됩니다.</p>`);
+  $('#ctcSit').onclick=()=>dlg(`<h3>${esc(G.p0.name)}</h3><pre>${esc(G.p0.situation||G.p0.voice||'')}</pre><p class="ctc-hint">관계 열차의 위치는 LS 표시반에서도 확인할 수 있어요.</p>`);
   $('#ctcLog').onclick=()=>dlg('<h3>무전 기록</h3>'+(G.log.map(l=>`<p><b>${esc(l.name)}</b> ${esc(l.text)}</p>`).join('')||'<p>아직 무전이 없어요.</p>'));
-  $('#ctcSubmit').onclick=()=>{if(G&&!G.ending&&!G.busy&&confirm('지금 상태로 제출할까요? 남은 항목은 감점됩니다.'))W.SimRemote.command({type:'fts',op:'next'});};
   document.addEventListener('keydown',keys,true);
  }
  function keys(e){
   if(!el||el.hidden||!G||document.querySelector('dialog[open]')||e.target.closest?.('input:not([type=checkbox]),textarea,select,[contenteditable]'))return;
   if((e.key===' '||e.key==='Enter')&&advanceFn){e.preventDefault();e.stopPropagation();advanceFn();}
-  else if((e.key==='r'||e.key==='R'||e.key==='ㄱ')&&!e.ctrlKey&&!e.metaKey&&!advanceFn){e.preventDefault();toggleRadio();}
   else if(e.key==='Tab'){e.preventDefault();look(G.view==='mmi'?'ls':'mmi');}
-  else if(e.key==='Escape'&&!$('#ctcRadioPanel').hidden){toggleRadio(false);}
  }
  // Two screens, as in a control room: the LS wall display ahead, the MMI terminal on the desk. Tab looks up or down.
  function look(v){if(!G)return;G.view=v;el.classList.toggle('show-mmi',v==='mmi');el.querySelectorAll('.ctc-view button').forEach(b=>b.classList.toggle('on',b.dataset.view===v));if(v==='mmi')$('.ctc-view i').hidden=true;SFX.play('select');if(v==='mmi')mmi(true);else W?.focus();}
@@ -159,7 +188,8 @@ const CTCDrill=(()=>{
   const snap=W.SimRemote.snapshot,list=mmiStations(),mm=G.mm;if(!list.includes(mm.station))mm.station=list[0]||'';
   const st=mm.station,state=snap.states[st],core=st&&W.SimCore.forStation(st),nm=id=>W.SimNetwork.catalog[id]?.name||id;
   if(!st){box.innerHTML='<p class="mm-empty">이 문제에는 취급역이 없어요.</p>';return;}
-  const sig=JSON.stringify([st,mm.signal,mm.form,mm.msg,list.map(id=>snap.states[id].mode),state.signals,Object.keys(state.routes),snap.ls.stations[st]?.windows,state.logs.length,alarms()]);
+  const T=records.hint&&G.target||null,tg=(k,v)=>T&&T[k]?.has(v)?' target':'';
+  const sig=JSON.stringify([st,mm.signal,mm.form,mm.msg,G.stepIndex,!!T,list.map(id=>snap.states[id].mode),state.signals,Object.keys(state.routes),snap.ls.stations[st]?.windows,state.logs.length,alarms()]);
   if(sig===mm.sig)return;if(mm.form&&box.contains(document.activeElement)&&document.activeElement.matches('input,select')&&!force)return;mm.sig=sig;
   const kinds={};for(const [id,g] of Object.entries(core.signals))(kinds[g.kind]??=[]).push(id);
   const routes=mm.signal?Object.keys(core.routes).filter(r=>core.routes[r].signal===mm.signal):[];
@@ -167,12 +197,12 @@ const CTCDrill=(()=>{
   const al=alarms(),f=mm.form;
   const form=f?.type==='rename'?`<div class="mm-form">열차번호 수정 <b>${esc(f.number)}</b> → <input id="mmNew" value="${esc(f.number)}" maxlength="6"><button data-do="rename">적용</button><button data-do="cancel">취소</button></div>`
    :f?.type==='move'?`<div class="mm-form">열차번호 이동 <b>${esc(f.number)}</b> → <select id="mmSt">${W.SimNetwork.stations.filter(x=>W.SimTrainWindows.data[x.id]&&snap.ls.stations[x.id]).map(x=>`<option value="${x.id}"${x.id===(f.to||st)?' selected':''}>${esc(x.name)}</option>`).join('')}</select><select id="mmSlot">${(W.SimTrainWindows.data[f.to||st]||[]).map(w=>`<option>${esc(w.slot)}</option>`).join('')}</select><button data-do="move">이동</button><button data-do="cancel">취소</button></div>`:'';
-  box.innerHTML=`<nav class="mm-side"><h4>취급역</h4>${list.map(id=>`<button data-st="${id}" class="${id===st?'on':''}">${esc(nm(id))}<i class="m-${snap.states[id].mode}">${snap.states[id].mode}</i></button>`).join('')}<p>고개를 들면 LS 표시반 (Tab)</p></nav>
-  <section class="mm-main"><header><h3>${esc(nm(st))}역 <small>현장설비제어</small></h3><div class="mm-mode">${['AUTO','CCM','LOCAL'].map(m=>`<button data-mode="${m}" class="${state.mode===m?'on':''}">${m}</button>`).join('')}</div></header>
-   ${Object.entries(kinds).map(([k,ids])=>`<div class="mm-sigs"><b>${esc(k)}</b>${ids.map(id=>`<button data-sig="${esc(id)}" class="${SIG[state.signals[id]]||'go'}${id===mm.signal?' on':''}">${esc(id)}</button>`).join('')}</div>`).join('')}
-   <div class="mm-detail">${mm.signal?`<h4>신호기 ${esc(mm.signal)} <small>${esc(core.signals[mm.signal]?.kind||'')} · 현재 ${state.signals[mm.signal]==='STOP'?'정지':'진행'}</small></h4><button data-do="stop" class="mm-stop">■ 신호 정지</button><div class="mm-routes">${routes.map(r=>`<button data-route="${esc(r)}" class="${state.routes[r]?'set':''}">${esc(r)}</button>`).join('')||'<span>이 신호기에서 시작하는 진로가 없어요.</span>'}</div>`:'<p>신호기를 고르면 정지 취급과 진로 설정을 할 수 있어요. (CCM 모드에서만)</p>'}</div>
+  box.innerHTML=`<nav class="mm-side"><h4>취급역</h4>${list.map(id=>`<button data-st="${id}" class="${id===st?'on':''}${tg('st',id)}">${esc(nm(id))}<i class="m-${snap.states[id].mode}">${snap.states[id].mode}</i></button>`).join('')}<p>고개를 들면 LS 표시반 (Tab)</p></nav>
+  <section class="mm-main"><header><h3>${esc(nm(st))}역 <small>현장설비제어</small></h3><div class="mm-mode">${['AUTO','CCM','LOCAL'].map(m=>`<button data-mode="${m}" class="${state.mode===m?'on':''}${T&&T.st?.has(st)?tg('mode',m):''}">${m}</button>`).join('')}</div></header>
+   ${Object.entries(kinds).map(([k,ids])=>`<div class="mm-sigs"><b>${esc(k)}</b>${ids.map(id=>`<button data-sig="${esc(id)}" class="${SIG[state.signals[id]]||'go'}${id===mm.signal?' on':''}${T&&T.st?.has(st)?tg('sig',id):''}">${esc(id)}</button>`).join('')}</div>`).join('')}
+   <div class="mm-detail">${mm.signal?`<h4>신호기 ${esc(mm.signal)} <small>${esc(core.signals[mm.signal]?.kind||'')} · 현재 ${state.signals[mm.signal]==='STOP'?'정지':'진행'}</small></h4><button data-do="stop" class="mm-stop${T&&T.st?.has(st)&&T.stop?.has(mm.signal)?' target':''}">■ 신호 정지</button><div class="mm-routes">${routes.map(r=>`<button data-route="${esc(r)}" class="${state.routes[r]?'set':''}${tg('route',r)}">${esc(r)}</button>`).join('')||'<span>이 신호기에서 시작하는 진로가 없어요.</span>'}</div>`:'<p>신호기를 고르면 정지 취급과 진로 설정을 할 수 있어요. (CCM 모드에서만)</p>'}</div>
    <div class="mm-set"><b>설정된 진로</b>${Object.keys(state.routes).map(r=>`<span>${esc(r)}</span>`).join('')||'<span class="none">없음</span>'}</div></section>
-  <aside class="mm-right"><h4>열차번호 <small>${esc(nm(st))}역 열번창</small></h4><div class="mm-trains">${wins.map(w=>`<div><b>${esc(w.number)}</b><small>${esc(w.slot)}</small><button data-edit="rename" data-uid="${w.uid}" data-slot="${esc(w.slot)}" data-n="${esc(w.number)}">수정</button><button data-edit="move" data-uid="${w.uid}" data-slot="${esc(w.slot)}" data-n="${esc(w.number)}">이동</button><button data-edit="delete" data-uid="${w.uid}" data-slot="${esc(w.slot)}" data-n="${esc(w.number)}">삭제</button></div>`).join('')||'<p>이 역 열번창에 열차가 없어요.</p>'}</div>${form}
+  <aside class="mm-right"><h4>열차번호 <small>${esc(nm(st))}역 열번창</small></h4><div class="mm-trains">${wins.map(w=>`<div><b>${esc(w.number)}</b><small>${esc(w.slot)}</small><button class="${tg('num',w.number)}" data-edit="rename" data-uid="${w.uid}" data-slot="${esc(w.slot)}" data-n="${esc(w.number)}">수정</button><button data-edit="move" data-uid="${w.uid}" data-slot="${esc(w.slot)}" data-n="${esc(w.number)}">이동</button><button data-edit="delete" data-uid="${w.uid}" data-slot="${esc(w.slot)}" data-n="${esc(w.number)}">삭제</button></div>`).join('')||'<p>이 역 열번창에 열차가 없어요.</p>'}</div>${form}
    <h4>알람 <small>${al.length}건</small>${al.length?'<button data-do="ack" class="mm-ack">확인</button>':''}</h4><div class="mm-alarms">${al.map(a=>`<p>${esc(a)}</p>`).join('')||'<p class="none">미확인 알람 없음</p>'}</div>
    <h4>이벤트 로그</h4><div class="mm-log">${state.logs.slice(0,7).map(l=>`<p class="${l.result==='완료'?'':'bad'}">${esc(l.message||'')}</p>`).join('')}</div>
    <div class="mm-msg ${mm.bad?'bad':''}">${esc(mm.msg||'')}</div></aside>`;
@@ -230,66 +260,110 @@ const CTCDrill=(()=>{
  const item=()=>session()?.items[G.index];
  const view=()=>W.SimFTS.view(G.p0,item());
  function hud(){
-  const it=item(),p=view(),task=W.SimRemote.snapshot.assessment?.task,rem=Math.max(0,Math.round(task?.remaining??0));
-  $('.ctc-score').textContent=`${it?.score??0}점`;
-  $('.ctc-time').textContent=`⏱ ${String(Math.floor(rem/60)).padStart(2,'0')}:${String(rem%60).padStart(2,'0')}`;$('.ctc-time').classList.toggle('low',rem<60);
-  const od=p.objectives.filter(o=>it?.obj?.[o.id]!=null).length,cd=p.communications.filter(c=>it?.comm?.[c.id]!=null).length;
-  $('.ctc-count').textContent=`조작 ${od}/${p.objectives.length} · 통보 ${cd}/${p.communications.length}`;
+  if(!G.steps)return;const n=G.steps.length,i=Math.min(G.stepIndex+1,n);
+  $('.ctc-step').textContent=`단계 ${i} / ${n}`;
+  $('.ctc-score').textContent=G.dec?`첫 시도 ${G.first}/${G.dec}`:'';
  }
  function hintPanel(){
   const box=$('#ctcHintPanel');box.hidden=!records.hint||!G;if(box.hidden)return;
-  const it=item(),p=view(),od=o=>it.obj?.[o.id]!=null,done=s=>s.comm?it.comm?.[s.comm.id]!=null:s.objs?.length?s.objs.every(od):!!s.obj&&od(s.obj);
-  const rows=G.order.ok?[...G.order.seq,...G.order.rest.map(o=>({kind:'조작',obj:o}))]:[...p.objectives.map(o=>({kind:'조작',obj:o})),...p.communications.map(c=>({kind:'통보',comm:c}))];
-  const firstOpen=rows.find(s=>!done(s));
-  const html=`<h4>조치사항 (참고 순서)</h4><ol>${rows.map(s=>`<li class="${done(s)?'done':''}${s===firstOpen?' now':''}"><i>${s.kind==='조작'?'🖱':'📻'}</i>${esc(s.comm?label(s.comm):s.obj?s.obj.label:s.text)}</li>`).join('')}</ol><p>순서는 예시예요. 상황을 보고 주인님이 정하세요.</p>`;
+  const it=item(),od=o=>it.obj?.[o.id]!=null||it.missed?.[o.id]!=null,done=s=>s.comm?it.comm?.[s.comm.id]!=null:s.objs.every(od);
+  const rows=G.steps||[],cur=G.steps?.[G.stepIndex];
+  const html=`<h4>조치사항 (참고 순서)</h4><ol>${rows.map(s=>`<li class="${done(s)?'done':''}${s===cur?' now':''}"><i>${s.kind==='op'?'🖱':'📻'}</i>${esc(s.comm?label(s.comm):s.text)}</li>`).join('')}</ol><p>힌트를 켜면 정답에 색이 들어가요.</p>`;
   if(box.dataset.html!==html){box.dataset.html=html;box.innerHTML=html;}
  }
 
- // ── Radio: whom → what.
- function toggleRadio(on){const box=$('#ctcRadioPanel'),open=on??box.hidden;if(open&&(advanceFn||G.busy||G.ending))return;box.hidden=!open;if(open){SFX.play('radio');radio('');}}
- function radio(key){
-  G.radioKey=key;const box=$('#ctcRadioPanel'),it=item(),p=view();
-  const open=p.communications.filter(c=>it.comm?.[c.id]==null).map(c=>({c,r:recipient(c)}));
-  const nextRef=records.hint&&G.order.ok?G.order.seq.find(s=>s.comm&&it.comm?.[s.comm.id]==null)?.comm:null;
-  if(!key){
-   const groups=new Map();for(const x of open)if(!groups.has(x.r.key))groups.set(x.r.key,x.r);
-   const list=[...groups.values()].sort((a,b)=>hash(a.key+G.p0.id)-hash(b.key+G.p0.id));
-   box.innerHTML=`<h4>📻 누구를 부를까요?</h4>${list.length?list.map(r=>`<button type="button" class="ctc-opt${nextRef&&recipient(nextRef).key===r.key?' hinted':''}" data-key="${esc(r.key)}">${esc(r.name)}</button>`).join(''):'<p>보낼 무전을 모두 마쳤어요.</p>'}<button type="button" class="ctc-close">닫기 (Esc)</button>`;
-  }else{
-   const mine=open.filter(x=>x.r.key===key).sort((a,b)=>hash(a.c.id+G.p0.id)-hash(b.c.id+G.p0.id)),short=t=>t.length>90?t.slice(0,89)+'…':t;
-   box.innerHTML=`<h4>📻 ${esc(mine[0]?.r.name||'')}</h4><p class="ctc-sub">무엇을 말할까요?</p>${mine.map(x=>`<button type="button" class="ctc-opt msg${nextRef?.id===x.c.id?' hinted':''}" data-id="${esc(x.c.id)}">${esc(short(label(x.c)))}</button>`).join('')}<button type="button" class="ctc-back">← 다른 상대</button>`;
-  }
-  box.querySelectorAll('[data-key]').forEach(b=>b.onclick=()=>{SFX.play('select');radio(b.dataset.key);});
-  box.querySelectorAll('[data-id]').forEach(b=>b.onclick=()=>send(p.communications.find(c=>c.id===b.dataset.id)));
-  box.querySelector('.ctc-back')?.addEventListener('click',()=>radio(''));
-  box.querySelector('.ctc-close')?.addEventListener('click',()=>toggleRadio(false));
- }
- async function send(c){
-  if(!c||G.busy||G.ending)return;G.busy=true;$('#ctcRadioPanel').hidden=true;
-  const r=recipient(c),need=unmetBefore(c),text=utterances(c.text).filter(u=>u.sp==='관').map(u=>u.text).join(' ');
-  if(need&&r.key==='self'){SFX.play('wrong');G.early++;await say('orpheia','오르페이아','주인님, 그 환호는 조작을 마친 다음에 하는 거예요. LS에서 먼저 취급해 주세요!','worry');hush();G.busy=false;return;}
-  if(need&&GO.test(text)){
-   G.rewinds++;clock(true);SFX.play('transmit');await say('sangcheol','신상철 · 관제',exchange(c,r)[0].text);hush();SFX.play('wrong');
-   const fc=$('.ctc-forecast');fc.querySelector('.ctc-fc-body').innerHTML=forecast(c,need);fc.style.backgroundImage=has('ui_forecast_bg.png')?`url(${asset('ui_forecast_bg.png')})`:'';fc.hidden=false;if(typeof BGM!=='undefined')BGM.play('bgm_forecast');
+ // ── Decisions. One choice at a time in the panel; a wrong pick shows its forecast, is struck out and asked again.
+ async function choose(prompt,title,options,answer,said,ops,mood='serious'){
+  G.dec++;let first=true;const struck=new Set(),opts=[...options].sort((a,b)=>hash(a.text+G.p0.id)-hash(b.text+G.p0.id));
+  for(;;){
+   clock(true);
+   const box=$('.ctc-dialogue');box.hidden=false;face(box,'orpheia',struck.size?'worry':mood);advanceFn=null;
+   $('.ctc-name').innerHTML='오르페이아';$('.ctc-name').className='ctc-name c-orpheia';$('.ctc-next').hidden=true;
+   $('.ctc-text').textContent=struck.size?'예측을 되감았어요. 다시 골라요, 주인님.':prompt;
+   const got=await new Promise(res=>{
+    const panel=$('#ctcRadioPanel');panel.hidden=false;
+    const draw=()=>{panel.innerHTML=`<h4>${esc(title)}</h4>${opts.map((o,k)=>`<button type="button" class="ctc-opt${o.text.length>40?' msg':''}${records.hint&&o.key===answer?' hinted':''}" data-k="${k}" ${struck.has(o.key)?'disabled':''}>${esc(o.text.length>110?o.text.slice(0,109)+'…':o.text)}</button>`).join('')}`;
+     panel.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>res(opts[+b.dataset.k]));};
+    G.redraw=draw;draw();
+   });
+   G.redraw=null;$('#ctcRadioPanel').hidden=true;
+   if(got.key===answer){if(first)G.first++;SFX.play('select');hud();return got;}
+   first=false;struck.add(got.key);G.rewinds++;SFX.play('wrong');hush();
+   const fc=$('.ctc-forecast');fc.querySelector('.ctc-fc-body').innerHTML=forecast(said(got),said(options.find(o=>o.key===answer)),ops);
+   fc.style.backgroundImage=has('ui_forecast_bg.png')?`url(${asset('ui_forecast_bg.png')})`:'';fc.hidden=false;if(typeof BGM!=='undefined')BGM.play('bgm_forecast');
    await new Promise(res=>fc.querySelector('button').onclick=res);
    fc.hidden=true;SFX.play('rewind');if(typeof BGM!=='undefined')BGM.play('bgm_emergency');
-   await say('orpheia','오르페이아','예측을 되감았어요. 그 지시는 LS 조작이 끝난 뒤에 내야 해요, 주인님.','worry');hush();clock(false);G.busy=false;return;
   }
-  await play(c,r);G.busy=false;
  }
+ const FALLBACK_WHO=[{key:'all',name:'전 열차 (일제 통보)'},{key:'chief',name:'관제팀장 · 관제운영실'},{key:'사고복구반',name:'사고복구반'},{key:'self',name:'지적확인 환호 (혼잣말)'}];
+ async function commStep(c){
+  const r=recipient(c),op=opener(c),us=utterances(c.text);
+  // incoming: the call plays first, then the reply is the decision
+  if(r.incoming){
+   await play(c,r,0,op.i);
+  }else{
+   const later=G.steps.slice(G.stepIndex+1).filter(s=>s.comm).map(s=>recipient(s.comm)),all=G.steps.filter(s=>s.comm).map(s=>recipient(s.comm));
+   const pool=[];for(const x of [...later,...all,...FALLBACK_WHO])if(x.key!==r.key&&!x.incoming&&!pool.some(y=>y.key===x.key))pool.push(x);
+   const who=[{key:r.key,text:r.name},...pool.slice(0,2).map(x=>({key:x.key,text:x.name}))];
+   await choose(cue(c),'📻 누구를 부를까요?',who,r.key,o=>o.text+'에게 무전',false);
+  }
+  // what to say: this opener vs. openers of other steps (same addressee first, then what comes next)
+  const others=G.steps.filter(s=>s.comm&&s.comm.id!==c.id).map(s=>({c:s.comm,r:recipient(s.comm)}));
+  const pool=[];const key=t=>t.slice(0,30);
+  for(const x of [...others.filter(x=>x.r.key===r.key),...others.slice(Math.max(0,others.findIndex(x=>G.steps.indexOf(G.steps.find(s=>s.comm===x.c))>G.stepIndex))),...others]){const t=opener(x.c).text;if(key(t)!==key(op.text)&&!pool.some(y=>key(y)===key(t)))pool.push(t);}
+  const what=[{key:'ok',text:op.text},...pool.slice(0,2).map((t,k)=>({key:'x'+k,text:t}))];
+  await choose(r.incoming?`${r.name}의 보고예요. 뭐라고 답할까요?`:`${r.name}에게 무엇을 말할까요?`,r.incoming?'📻 응답':'📻 '+r.name,what,'ok',o=>o.text,false);
+  await play(c,r,Math.max(0,op.i));
+  W.SimRemote.command({type:'fts',op:'manual',key:'comm:'+c.id,checked:true});update();
+ }
+ // operation: pick it, then do it
+ function mutate(text){
+  const names=[...G.used].map(id=>W.SimNetwork.catalog[id]?.name).filter(Boolean),here=names.find(n=>text.includes(n+'역'))||names.find(n=>text.includes(n));
+  const out=new Set();
+  for(const n of names)if(here&&n!==here)out.add(text.replace(here,n));
+  const st=[...G.used].find(id=>W.SimNetwork.catalog[id]?.name===here),sigs=st?Object.keys(W.SimCore.forStation(st).signals):[];
+  const tok=text.match(/\b(\d+[A-Z])\b/);
+  if(tok)for(const x of sigs.filter(x=>/^\d+[A-Z]$/.test(x)&&x!==tok[1]).sort((a,b)=>hash(a+text)-hash(b+text)).slice(0,3))out.add(text.replace(tok[1],x));
+  if(/CCM 전환/.test(text))out.add(text.replace('CCM','LOCAL'));if(/AUTO/.test(text))out.add(text.replace('AUTO','LOCAL'));
+  out.delete(text);return [...out].sort((a,b)=>hash(a+G.p0.id)-hash(b+G.p0.id));
+ }
+ function targets(objs){
+  const T={st:new Set(),mode:new Set(),sig:new Set(),stop:new Set(),route:new Set(),num:new Set()};
+  const walk=c=>{if(!c)return;if(c.station)T.st.add(c.station);
+   if(c.type==='event'&&c.eventType==='mode'||c.type==='mode')T.mode.add(c.value);
+   if(c.type==='signalCancelled'||c.type==='signalStop'){T.sig.add(c.signal);T.stop.add(c.signal);}
+   if(c.type==='route'){T.route.add(c.route);T.sig.add(c.route.split('-')[0]);}
+   if(c.number)T.num.add(c.number);if(c.from)T.num.add(c.from);
+   (c.conditions||[]).forEach(walk);walk(c.condition);};
+  for(const o of objs)walk(o.condition);return T;
+ }
+ async function opStep(s){
+  const done=()=>{const it=item();return s.objs.every(o=>it.obj?.[o.id]!=null||it.missed?.[o.id]!=null);};
+  if(!done()){
+   const wrong=mutate(s.text).slice(0,2);
+   if(wrong.length)await choose(pick(['LS를 봐요. 이제 손을 쓸 차례예요. 지금 필요한 조작은?','무전만으로는 열차가 멈추지 않아요. 어떤 조작이 필요할까요?','설비를 만질 차례예요. 무엇을 할까요?'],hash(s.text)),'🖱 필요한 조작은?',[{key:'ok',text:s.text},...wrong.map((t,k)=>({key:'x'+k,text:t}))],'ok',o=>o.text,true);
+   await say('orpheia','오르페이아',/접근쇄정/.test(s.text)?'접근쇄정이 풀릴 때까지 기다려야 해요. 위쪽 「+10초」로 시간을 넘길 수 있어요.':pick(['좋아요! 그럼 직접 해 주세요. MMI 단말은 Tab이에요.','맞아요. LS나 MMI에서 직접 취급해 주세요!'],hash(s.text)),'smile');hush();
+  }
+  G.target=targets(s.objs);if(records.hint&&G.target.st.size){G.mm.station=[...G.target.st][0];G.mm.signal='';}G.mm.sig='';mmi();
+  const task=$('.ctc-task');task.innerHTML=`🖱 <b>${esc(s.text)}</b><small>LS 표시반 또는 MMI 단말(Tab)에서 직접 조작하세요</small>`;task.hidden=done();
+  clock(false);G.busy=false;
+  while(G&&!done())await new Promise(r=>setTimeout(r,250));
+  if(!G)return;G.busy=true;task.hidden=true;G.target=null;G.mm.sig='';mmi();
+ }
+
  // The clock stops while people talk. A stop order asks where: the answer is on the LS (or in 📋 상황).
- async function play(c,r){
+ async function play(c,r,from=0,to=Infinity){
   clock(true);
-  const lines=exchange(c,r),stops=lines.filter(l=>l.who==='sangcheol').map(l=>l.text.match(/^([A-Z]\d{3,4})\s*열차\s*([가-힣]+역)\s*정차/)).filter(Boolean),places=[...new Set(stops.map(m=>m[2]))];
+  const lines=exchange(c,r).slice(from,to),stops=lines.filter(l=>l.who==='sangcheol').map(l=>l.text.match(/^([A-Z]\d{3,4})\s*열차\s*([가-힣]+역)\s*정차/)).filter(Boolean),places=[...new Set(stops.map(m=>m[2]))];
   for(const [k,line] of lines.entries()){
    const m=line.who==='sangcheol'&&places.length>1&&line.text.match(/^([A-Z]\d{3,4})\s*열차\s*([가-힣]+역)\s*정차/);
    if(m)await ask(`${m[1]}열차를 어디에 세울까요?`,places,m[2]);
    SFX.play(line.who==='sangcheol'?'transmit':'radio');await say(line.who,line.name,line.text,line.who!=='sangcheol'&&(k===0&&c===G.p0.communications[0]||/비상|화재|연기|충돌|침수|사상/.test(line.text))?'urgent':'');
   }
-  hush();clock(false);W.SimRemote.command({type:'fts',op:'manual',key:'comm:'+c.id,checked:true});update();
+  hush();
  }
  async function ask(question,options,answer){
-  const opts=[...options].sort((a,b)=>hash(a+question)-hash(b+question));
+  const opts=[...options].sort((a,b)=>hash(a+question)-hash(b+question));G.dec++;let first=true;
   for(;;){
    const got=await new Promise(res=>{
     const box=$('.ctc-dialogue');box.hidden=false;face(box,'orpheia','serious');advanceFn=null;
@@ -297,8 +371,8 @@ const CTCDrill=(()=>{
     $('.ctc-text').innerHTML=`${esc(question)} <small>(LS에서 열차 위치를 확인하세요)</small><span class="ctc-ask">${opts.map(o=>`<button type="button" class="${records.hint&&o===answer?'hinted':''}">${esc(o)}</button>`).join('')}</span>`;
     $('.ctc-text').querySelectorAll('button').forEach(b=>b.onclick=e=>{e.stopPropagation();res(b.textContent);});
    });
-   if(got===answer){SFX.play('correct');return;}
-   G.wrong++;SFX.play('wrong');await say('orpheia','오르페이아',`${got}이 아니에요, 주인님. 그 열차가 지금 어디 있는지 LS를 다시 봐요!`,'worry');
+   if(got===answer){if(first)G.first++;SFX.play('correct');hud();return;}
+   first=false;G.wrong++;SFX.play('wrong');await say('orpheia','오르페이아',`${got}이 아니에요, 주인님. 그 열차가 지금 어디 있는지 LS를 다시 봐요!`,'worry');
   }
  }
 
@@ -312,25 +386,40 @@ const CTCDrill=(()=>{
   else if(ps.some(x=>!/열차번호 중복/.test(x.textContent))&&G.view!=='mmi'&&$('.ctc-view i').hidden){$('.ctc-view i').hidden=false;if(!G.busy)toast('MMI 단말에 알람이 떴어요! (Tab)','worry');}
   const p=view();
   for(const o of p.objectives){const done=it.obj?.[o.id]!=null;if(done&&!G.seen.has(o.id)){G.seen.add(o.id);if(!G.busy&&!G.ending){SFX.play('correct');toast('조작 확인! '+o.label);}}else if(!done&&o.final)G.seen.delete(o.id);}
-  for(const b of G.p0.branches||[])if(it.branch?.[b.id]!=null&&!G.branches.has(b.id)){G.branches.add(b.id);branch(b);}
-  if(!G.ending&&(it.status!=='진행'||s.finished))finish(it.status);
+  for(const b of G.p0.branches||[])if(it.branch?.[b.id]!=null&&!G.branches.has(b.id)){G.branches.add(b.id);G.queue.push(b);}
  }
- const idle=async()=>{while(G?.busy)await new Promise(r=>setTimeout(r,200));};
  async function branch(b){
-  await idle();if(!G||G.ending)return;G.busy=true;clock(true);SFX.play('alarm');
+  clock(true);SFX.play('alarm');
   await say('instructor','서도희 교수','상황 변경. '+String(b.text||b.label).split('\n')[0].replace(/^[\s▪•·-]+/,''));
-  await say('orpheia','오르페이아','또?! ……주인님, 대본과 달라졌어요. 상황을 다시 확인해요!','worry');hush();clock(false);G.busy=false;
+  await say('orpheia','오르페이아','또?! ……주인님, 대본과 달라졌어요. 상황을 다시 확인해요!','worry');hush();
+  // the branch brings its own items: add the ones not yet done as steps after the current one
+  const it=item(),p=view(),have=new Set(G.steps.flatMap(s=>s.comm?['c:'+s.comm.id]:s.objs.map(o=>'o:'+o.id))),add=[];
+  for(const c of p.communications)if(!have.has('c:'+c.id)&&it.comm?.[c.id]==null)add.push({kind:'comm',comm:c});
+  for(const o of p.objectives)if(!have.has('o:'+o.id)&&it.obj?.[o.id]==null)add.push({kind:'op',text:o.label,objs:[o]});
+  G.steps.splice(G.stepIndex+1,0,...add);
+ }
+ async function run(){
+  for(G.stepIndex=0;G&&G.stepIndex<G.steps.length;G.stepIndex++){
+   while(G.queue.length)await branch(G.queue.shift());
+   const s=G.steps[G.stepIndex],it=item();hud();hintPanel();
+   if(s.kind==='comm'){if(it.comm?.[s.comm.id]==null)await commStep(s.comm);}
+   else await opStep(s);
+   if(!G)return;
+  }
+  // let the last reactions play out, then close the problem
+  clock(false);for(let k=0;k<40&&G&&item().status==='진행';k++)await new Promise(r=>setTimeout(r,250));
+  if(!G)return;if(item().status==='진행')W.SimRemote.command({type:'fts',op:'next'});
+  await finish(item().status);
  }
  async function finish(status){
-  G.ending=true;$('#ctcRadioPanel').hidden=true;await idle();if(!G)return;G.busy=true;
-  const it=item(),p=view(),mo=p.objectives.filter(o=>it.obj?.[o.id]==null),mc=p.communications.filter(c=>it.comm?.[c.id]==null);
-  const R={id:G.id,title:p.name,score:it.score??0,status,seconds:Math.round((it.endedAt??0)-(it.startedAt??0)),limit:p.limit,
-   ops:[p.objectives.length-mo.length,p.objectives.length],comms:[p.communications.length-mc.length,p.communications.length],
-   missed:[...mo.map(o=>'🖱 '+o.label),...mc.map(c=>'📻 '+label(c))],deductions:(p.deductions||[]).filter((d,i)=>it.deducted?.[i]).map(d=>d.label),
-   rewinds:G.rewinds,early:G.early,wrong:G.wrong,hint:!!records.hint};
-  SFX.play(status==='완료'?'clear':'wrong');
-  await say('instructor','서도희 교수',status==='완료'?`거기까지. ${R.score}점.`:status==='시간초과'?`시간 종료. ${R.score}점. 빠뜨린 항목을 확인해요.`:`제출 확인. ${R.score}점.`);
-  await say('orpheia','오르페이아',R.score>=90?'완벽해요, 주인님! 무전도 조작도 빠짐없이 해내셨어요♪':R.score>=60?'수고하셨어요! 빠뜨린 항목은 채점표에서 같이 봐요.':'괜찮아요, 주인님. 처음엔 누구나 그래요. 채점표를 보고 다시 해 봐요!',R.score>=60?'smile':'worry');
+  G.ending=true;$('#ctcRadioPanel').hidden=true;G.busy=true;clock(true);
+  const it=item(),p=view(),mo=p.objectives.filter(o=>it.obj?.[o.id]==null&&it.missed?.[o.id]==null),mc=p.communications.filter(c=>it.comm?.[c.id]==null);
+  const ratio=G.dec?G.first/G.dec:1,rank=ratio===1&&!G.hinted?'S':ratio>=.9?'A':ratio>=.75?'B':'C';
+  const R={id:G.id,title:p.name,rank,firstTry:G.first,decisions:G.dec,score:it.score??0,status,rewinds:G.rewinds,wrong:G.wrong,hint:G.hinted,
+   missed:[...mo.map(o=>'🖱 '+o.label),...mc.map(c=>'📻 '+label(c))],deductions:(p.deductions||[]).filter((d,i)=>it.deducted?.[i]).map(d=>d.label)};
+  SFX.play('clear');
+  await say('instructor','서도희 교수',rank==='S'?'……한 번도 안 틀렸네요. 거기까지.':rank==='A'?'거기까지. 거의 완벽해요.':rank==='B'?'거기까지. 흐름은 잡았어요. 되감은 곳을 복습해요.':'거기까지. 순서가 아직 몸에 안 붙었어요. 다시 해 봐요.');
+  await say('orpheia','오르페이아',rank==='S'?'랭크 S! 완벽해요, 주인님♪ 예측 연산을 한 번도 안 썼어요!':rank==='A'?'랭크 A예요! 거의 다 맞히셨어요♪':rank==='B'?'랭크 B! 되감은 곳만 다시 보면 금방이에요.':'랭크 C…… 괜찮아요. 처음엔 다 그래요. 같이 다시 해요!',rank<'C'?'smile':'worry');
   close(R);
  }
  function close(R){
@@ -345,7 +434,7 @@ const CTCDrill=(()=>{
   if(!el)build();onDone=done;el.hidden=false;document.body.classList.add('in-ctc');
   $('#ctcHint').checked=!!records.hint;$('.ctc-loading').hidden=false;el.classList.remove('show-mmi');el.querySelectorAll('.ctc-view button').forEach(b=>b.classList.toggle('on',b.dataset.view==='ls'));$('.ctc-view i').hidden=true;
   const old=$('#ctcMMI'),fresh=document.createElement('iframe');fresh.id='ctcMMI';fresh.title=old.title;old.replaceWith(fresh);
-  for(const s of ['.ctc-dialogue','#ctcRadioPanel','#ctcHintPanel','.ctc-toast','.ctc-forecast','.ctc-hud'])$(s).hidden=true;
+  for(const s of ['.ctc-dialogue','#ctcRadioPanel','#ctcHintPanel','.ctc-toast','.ctc-forecast','.ctc-hud','.ctc-task'])$(s).hidden=true;
   if(typeof BGM!=='undefined')BGM.play('bgm_emergency');
   frame.onload=()=>{
    W=frame.contentWindow;if(!W||!/ctc\/index/.test(W.location.href)){W=null;return;}let tries=0;
@@ -361,11 +450,16 @@ const CTCDrill=(()=>{
   const single=s=>{const st=s.situations.length===1&&lib.situations.find(x=>x.id===s.situations[0]);return st&&st.problems.length===1&&st.problems[0]===pid;};
   const sc=lib.scenarios.find(s=>s.id===id)||lib.scenarios.find(single);
   if(!sc)throw Error('알 수 없는 문제: '+id);
+  // decisions are not timed: give the problem a long limit so FTS never closes it on the clock
+  const relaxed=structuredClone(lib),ids=new Set(relaxed.situations.filter(x=>sc.situations.includes(x.id)).flatMap(x=>x.problems));
+  for(const x of relaxed.problems)if(ids.has(x.id))x.limit=Math.max(x.limit||0,7200);for(const x of relaxed.situations)if(sc.situations.includes(x.id)&&x.limit)x.limit=Math.max(x.limit,7200);
+  W.SimRemote.command({type:'fts',op:'library',library:relaxed});
   const r=W.SimRemote.command({type:'fts',op:'start',scenario:sc.id,professor:'001',student:'tester'});
   if(!r?.ok)throw Error(r?.message||'교육을 시작하지 못했어요.');
   clock(true);
-  const run=W.SimRemote.snapshot.ftsRunLibrary||lib,s=W.SimRemote.snapshot.fts.session,p0=run.problems.find(p=>p.id===s.items[0].problem);
-  G={id,view:'ls',index:0,p0,order:order(p0),wrong:0,mm:{station:'',signal:'',form:null,msg:''},log:[],seen:new Set(),branches:new Set(),rewinds:0,early:0,busy:true,ending:false,radioKey:''};
+  const runLib=W.SimRemote.snapshot.ftsRunLibrary||lib,s=W.SimRemote.snapshot.fts.session,p0=runLib.problems.find(p=>p.id===s.items[0].problem);
+  G={id,view:'ls',index:0,p0,wrong:0,mm:{station:'',signal:'',form:null,msg:''},log:[],seen:new Set(),branches:new Set(),queue:[],rewinds:0,dec:0,first:0,hinted:!!records.hint,stepIndex:0,busy:true,ending:false};
+  G.order=order(p0);G.steps=stepsFor(p0);
   const station=p0.setup?.trains?.[0]?.station||p0.setup?.reset?.[0];
   if(station)W.document.querySelector(`#stationTabs [data-view="${station}"]`)?.click();
   const onKey=e=>{if(!e.target.closest?.('input:not([type=checkbox]),textarea,select,[contenteditable]'))keys(e);};
@@ -377,18 +471,17 @@ const CTCDrill=(()=>{
   const used=G.used=new Set([...JSON.stringify(p0).matchAll(/"(?:station|targetStation)":"([\w-]+)"/g)].map(m=>m[1]));
   const st=W.document.createElement('style');st.textContent='.ls-topbar,#extraLSBtn{display:none!important}'+(used.size<2?'.ctc-one-station{display:none!important}':'')+(used.size?`#stationTabs [data-view]${[...used].map(x=>`:not([data-view="${x}"])`).join('')}{display:none!important}`:'');W.document.head.appendChild(st);W.document.querySelector('.ls-bottom')?.classList.add('ctc-one-station');
   $('.ctc-title').textContent=p0.name;
-  $('.ctc-loading').hidden=true;$('.ctc-hud').hidden=false;hud();hintPanel();
+  $('.ctc-loading').hidden=true;$('.ctc-hud').hidden=false;$('.ctc-task').hidden=true;hud();hintPanel();
   tick=setInterval(update,300);
   // Briefing with the clock paused: the report, the problem, then the floor is the player's.
   SFX.play('alarm');
   const first=p0.communications[0],fr=first&&recipient(first),train=p0.setup?.trains?.[0]?.number;
   if(!fr?.incoming&&train&&/고장/.test(p0.voice||''))await say('harin',`${train} 기관사`,`철도관제, ${train}열차 이상! 차량고장으로 정상 운행이 어렵습니다. 이상!`,'urgent');
-  await say('instructor','서도희 교수',`문제. 「${p0.name}」 제한시간 ${Math.round(p0.limit/60)}분. 관계 열차는 LS와 📋 상황에서 확인하세요.`);
-  await say('orpheia','오르페이아','무전은 📻 버튼이나 R 키예요. 앞쪽 LS 표시반과 책상 위 MMI 단말은 Tab 키로 오가요. 순서는 주인님이 정하세요. 시작할게요!','serious');
-  hush();clock(false);G.busy=false;
-  if(fr?.incoming){G.busy=true;await play(first,fr);G.busy=false;}
+  await say('instructor','서도희 교수',`문제. 「${p0.name}」 관계 열차는 LS와 📋 상황에서 확인하세요.`);
+  await say('orpheia','오르페이아',`조치는 ${G.steps.length}단계예요. 단계마다 누구에게 무엇을 말할지, 어떤 조작을 할지 골라요. 틀리면 그 미래를 보여 드리고 되감을게요!`,'serious');
+  hush();run().catch(e=>{console.error(e);fail(e.message);});
  }
  function fail(msg){$('.ctc-loading').hidden=true;G=G||{log:[]};say('orpheia','오르페이아',msg+' 이야기로 돌아갈게요.','worry').then(()=>close({id:'',error:msg}));}
  // Test helpers.
- return {start,look,mmi:()=>M,debug:()=>G&&{view:G.view,p:view(),item:item(),order:G.order,busy:G.busy,ending:G.ending,talking:!!advanceFn},frame:()=>W,recipient,label,send:id=>send(view().communications.find(c=>c.id===id))};
+ return {start,look,mmi:()=>M,debug:()=>G&&{view:G.view,p:view(),item:item(),order:G.order,steps:G.steps,stepIndex:G.stepIndex,busy:G.busy,ending:G.ending,talking:!!advanceFn,choosing:!$('#ctcRadioPanel').hidden,task:!$('.ctc-task').hidden,target:G.target},frame:()=>W,recipient,label,opener};
 })();

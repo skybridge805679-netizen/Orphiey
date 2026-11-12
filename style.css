@@ -442,3 +442,96 @@ img.vn-stamp{width:min(34vw,360px);text-shadow:none}
 .dk-c .dk-face{flex-basis:28px;width:28px;height:28px}
 #ctcDrill.desk .ctc-toast{left:16px;bottom:96px}
 #ctcDrill.desk .ctc-forecast{z-index:80}
+
+/* ══ Desk skin v2 — one palette for the whole drill screen ══
+   base navy · one accent (teal) · rose only for ORPHEIA · gold only for hints. No mixed borders. */
+#ctcDrill{--d0:#060b12;--d1:#0b131d;--d2:#111d2a;--d3:#182838;--ln:#213547;--ink:#e9f1f5;--mute:#8094a3;--acc:#5fe3d0;--rose:#f3a8c5;--gold:#ffcf5c;--me:#244b86;--bad:#ff6b8a;background:var(--d0)}
+/* HUD: quiet text buttons, a thin progress line under the bar */
+#ctcDrill .ctc-hud{height:46px;gap:14px;padding:0 16px;background:var(--d1);border-bottom:1px solid var(--ln);color:var(--mute);font-size:13px}
+#ctcDrill .ctc-hud::after{content:"";position:absolute;left:0;bottom:-1px;height:2px;width:var(--prog,0%);background:linear-gradient(90deg,var(--acc),var(--rose));transition:width .4s}
+#ctcDrill .ctc-hud button,#ctcDrill .ctc-hud label{padding:6px 10px;border:0;border-radius:8px;background:transparent;color:var(--mute);font-size:13px}
+#ctcDrill .ctc-hud button:hover,#ctcDrill .ctc-hud label:hover{background:var(--d3);color:var(--ink)}
+#ctcDrill .ctc-step{padding:0;border:0;background:none;color:var(--ink);font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:.3px}
+#ctcDrill .ctc-view{border:1px solid var(--ln);border-radius:9px;background:var(--d0)}
+#ctcDrill .ctc-hud .ctc-view button{padding:5px 12px;border-radius:7px;color:var(--mute);font-size:12.5px}
+#ctcDrill .ctc-hud .ctc-view button.on{background:var(--d3);color:var(--acc);font-weight:700}
+#ctcDrill .ctc-title{color:var(--ink);font-weight:600;font-size:14px}
+#ctcDrill .ctc-score{display:flex;align-items:center;gap:10px;color:var(--mute);font-weight:500;font-size:12.5px}
+.fc-pips{display:inline-flex;gap:5px;align-items:center}.fc-pips i{width:9px;height:9px;transform:rotate(45deg);border:1.5px solid var(--rose);border-radius:2px;display:block}
+.fc-pips i.on{background:var(--rose);box-shadow:0 0 8px #f3a8c588}
+.fc-pips+b{font-weight:500;color:var(--mute)}
+/* LS as a monitor on the desk */
+#ctcDrill.desk .ctc-screens{inset:58px 412px 12px 12px;border-radius:14px;overflow:hidden;box-shadow:0 0 0 1px var(--ln),0 18px 50px #000b}
+/* The dock */
+#ctcDrill .ctc-desk{top:58px;right:12px;bottom:12px;width:388px;border:1px solid var(--ln);border-radius:14px;background:var(--d1);overflow:hidden;color:var(--ink);font-size:14px;box-shadow:0 18px 50px #000b}
+#ctcDrill .dk-status{gap:12px;align-items:center;padding:14px 16px;min-height:76px;background:linear-gradient(135deg,#2a1830,#131c2b 70%);border-bottom:1px solid var(--ln)}
+#ctcDrill .dk-status .dk-face{flex-basis:46px;width:46px;height:46px;border:2px solid var(--rose);box-shadow:0 0 14px #f3a8c544}
+#ctcDrill .dk-status p{font-size:14.5px;line-height:1.6;color:#fdeef4}
+#ctcDrill .dk-main{padding:14px 16px 16px;gap:8px;border-bottom:1px solid var(--ln);background:var(--d1)}
+#ctcDrill .dk-main h4{font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--mute);text-transform:uppercase;margin-bottom:2px}
+#ctcDrill .dk-contacts{gap:7px;counter-reset:k}
+#ctcDrill .dk-c,#ctcDrill .dk-p{position:relative;border:1px solid transparent;border-radius:11px;background:var(--d2);color:var(--ink);transition:background .12s,border-color .12s,transform .08s;counter-increment:k}
+#ctcDrill .dk-c{min-height:50px;padding:7px 26px 7px 9px;gap:9px;font-size:13px;line-height:1.3}
+#ctcDrill .dk-p{padding:10px 30px 10px 14px;font-size:13.5px;line-height:1.5;border-left:3px solid var(--acc)}
+#ctcDrill .dk-say{gap:7px;counter-reset:k}
+#ctcDrill .dk-c:hover:not(:disabled),#ctcDrill .dk-p:hover:not(:disabled){background:var(--d3);border-color:var(--acc)}
+#ctcDrill .dk-p:hover:not(:disabled){border-left-color:var(--acc)}
+#ctcDrill .dk-c:active:not(:disabled),#ctcDrill .dk-p:active:not(:disabled){transform:scale(.985)}
+#ctcDrill .dk-c::after,#ctcDrill .dk-p::after{content:counter(k);position:absolute;right:8px;top:50%;transform:translateY(-50%);width:17px;height:17px;border-radius:5px;background:var(--d0);color:var(--mute);font-size:10.5px;font-weight:700;display:flex;align-items:center;justify-content:center}
+#ctcDrill .dk-c:disabled,#ctcDrill .dk-p:disabled{opacity:.28;text-decoration:line-through}
+#ctcDrill .dk-c .dk-face{flex-basis:32px;width:32px;height:32px;border:0;background:var(--d0)}
+#ctcDrill .dk-end{margin-top:2px;padding:10px;border:1px solid var(--acc);border-radius:11px;background:transparent;color:var(--acc);font-weight:700;letter-spacing:.5px;transition:background .12s}
+#ctcDrill .dk-end:hover{background:#5fe3d01f}
+#ctcDrill .dk-c.hinted,#ctcDrill .dk-p.hinted,#ctcDrill .dk-end.hinted{background:var(--d2);border-color:var(--gold);box-shadow:0 0 0 3px #ffcf5c22}
+#ctcDrill .dk-p.hinted{border-left-color:var(--gold)}#ctcDrill .dk-end.hinted{color:var(--gold)}
+#ctcDrill .dk-wait{color:var(--mute);font-size:12.5px;letter-spacing:.5px}
+#ctcDrill .dk-note{color:var(--mute);font-size:12px}
+#ctcDrill .dk-task{padding:12px 14px;border:0;border-left:3px solid var(--gold);border-radius:11px;background:var(--d2);color:var(--ink)}
+#ctcDrill .dk-task b{font-size:14px;color:#fff}#ctcDrill .dk-task ul{color:var(--mute);line-height:1.8}#ctcDrill .dk-task li.done{color:var(--acc)}
+#ctcDrill .dk-main .ctc-row{padding:7px 9px;border:1px solid transparent;border-radius:10px;background:var(--d2);gap:6px}
+#ctcDrill .dk-main .ctc-row b{min-width:52px;font-size:14px;color:#fff}
+#ctcDrill .dk-main .ctc-row select{border:1px solid var(--ln);border-radius:7px;background:var(--d0);color:var(--ink);padding:5px 6px;font-size:12.5px}
+#ctcDrill .dk-main .ctc-row button{border:0;border-radius:8px;background:var(--acc);color:#06222a;padding:5px 10px}
+#ctcDrill .dk-main .ctc-row.sent{opacity:.55}#ctcDrill .dk-main .ctc-row.sent span{color:var(--acc)}
+#ctcDrill .dk-main .ctc-row.hinted{border-color:var(--gold);background:var(--d2);box-shadow:0 0 0 3px #ffcf5c22}
+#ctcDrill .dk-main .ctc-row small{color:var(--gold)}
+/* Radio log: soft bubbles, no outlines; the speaker shows in the name colour only */
+#ctcDrill .dk-log{padding:14px 14px 18px;gap:10px;background:var(--d0);scrollbar-width:thin;scrollbar-color:var(--ln) transparent}
+#ctcDrill .dk-b{gap:9px;max-width:92%}
+#ctcDrill .dk-b>div{padding:7px 12px 9px;border:0;border-radius:4px 14px 14px 14px;background:var(--d2)}
+#ctcDrill .dk-b b{font-size:11px;font-weight:700;letter-spacing:.3px;color:var(--mute);margin-bottom:2px}
+#ctcDrill .dk-b p{font-size:14px;line-height:1.6;color:var(--ink)}
+#ctcDrill .dk-b.me>div{border-radius:14px 4px 14px 14px;background:var(--me)}#ctcDrill .dk-b.me b{color:#b9d3f7}
+#ctcDrill .dk-b.c-harin>div,#ctcDrill .dk-b.c-jian>div,#ctcDrill .dk-b.c-instructor>div,#ctcDrill .dk-b.c-orpheia>div{background:var(--d2)}
+#ctcDrill .dk-b.c-harin b{color:#9fe3ae}#ctcDrill .dk-b.c-jian b{color:#c5b4ff}#ctcDrill .dk-b.c-instructor b{color:#ffc58a}#ctcDrill .dk-b.c-orpheia b{color:var(--rose)}
+#ctcDrill .dk-b.coach>div{background:transparent;border:0;padding:0 0 0 2px}#ctcDrill .dk-b.coach p{font-size:13px;color:#f6cfdd}
+#ctcDrill .dk-b .dk-face{flex-basis:32px;width:32px;height:32px;border:0;background:var(--d2)}
+#ctcDrill .dk-b.me .dk-face{display:none}
+#ctcDrill .dk-log::before{content:"RADIO LOG";font-size:10px;letter-spacing:2px;color:#4c6070;align-self:center}
+/* toast and forecast in the same language */
+#ctcDrill .ctc-toast{left:28px;bottom:86px;border:1px solid var(--ln);background:#0b131df2;color:var(--ink);font-size:13.5px;box-shadow:0 10px 30px #000a}
+#ctcDrill .ctc-fc-box{border:1px solid #ff6b8a66;border-radius:18px;background:#12070ce8;backdrop-filter:blur(8px)}
+#ctcDrill .ctc-fc-box small{color:var(--bad);font-weight:700}#ctcDrill .ctc-fc-box h3{font-size:21px;letter-spacing:.3px}
+#ctcDrill .ctc-said{font-size:16px}#ctcDrill .ctc-why{border-left-color:var(--acc);border-radius:0 10px 10px 0}
+#ctcDrill .ctc-fc-box button{border:0;border-radius:10px;background:var(--acc);color:#06222a;font-weight:800;padding:10px 20px}
+
+#ctcDrill .dk-c>span:last-child{display:flex;flex-direction:column;min-width:0}
+#ctcDrill .dk-c small{font-size:11px;color:var(--mute);margin-top:1px}
+#ctcDrill .dk-main{max-height:64%;padding-bottom:0}
+#ctcDrill .dk-main>:last-child{margin-bottom:14px}
+#ctcDrill .dk-p{padding:8px 30px 8px 13px}
+#ctcDrill .dk-end{position:sticky;bottom:0;margin:2px 0 0;background:var(--d1);box-shadow:0 -10px 14px var(--d1)}
+#ctcDrill .dk-end:hover{background:#12323a}
+#ctcDrill .dk-main .dk-end:last-child{margin-bottom:14px}
+
+/* ── Desk layout v3: the LS keeps one aspect ratio at every window size (it re-lays its tracks to the box it is
+   given, so a wide low box flattens it and a square box stretches it). The radio log sits under the LS. */
+#ctcDrill.desk{--dockW:clamp(300px,26vw,388px);--colW:calc(100vw - var(--dockW) - 36px);--lsH:min(calc(var(--colW)/1.7),calc(100vh - 58px - 12px - 150px));--lsW:calc(var(--lsH)*1.7)}
+#ctcDrill.desk .ctc-screens{inset:auto;top:58px;left:calc(12px + (var(--colW) - var(--lsW))/2);width:var(--lsW);height:var(--lsH)}
+#ctcDrill .ctc-desk{width:var(--dockW)}
+#ctcDrill .dk-log{display:none}
+#ctcDrill.desk .dk-log{display:flex;position:absolute;left:12px;width:var(--colW);top:calc(58px + var(--lsH) + 10px);bottom:12px;border:1px solid var(--ln);border-radius:14px;background:var(--d1);padding:10px 16px 14px;gap:8px;flex:none}
+#ctcDrill.desk .dk-log::before{display:none}
+#ctcDrill.desk .dk-b{max-width:min(78%,760px)}
+#ctcDrill .dk-main{max-height:none;flex:1 1 auto;border-bottom:0}
+#ctcDrill.desk .ctc-toast{left:auto;right:calc(var(--dockW) + 36px);top:70px;bottom:auto}

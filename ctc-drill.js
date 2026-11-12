@@ -155,11 +155,11 @@ const CTCDrill=(()=>{
   <div class="ctc-hud"><span class="ctc-step"></span>
    <span class="ctc-view" role="tablist"><button type="button" data-view="ls" class="on" title="앞쪽 대형표시반 (Tab)">▲ LS 표시반</button><button type="button" data-view="mmi" title="책상 위 관제 단말 (Tab)">▼ MMI 단말<i hidden>!</i></button></span>
    <span class="ctc-title"></span><span class="ctc-score" title="판단 첫 시도"></span>
-   <button type="button" id="ctcSkip" title="시간을 10초 넘깁니다 (접근쇄정 대기 등)">+10초</button><button type="button" id="ctcSit">📋 상황</button><button type="button" id="ctcScript" title="이 실습의 원문 대본">📖 대본</button><label><input type="checkbox" id="ctcHint"> 힌트</label><button type="button" id="ctcLog">기록</button></div>
+   <button type="button" id="ctcSkip" title="시간을 10초 넘깁니다 (접근쇄정 대기 등)">+10초</button><button type="button" id="ctcSit">📋 상황</button><button type="button" id="ctcScript" title="이 실습의 원문 대본">📖 대본</button><label><input type="checkbox" id="ctcHint"> 힌트</label><button type="button" id="ctcLog">기록</button><button type="button" id="ctcFull" title="전체 화면">⛶</button></div>
   <div class="ctc-task" hidden></div>
   <aside class="ctc-panel" id="ctcRadioPanel" hidden></aside>
   <aside class="ctc-panel left" id="ctcHintPanel" hidden></aside>
-  <aside class="ctc-desk" id="ctcDesk" hidden><div class="dk-status"></div><div class="dk-main"></div><div class="dk-log"></div></aside>
+  <aside class="ctc-desk" id="ctcDesk" hidden><div class="dk-status"></div><div class="dk-main"></div></aside><div class="dk-log"></div>
   <div class="ctc-toast" hidden><img alt=""><span></span></div>
   <div class="ctc-dialogue" hidden><div class="ctc-face"><img alt=""></div><div class="ctc-talk"><div class="ctc-name"></div><div class="ctc-text"></div></div><div class="ctc-next">▼</div><small class="ctc-peekhint">H · 대화창 숨기고 LS 보기</small></div>
   <div class="ctc-forecast" hidden><div class="ctc-fc-box"><small>0.3초 예측 연산</small><h3>그 무전이 나간 미래</h3><div class="ctc-fc-body"></div><button type="button" class="primary">↺ 되감기</button></div></div>
@@ -174,12 +174,15 @@ const CTCDrill=(()=>{
   // the source script of this drill, for studying alongside (CTC LAB reference data)
   $('#ctcScript').onclick=()=>{const p=G.p0,rows=G.order.ok?G.order.seq:[...p.communications.map(c=>({kind:'통보',comm:c}))];
    dlg(`<h3>📖 ${esc(p.name)}</h3><p class="ctc-hint">원문 대본이에요. 차량고장 대본은 05(구원)와 05-1(운행선 변경·정상복구) 두 가지라서, 열차 위치와 정차역이 서로 달라요.</p><pre>${esc(p.situation||'')}</pre>`+rows.map(s=>s.comm?`<h4>${esc(s.comm.label)}</h4><pre>${esc(s.comm.text)}</pre>`:`<p class="ctc-opline">🖱 조작 · ${esc(s.text)}</p>`).join(''));};
+  $('#ctcFull').onclick=()=>{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen?.().catch(()=>{});};
   $('#ctcLog').onclick=()=>dlg('<h3>무전 기록</h3>'+(G.log.map(l=>`<p><b>${esc(l.name)}</b> ${esc(l.text)}</p>`).join('')||'<p>아직 무전이 없어요.</p>'));
   document.addEventListener('keydown',keys,true);
  }
  function keys(e){
   if(!el||el.hidden||!G||document.querySelector('dialog[open]')||e.target.closest?.('input:not([type=checkbox]),textarea,select,[contenteditable]'))return;
   if((e.key===' '||e.key==='Enter')&&advanceFn){e.preventDefault();e.stopPropagation();advanceFn();}
+  else if(/^[1-9]$/.test(e.key)&&G.dock&&G.dock!=='board'&&G.dock!=='ops'&&!e.ctrlKey&&!e.metaKey&&!e.altKey){const bs=[...$('.dk-main').querySelectorAll('.dk-c,.dk-p')],x=bs[+e.key-1];if(x&&!x.disabled){e.preventDefault();x.click();}}
+  else if(e.key==='Enter'&&G.dock==='call'){e.preventDefault();$('.dk-end')?.click();}
   else if(e.key==='Tab'){e.preventDefault();look(G.view==='mmi'?'ls':'mmi');}
   else if((e.key==='h'||e.key==='H'||e.key==='ㅗ')&&!e.ctrlKey&&!e.metaKey){e.preventDefault();el.classList.toggle('peek');}
  }
@@ -268,7 +271,8 @@ const CTCDrill=(()=>{
  function hud(){
   if(!G.steps)return;const n=G.steps.length,i=Math.min(G.stepIndex+1,n);
   $('.ctc-step').textContent=`단계 ${i} / ${n}`;
-  $('.ctc-score').textContent=(G.scene?`예측 연산 ${'◆'.repeat(Math.max(0,G.rw))}${'◇'.repeat(Math.max(0,FORECASTS-G.rw))} · `:'')+(G.dec?`첫 시도 ${G.first}/${G.dec}`:'');
+  $('.ctc-score').innerHTML=(G.scene?`<span title="예측 연산 남은 횟수">예측 연산</span><span class="fc-pips">${Array.from({length:FORECASTS},(_,k)=>`<i class="${k<G.rw?'on':''}"></i>`).join('')}</span>`:'')+(G.dec?`<b>첫 시도 ${G.first}/${G.dec}</b>`:'');
+  $('.ctc-hud').style.setProperty('--prog',(n?100*G.stepIndex/n:0)+'%');
  }
  function hintPanel(){
   const box=$('#ctcHintPanel');box.hidden=!records.hint||!G||!!G.scene;if(box.hidden)return;
@@ -412,7 +416,7 @@ const CTCDrill=(()=>{
   for(;;){
    clock(true);dkStatus(struck.size?'예측을 되감았어요. 지금 주인님의 무전을 기다리는 건 누구일까요?':b.cue||'다음은 누구 차례일까요?',struck.size?'worry':'');
    const got=await new Promise(res=>{
-    const draw=()=>{main().innerHTML=`<h4>📻 호출</h4><div class="dk-contacts">${sc.roster.map(r=>`<button type="button" class="dk-c${records.hint&&r.id===b.who?' hinted':''}" data-id="${r.id}" ${struck.has(r.id)?'disabled':''}>${r.who?icon(r.who,r.name):'<span class="dk-face none">🖱</span>'}<span>${esc(r.name)}</span></button>`).join('')}</div>`;
+    const draw=()=>{main().innerHTML=`<h4>📻 호출</h4><div class="dk-contacts">${sc.roster.map(r=>`<button type="button" class="dk-c${records.hint&&r.id===b.who?' hinted':''}" data-id="${r.id}" ${struck.has(r.id)?'disabled':''}>${r.who?icon(r.who,r.name):'<span class="dk-face none">🖱</span>'}<span>${esc(r.name)}${r.sub?`<small>${esc(r.sub)}</small>`:''}</span></button>`).join('')}</div>`;
      main().querySelectorAll('[data-id]').forEach(x=>x.onclick=()=>res(sc.roster.find(r=>r.id===x.dataset.id)));};
     G.redraw=draw;G.dock='who';draw();
    });
@@ -644,7 +648,8 @@ const CTCDrill=(()=>{
   
   // Game skin: the HUD above replaces the simulator's own top bar, and only this problem's stations keep a tab.
   const used=G.used=new Set([...JSON.stringify(p0).matchAll(/"(?:station|targetStation)":"([\w-]+)"/g)].map(m=>m[1]));
-  const st=W.document.createElement('style');st.textContent='.ls-topbar,#extraLSBtn{display:none!important}'+(used.size<2?'.ctc-one-station{display:none!important}':'')+(used.size?`#stationTabs [data-view]${[...used].map(x=>`:not([data-view="${x}"])`).join('')}{display:none!important}`:'');W.document.head.appendChild(st);W.document.querySelector('.ls-bottom')?.classList.add('ctc-one-station');
+  const st=W.document.createElement('style');st.textContent='.ls-topbar,#extraLSBtn{display:none!important}'+(used.size<2?'.ctc-one-station{display:none!important}':'')+(used.size?`#stationTabs [data-view]${[...used].map(x=>`:not([data-view="${x}"])`).join('')}{display:none!important}`:'');st.textContent+='.ls-bottom{background:#0b131d!important;border-top:1px solid #213547!important;padding:8px 10px!important}.ls-bottom .station-tabs{gap:6px!important}.ls-bottom .station-tabs button{flex:1 1 0!important;padding:8px 10px!important;border:1px solid #213547!important;border-radius:9px!important;background:#111d2a!important;color:#8094a3!important;font-size:12.5px!important;box-shadow:none!important}.ls-bottom .station-tabs button:hover{color:#e9f1f5!important;border-color:#5fe3d0!important}.ls-bottom .station-tabs button.selected{background:#182838!important;color:#5fe3d0!important;border-color:#5fe3d0!important;font-weight:700}';
+  W.document.head.appendChild(st);W.document.querySelector('.ls-bottom')?.classList.add('ctc-one-station');
   $('.ctc-title').textContent=SCENES[id]?.title||p0.name;
   $('.ctc-loading').hidden=true;$('.ctc-hud').hidden=false;$('.ctc-task').hidden=true;hud();hintPanel();
   tick=setInterval(update,300);

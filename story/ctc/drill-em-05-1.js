@@ -8,15 +8,15 @@
 // comm의 ids는 FTS 통보 번호(n1…n16): 기록하면 엔진이 그 반응(열차 이동)을 LS에 일으킨다.
 CTCDrill.scene('em-05-1',{title:'차량고장 · 가산디지털단지역 (비상제동 완해불능)',
  roster:[
-  {id:'k1208',who:'harin',name:'K1208 기관사 (고장열차)'},
-  {id:'all',who:'harin',name:'전 열차 (일제 통보)'},
-  {id:'trains',who:'harin',name:'열차 통제 (인접선·후속·선행)'},
-  {id:'k1210',who:'harin',name:'K1210 기관사'},
-  {id:'station',who:'jian',name:'가산디지털단지역'},
-  {id:'stations',who:'jian',name:'관계역 (금천구청~구로)'},
-  {id:'chief',who:'instructor',name:'관제팀장 · 운영실'},
-  {id:'inspect',who:'orpheia',name:'기동검수반'},
-  {id:'ls',name:'LS 조작 (설비 취급)'},
+  {id:'k1208',who:'harin',name:'K1208 기관사',sub:'고장열차'},
+  {id:'all',who:'harin',name:'전 열차',sub:'일제 통보'},
+  {id:'trains',who:'harin',name:'열차 통제',sub:'인접선 · 후속 · 선행'},
+  {id:'k1210',who:'harin',name:'K1210 기관사',sub:'후속열차'},
+  {id:'station',who:'jian',name:'가산디지털단지역',sub:'사고 역'},
+  {id:'stations',who:'jian',name:'관계역',sub:'금천구청 ~ 구로'},
+  {id:'chief',who:'instructor',name:'관제팀장 · 운영실',sub:'전파 · 보고'},
+  {id:'inspect',who:'orpheia',name:'기동검수반',sub:'차량 조치'},
+  {id:'ls',name:'LS 조작',sub:'설비 취급'},
  ],
  // 차례가 아닌 상대를 불렀을 때의 결말 (단계별 whoBad가 있으면 그쪽이 우선)
  whoBad:{

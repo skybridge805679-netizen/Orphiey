@@ -397,3 +397,8 @@ img.vn-stamp{width:min(34vw,360px);text-shadow:none}
 
 .ctc-dlg-body h4{margin:14px 0 4px;color:#ffd166;font-size:14px}.ctc-opline{color:#78eadb;margin:8px 0!important}
 #ctcDlg .ctc-dlg-body pre{font-size:13.5px;line-height:1.6}
+
+/* calls: roster and one-item-at-a-time speech */
+.ctc-opt.who{padding:7px 12px}
+.ctc-opt:disabled{opacity:.35;text-decoration:line-through;cursor:not-allowed}
+.ctc-task{top:auto;bottom:96px}

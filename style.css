@@ -394,3 +394,6 @@ img.vn-stamp{width:min(34vw,360px);text-shadow:none}
 .ctc-row.sent{opacity:.6;border-color:#78eadb66}.ctc-row.sent span{color:#b8f5c6;font-size:13px}
 .ctc-row.hinted{border-color:#ffd166;background:#2b2610}
 .ctc-row button{padding:3px 9px;border-radius:7px;border:1px solid #f3b9d0;background:#3a1830;color:#ffe1ec;cursor:pointer;margin-left:auto}
+
+.ctc-dlg-body h4{margin:14px 0 4px;color:#ffd166;font-size:14px}.ctc-opline{color:#78eadb;margin:8px 0!important}
+#ctcDlg .ctc-dlg-body pre{font-size:13.5px;line-height:1.6}

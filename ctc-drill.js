@@ -155,7 +155,7 @@ const CTCDrill=(()=>{
   <div class="ctc-hud"><span class="ctc-step"></span>
    <span class="ctc-view" role="tablist"><button type="button" data-view="ls" class="on" title="앞쪽 대형표시반 (Tab)">▲ LS 표시반</button><button type="button" data-view="mmi" title="책상 위 관제 단말 (Tab)">▼ MMI 단말<i hidden>!</i></button></span>
    <span class="ctc-title"></span><span class="ctc-score" title="판단 첫 시도"></span>
-   <button type="button" id="ctcSkip" title="시간을 10초 넘깁니다 (접근쇄정 대기 등)">+10초</button><button type="button" id="ctcSit">📋 상황</button><label><input type="checkbox" id="ctcHint"> 힌트</label><button type="button" id="ctcLog">기록</button></div>
+   <button type="button" id="ctcSkip" title="시간을 10초 넘깁니다 (접근쇄정 대기 등)">+10초</button><button type="button" id="ctcSit">📋 상황</button><button type="button" id="ctcScript" title="이 실습의 원문 대본">📖 대본</button><label><input type="checkbox" id="ctcHint"> 힌트</label><button type="button" id="ctcLog">기록</button></div>
   <div class="ctc-task" hidden></div>
   <aside class="ctc-panel" id="ctcRadioPanel" hidden></aside>
   <aside class="ctc-panel left" id="ctcHintPanel" hidden></aside>
@@ -169,6 +169,9 @@ const CTCDrill=(()=>{
   el.querySelectorAll('.ctc-view button').forEach(b=>b.onclick=()=>look(b.dataset.view));
   $('#ctcSkip').onclick=()=>{if(G&&!G.busy&&!G.ending)W.SimRemote.command({type:'tick',seconds:10});};
   $('#ctcSit').onclick=()=>dlg(`<h3>${esc(G.p0.name)}</h3><pre>${esc(G.p0.situation||G.p0.voice||'')}</pre><p class="ctc-hint">관계 열차의 위치는 LS 표시반에서도 확인할 수 있어요.</p>`);
+  // the source script of this drill, for studying alongside (CTC LAB reference data)
+  $('#ctcScript').onclick=()=>{const p=G.p0,rows=G.order.ok?G.order.seq:[...p.communications.map(c=>({kind:'통보',comm:c}))];
+   dlg(`<h3>📖 ${esc(p.name)}</h3><p class="ctc-hint">원문 대본이에요. 차량고장 대본은 05(구원)와 05-1(운행선 변경·정상복구) 두 가지라서, 열차 위치와 정차역이 서로 달라요.</p><pre>${esc(p.situation||'')}</pre>`+rows.map(s=>s.comm?`<h4>${esc(s.comm.label)}</h4><pre>${esc(s.comm.text)}</pre>`:`<p class="ctc-opline">🖱 조작 · ${esc(s.text)}</p>`).join(''));};
   $('#ctcLog').onclick=()=>dlg('<h3>무전 기록</h3>'+(G.log.map(l=>`<p><b>${esc(l.name)}</b> ${esc(l.text)}</p>`).join('')||'<p>아직 무전이 없어요.</p>'));
   document.addEventListener('keydown',keys,true);
  }
@@ -363,7 +366,7 @@ const CTCDrill=(()=>{
  const SCENES={};
  const NAMES={harin:'기관사',jian:'역',instructor:'서도희 교수',orpheia:'오르페이아',sangcheol:'신상철 · 관제'};
  async function lines(list){clock(true);for(const [who,name,text,mood] of list||[]){SFX.play(who==='sangcheol'?'transmit':who==='orpheia'&&!name?'select':'radio');await say(who,name||NAMES[who],text,mood);}hush();}
- const ACTS={stop:'역에 정차',caution:'주의운전',hold:'3분 추가 정차',run:'그대로 운행'};
+ const ACTS={stop:'다음 역에 정차',caution:'주의운전',hold:'3분 추가 정차',run:'그대로 운행'};
  // Forecast overlay for a written outcome; resolves on rewind.
  async function outcome(said,bad,why){
   G.rewinds++;SFX.play('wrong');hush();

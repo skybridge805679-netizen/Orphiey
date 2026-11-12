@@ -387,3 +387,10 @@ img.vn-stamp{width:min(34vw,360px);text-shadow:none}
 .ctc-panel.board{width:372px;max-height:calc(100% - 76px);gap:5px}
 .ctc-panel.board .ctc-row{flex-wrap:wrap;padding:5px 8px}.ctc-panel.board .ctc-row select{max-width:132px}
 .ctc-panel.board .ctc-row small{margin-top:-2px}
+
+/* composing a message and ordered train control */
+.ctc-opt.pickable{display:flex;gap:8px;align-items:flex-start}.ctc-opt.pickable i{font-style:normal;color:#f3b9d0}
+.ctc-opt.pickable.on{background:#123f4d;border-color:#78eadb;color:#eafffb}.ctc-opt.pickable.on i{color:#78eadb}
+.ctc-row.sent{opacity:.6;border-color:#78eadb66}.ctc-row.sent span{color:#b8f5c6;font-size:13px}
+.ctc-row.hinted{border-color:#ffd166;background:#2b2610}
+.ctc-row button{padding:3px 9px;border-radius:7px;border:1px solid #f3b9d0;background:#3a1830;color:#ffe1ec;cursor:pointer;margin-left:auto}

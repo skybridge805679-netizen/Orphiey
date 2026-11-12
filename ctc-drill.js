@@ -356,45 +356,84 @@ const CTCDrill=(()=>{
  // ── Written scenes (story/ctc/drill-*.js). A scene replaces the generated steps with authored beats:
  //  say    {t:'say',lines:[[who,name,text,mood]…]}
  //  choice {t:'choice',ask,opts:[{text,ok:true,then:[lines]},{text,bad:'what follows',why:'the lesson'}…]}
- //  board  {t:'board',ask,places:[…],rows:[{train,act:'stop|caution|hold|run',at,bad:{…}}],then:[lines]}  (train control sheet; the LS stays in view)
+ //  build  {t:'build',ask,need:[{text,bad,why}…],extra:[{text,bad,why}…],then:[lines]}   (compose the radio message: pick what goes in it)
+ //  board  {t:'board',ask,places:[…],order:{adjacent,follow,near},rows:[{train,group,act:'stop|caution|hold|run',at,bad:{…}}],then:[lines]}  (train control, one order at a time; the LS stays in view)
  //  ops    {t:'ops',text,objs:[objective ids]}   (done by hand on the LS or the MMI terminal)
  //  comm   {t:'comm',ids:[…]}                    (records communications in FTS so their reactions happen on the LS)
  const SCENES={};
  const NAMES={harin:'기관사',jian:'역',instructor:'서도희 교수',orpheia:'오르페이아',sangcheol:'신상철 · 관제'};
  async function lines(list){clock(true);for(const [who,name,text,mood] of list||[]){SFX.play(who==='sangcheol'?'transmit':who==='orpheia'&&!name?'select':'radio');await say(who,name||NAMES[who],text,mood);}hush();}
  const ACTS={stop:'역에 정차',caution:'주의운전',hold:'3분 추가 정차',run:'그대로 운행'};
+ // Forecast overlay for a written outcome; resolves on rewind.
+ async function outcome(said,bad,why){
+  G.rewinds++;SFX.play('wrong');hush();
+  const fc=$('.ctc-forecast');fc.querySelector('.ctc-fc-body').innerHTML=written(said,bad,why);
+  fc.style.backgroundImage=has('ui_forecast_bg.png')?`url(${asset('ui_forecast_bg.png')})`:'';fc.hidden=false;if(typeof BGM!=='undefined')BGM.play('bgm_forecast');
+  await new Promise(res=>fc.querySelector('button').onclick=res);
+  fc.hidden=true;SFX.play('rewind');if(typeof BGM!=='undefined')BGM.play('bgm_emergency');
+ }
+ function prompt(text,mood='serious'){const box=$('.ctc-dialogue');box.hidden=false;face(box,'orpheia',mood);advanceFn=null;$('.ctc-name').innerHTML='오르페이아';$('.ctc-name').className='ctc-name c-orpheia';$('.ctc-next').hidden=true;$('.ctc-text').textContent=text;}
+ // Train control, one order at a time and in order: adjacent line first, then following trains (nearest first), then trains ahead.
+ const GROUPS=['adjacent','follow','ahead'],GNAME={adjacent:'인접선 열차',follow:'후속열차',ahead:'선행열차'};
  async function board(b){
-  G.dec++;let first=true;hush();clock(true);const panel=$('#ctcRadioPanel'),val={};
+  hush();clock(true);const panel=$('#ctcRadioPanel'),val={},sent=new Set(),shown=[...b.rows].sort((x,y)=>hash(x.train+G.p0.id)-hash(y.train+G.p0.id));
+  const due=()=>{for(const g of GROUPS){const r=b.rows.find(r=>r.group===g&&!sent.has(r.train));if(r)return r;}return null;};
+  while(sent.size<b.rows.length){
+   G.dec++;let first=true;
+   for(;;){
+    const pickd=await new Promise(res=>{
+     panel.hidden=false;panel.classList.add('board');
+     const draw=()=>{const next=due();panel.innerHTML=`<h4>🚦 열차 통제</h4><p class="ctc-sub">${esc(b.ask)}</p>${shown.map(r=>{const v=val[r.train]||{},done=sent.has(r.train),k=b.rows.indexOf(r);return `<div class="ctc-row${done?' sent':''}${records.hint&&r===next?' hinted':''}"><b>${esc(r.train)}</b>${done?`<span>✔ ${ACTS[r.act]}${r.at?' · '+esc(r.at):''}</span>`:`<select data-k="${k}" data-f="act"><option value="">지시…</option>${Object.entries(ACTS).map(([a,t])=>`<option value="${a}"${v.act===a?' selected':''}>${t}</option>`).join('')}</select><select data-k="${k}" data-f="at"${v.act==='stop'?'':' hidden'}><option value="">어느 역…</option>${b.places.map(x=>`<option${v.at===x?' selected':''}>${esc(x)}</option>`).join('')}</select><button type="button" data-send="${k}">📻</button>`}${records.hint&&r===next?`<small>힌트 · 다음 차례 (${GNAME[r.group]}) · ${ACTS[r.act]}${r.at?' · '+esc(r.at):''}</small>`:''}</div>`;}).join('')}<button type="button" class="ctc-back">◀▶ 옮기기</button><p>한 대씩 지시해요. 누구부터 통제할지도 주인님이 정해요. LS 아래쪽 역 버튼으로 열차 위치를 찾아요.</p>`;
+      panel.querySelectorAll('select').forEach(x=>x.onchange=()=>{const r=b.rows[+x.dataset.k];(val[r.train]??={})[x.dataset.f]=x.value;if(x.dataset.f==='act')draw();});
+      panel.querySelector('.ctc-back').onclick=()=>panel.classList.toggle('left');
+      panel.querySelectorAll('[data-send]').forEach(x=>x.onclick=()=>{const r=b.rows[+x.dataset.send],v=val[r.train]||{};if(!v.act||v.act==='stop'&&!v.at){toast(`${r.train}열차에 내릴 지시를 먼저 정해요.`,'worry');return;}res(r);});};
+     G.redraw=draw;draw();
+    });
+    G.redraw=null;
+    const v=val[pickd.train],next=due(),said=`${pickd.train}열차 — ${ACTS[v.act]}${v.act==='stop'?' ('+v.at+')':''}`;
+    let o=null;
+    if(pickd.group!==next.group)o=b.order[next.group];                                   // a whole group was skipped
+    else if(pickd!==next&&pickd.group==='follow')o=b.order.near;                          // a farther train before the nearest
+    else if(v.act!==pickd.act)o={bad:pickd.bad[v.act]||pickd.bad.other,why:pickd.bad.why};
+    else if(pickd.act==='stop'&&v.at!==pickd.at)o={bad:pickd.bad.place.replaceAll('{at}',v.at),why:pickd.bad.why};
+    if(!o){if(first)G.first++;sent.add(pickd.train);SFX.play('transmit');hud();toast(`📻 ${pickd.train} 기관사 · 수신 이상!`);break;}
+    first=false;panel.hidden=true;await outcome(said,o.bad.replaceAll('{train}',pickd.train).replaceAll('{next}',next.train),o.why);
+    if(v.act!==pickd.act||pickd.act==='stop'&&v.at!==pickd.at)delete val[pickd.train];
+   }
+  }
+  panel.hidden=true;panel.classList.remove('board','left');
+  await lines(b.then);
+ }
+ // Composing a radio message: the player picks what goes into it. A wrong item or a missing one has its own outcome.
+ async function compose(b){
+  G.dec++;let first=true;const on=new Set(),items=[...b.need.map(x=>({...x,need:true})),...b.extra].sort((x,y)=>hash(x.text+G.p0.id)-hash(y.text+G.p0.id));
   for(;;){
-   const bad=await new Promise(res=>{
-    panel.hidden=false;panel.classList.add('board');
-    const draw=()=>{panel.innerHTML=`<h4>🚦 열차 통제 지시판</h4><p class="ctc-sub">${esc(b.ask)}</p>${b.rows.map((r,k)=>{const v=val[r.train]||{};return `<div class="ctc-row"><b>${esc(r.train)}</b><select data-k="${k}" data-f="act"><option value="">지시…</option>${Object.entries(ACTS).map(([a,t])=>`<option value="${a}"${v.act===a?' selected':''}>${t}</option>`).join('')}</select><select data-k="${k}" data-f="at"${v.act==='stop'?'':' hidden'}><option value="">어느 역…</option>${b.places.map(x=>`<option${v.at===x?' selected':''}>${esc(x)}</option>`).join('')}</select>${records.hint?`<small>힌트 · ${ACTS[r.act]}${r.at?' · '+esc(r.at):''}</small>`:''}</div>`;}).join('')}<button type="button" class="ctc-opt go">📻 이대로 지시한다</button><button type="button" class="ctc-back">◀▶ 지시판 옮기기</button><p>LS 아래쪽 역 버튼으로 화면을 넘기며 열차 위치를 찾아요.</p>`;
-     panel.querySelectorAll('select').forEach(x=>x.onchange=()=>{const r=b.rows[+x.dataset.k];(val[r.train]??={})[x.dataset.f]=x.value;if(x.dataset.f==='act')draw();});
-     panel.querySelector('.ctc-back').onclick=()=>panel.classList.toggle('left');
-     panel.querySelector('.go').onclick=()=>{
-      const blank=b.rows.find(r=>!val[r.train]?.act||val[r.train].act==='stop'&&!val[r.train].at);if(blank){toast(`${blank.train}열차 지시가 비어 있어요.`,'worry');return;}
-      res(b.rows.find(r=>val[r.train].act!==r.act||r.act==='stop'&&val[r.train].at!==r.at)||null);};};
+   clock(true);prompt(first?b.ask:'예측을 되감았어요. 무전에 담을 내용을 다시 정해요, 주인님.',first?'serious':'worry');
+   await new Promise(res=>{
+    const panel=$('#ctcRadioPanel');panel.hidden=false;
+    const draw=()=>{panel.innerHTML=`<h4>${esc(b.title||'📻 무전에 담을 내용')}</h4><p class="ctc-sub">필요한 것을 모두 고르고 송신해요.</p>${items.map((x,k)=>`<button type="button" class="ctc-opt pickable${on.has(x)?' on':''}${records.hint&&x.need?' hinted':''}" data-k="${k}"><i>${on.has(x)?'☑':'☐'}</i>${esc(x.text)}</button>`).join('')}<button type="button" class="ctc-opt go">📻 이 내용으로 송신</button>`;
+     panel.querySelectorAll('[data-k]').forEach(x=>x.onclick=()=>{const it=items[+x.dataset.k];on.has(it)?on.delete(it):on.add(it);SFX.play('select');draw();});
+     panel.querySelector('.go').onclick=()=>{if(!on.size){toast('무전에 담을 내용을 골라요.','worry');return;}res();};};
     G.redraw=draw;draw();
    });
-   G.redraw=null;panel.hidden=true;panel.classList.remove('board','left');
-   if(!bad){if(first)G.first++;SFX.play('correct');hud();break;}
-   first=false;G.rewinds++;SFX.play('wrong');
-   const v=val[bad.train],msg=(v.act===bad.act?bad.bad.place:bad.bad[v.act])||bad.bad.other||'',said=`${bad.train}열차 — ${ACTS[v.act]}${v.act==='stop'?' ('+v.at+')':''}`;
-   const fc=$('.ctc-forecast');fc.querySelector('.ctc-fc-body').innerHTML=written(said,msg.replaceAll('{at}',v.at||''),bad.bad.why);
-   fc.style.backgroundImage=has('ui_forecast_bg.png')?`url(${asset('ui_forecast_bg.png')})`:'';fc.hidden=false;if(typeof BGM!=='undefined')BGM.play('bgm_forecast');
-   await new Promise(res=>fc.querySelector('button').onclick=res);
-   fc.hidden=true;SFX.play('rewind');if(typeof BGM!=='undefined')BGM.play('bgm_emergency');delete val[bad.train];
+   G.redraw=null;$('#ctcRadioPanel').hidden=true;
+   const wrong=[...on].find(x=>!x.need),miss=items.find(x=>x.need&&!on.has(x));
+   if(!wrong&&!miss){if(first)G.first++;SFX.play('select');hud();break;}
+   first=false;
+   if(wrong){await outcome(wrong.text,wrong.bad,wrong.why);on.delete(wrong);}
+   else await outcome(`(빠뜨림) ${miss.text}`,miss.bad,miss.why);
   }
   await lines(b.then);
  }
  async function runScene(sc){
-  const beats=sc.beats;G.steps=beats.filter(b=>['choice','board','ops'].includes(b.t)).map(b=>({kind:b.t,beat:b}));G.stepIndex=0;hud();
+  const beats=sc.beats;G.steps=beats.filter(b=>['choice','board','build','ops'].includes(b.t)).map(b=>({kind:b.t,beat:b}));G.stepIndex=0;hud();
   for(const b of beats){
    if(!G)return;while(G.queue.length)await branch(G.queue.shift());
    const k=G.steps.findIndex(s=>s.beat===b);if(k>=0){G.stepIndex=k;hud();}
    if(b.t==='say')await lines(b.lines);
    else if(b.t==='choice'){const opts=b.opts.map((o,i)=>({...o,key:o.ok?'ok':'x'+i}));const got=await choose(b.ask,b.title||'어떻게 할까요?',opts,'ok',o=>o.text,false);await lines(got.then);}
    else if(b.t==='board')await board(b);
+   else if(b.t==='build')await compose(b);
    else if(b.t==='ops'){const objs=b.objs.map(id=>view().objectives.find(o=>o.id===id)).filter(Boolean);hush();await opStep({text:b.text,objs},false);if(G){SFX.play('correct');}}
    else if(b.t==='comm'){for(const id of b.ids)W.SimRemote.command({type:'fts',op:'manual',key:'comm:'+id,checked:true});clock(false);await new Promise(r=>setTimeout(r,b.wait??700));update();}
   }

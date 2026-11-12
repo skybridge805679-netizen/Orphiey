@@ -373,6 +373,7 @@ const CTCDrill=(()=>{
  //  board  {t:'board',who,cue,…,places,order:{adjacent,follow},rows:[{train,group,act,at,bad}…],then}   train control, one order at a time
  //  choice {t:'choice',ask,opts:[{text,ok:true,then},{text,bad,why}…]}
  //  ops    {t:'ops',who,cue,…,text,objs:[objective ids]}     done by hand on the LS; the engine has to recognise it
+ //  rush   {t:'rush',cue,needs:[{id,who,patience,after,late:{bad,why},comm,…call fields}]}   several parties wait at once
  //  comm   {t:'comm',ids:[…]}                                 records communications in FTS so their reactions happen on the LS
  // Every wrong pick costs one forecast (◆): the outcome plays, then the same decision comes back with that pick struck out.
  const SCENES={};
@@ -435,8 +436,8 @@ const CTCDrill=(()=>{
   for(;;){
    clock(true);dkStatus(said.size?'더 할 말이 있나요? 다 했으면 「관제 이상!」으로 끝내요.':b.ask||'연결됐어요. 무엇을 말할까요?',first?'':'worry');
    const got=await new Promise(res=>{
-    const draw=()=>{const done=items.every(x=>!x.need||said.has(x));main().innerHTML=`<h4>📻 ${esc(title)}</h4><div class="dk-say">${items.filter(x=>!said.has(x)&&!x.gone).map(x=>`<button type="button" class="dk-p${records.hint&&x.need?' hinted':''}" data-k="${items.indexOf(x)}">${esc(x.text)}</button>`).join('')}</div><button type="button" class="dk-end${records.hint&&done?' hinted':''}">관제 이상! (송신 끝)</button>`;
-     main().querySelectorAll('[data-k]').forEach(x=>x.onclick=()=>res(items[+x.dataset.k]));main().querySelector('.dk-end').onclick=()=>res(null);};
+    const draw=()=>{const done=items.every(x=>!x.need||said.has(x));main().innerHTML=`<h4>📻 ${esc(title)}</h4><div class="dk-say">${items.filter(x=>!said.has(x)&&!x.gone).map(x=>`<button type="button" class="dk-p${records.hint&&x.need?' hinted':''}" data-k="${items.indexOf(x)}">${esc(x.text)}</button>`).join('')}</div>${b.autoEnd?'':`<button type="button" class="dk-end${records.hint&&done?' hinted':''}">관제 이상! (송신 끝)</button>`}`;
+     main().querySelectorAll('[data-k]').forEach(x=>x.onclick=()=>res(items[+x.dataset.k]));const e=main().querySelector('.dk-end');if(e)e.onclick=()=>res(null);};
     G.redraw=draw;G.dock='call';draw();
    });
    G.redraw=null;G.dock='';
@@ -449,8 +450,37 @@ const CTCDrill=(()=>{
    said.add(got);main().innerHTML='<p class="dk-wait">📻 송신 중…</p>';
    await bubble('sangcheol','',got.line||got.text);
    for(const [who,name,text,mood] of got.reply||[])await bubble(who,name,text,mood);
+   if(b.autoEnd&&items.every(x=>!x.need||said.has(x))){if(first)G.first++;hud();break;}
   }
   await dkLines(b.then);
+ }
+ // A rush: several parties wait at once. Each has a patience gauge that drains only while the roster is open (reading
+ // and talking never cost time). The player decides whom to take first; a gauge that runs out has its own outcome.
+ async function dkRush(b){
+  const sc=G.scene,done=new Set(),left=new Map(b.needs.map(n=>[n.id,n.patience]));
+  const active=()=>b.needs.filter(n=>!done.has(n.id)&&(n.after||[]).every(a=>done.has(a)));
+  while(done.size<b.needs.length){
+   clock(true);dkStatus(b.cue||'여러 곳이 주인님의 무전을 기다려요. 급한 쪽부터!');
+   const got=await new Promise(res=>{
+    let timer=0;
+    const pct=n=>Math.max(0,Math.round(100*left.get(n.id)/n.patience));
+    const draw=()=>{const act=active();main().innerHTML=`<h4>📻 호출</h4><div class="dk-contacts">${sc.roster.map(r=>{const n=act.find(x=>x.who===r.id);return `<button type="button" class="dk-c${n?' wait':''}${n&&pct(n)<30?' hot':''}" data-id="${r.id}">${r.who?icon(r.who,r.name):'<span class="dk-face none">🖱</span>'}<span>${esc(r.name)}${r.sub?`<small>${esc(r.sub)}</small>`:''}</span>${n?`<i class="dk-g"><b style="width:${pct(n)}%"></b></i>`:''}</button>`;}).join('')}</div>`;
+     main().querySelectorAll('[data-id]').forEach(x=>x.onclick=()=>{clearInterval(timer);res({r:sc.roster.find(r=>r.id===x.dataset.id)});});};
+    G.redraw=draw;G.dock='rush';draw();
+    timer=setInterval(()=>{
+     if(!G||document.querySelector('dialog[open]'))return;
+     for(const n of active()){left.set(n.id,left.get(n.id)-.25);
+      if(left.get(n.id)<=0){clearInterval(timer);res({late:n});return;}
+      const btn=main().querySelector(`[data-id="${n.who}"]`),bar=btn?.querySelector('.dk-g b');if(bar){bar.style.width=pct(n)+'%';btn.classList.toggle('hot',pct(n)<30);}}
+    },250);
+   });
+   G.redraw=null;G.dock='';
+   if(got.late){const n=got.late;G.dec++;await outcome(n.late.said||'(늦음) '+(sc.roster.find(r=>r.id===n.who)?.name||''),n.late.bad,n.late.why);left.set(n.id,n.patience*.6);continue;}
+   const need=active().find(n=>n.who===got.r.id);
+   if(!need){main().innerHTML='<p class="dk-wait">📻 교신 중…</p>';await bubble('sangcheol','',`${got.r.call||got.r.name}, 관제 이상!`);await bubble(got.r.who,got.r.name,got.r.idle||'……네? 호출하셨습니까? 용건 없으시면 이상!');continue;}
+   await dkCall({...need,incoming:true});done.add(need.id);
+   if(need.comm)for(const id of need.comm)W.SimRemote.command({type:'fts',op:'manual',key:'comm:'+id,checked:true});
+  }
  }
  // Train control: one order at a time. Only the broad order is judged (adjacent → following → ahead).
  async function dkBoard(b){
@@ -512,13 +542,14 @@ const CTCDrill=(()=>{
   if(!G)return;G.redraw=null;G.dock='';G.busy=true;G.target=null;draw();SFX.play('correct');
  }
  async function runScene(sc){
-  const beats=sc.beats;G.steps=beats.filter(b=>['choice','board','ops','call'].includes(b.t)).map(b=>({kind:b.t,beat:b}));G.stepIndex=0;G.rw=FORECASTS;hud();
+  const beats=sc.beats;G.steps=beats.flatMap(b=>b.t==='rush'?b.needs.map(()=>({kind:'rush',beat:b})):['choice','board','ops','call'].includes(b.t)?[{kind:b.t,beat:b}]:[]);G.stepIndex=0;G.rw=FORECASTS;hud();
   for(const b of beats){
    if(!G)return;
-   const k=G.steps.findIndex(s=>s.beat===b);if(k>=0){G.stepIndex=k;hud();}
+   const k=G.steps.findIndex(s=>s.beat===b);if(k>=0){G.stepIndex=k;hud();}G.beat=b;
    if(b.t==='say')await dkLines(b.lines);
    else if(b.t==='call')await dkCall(b);
    else if(b.t==='board')await dkBoard(b);
+   else if(b.t==='rush')await dkRush(b);
    else if(b.t==='choice')await dkChoice(b);
    else if(b.t==='ops')await dkOps(b);
    else if(b.t==='comm'){for(const id of b.ids)W.SimRemote.command({type:'fts',op:'manual',key:'comm:'+id,checked:true});clock(false);await new Promise(r=>setTimeout(r,b.wait??700));update();}
@@ -593,7 +624,7 @@ const CTCDrill=(()=>{
   G.ending=true;$('#ctcRadioPanel').hidden=true;G.busy=true;clock(true);
   const it=item(),p=view(),mo=p.objectives.filter(o=>it.obj?.[o.id]==null&&it.missed?.[o.id]==null),mc=p.communications.filter(c=>it.comm?.[c.id]==null);
   const ratio=G.dec?G.first/G.dec:1,rank=G.over?'C':ratio===1&&!G.hinted?'S':ratio>=.9?'A':ratio>=.75?'B':'C',talk=G.scene?bubble:say;
-  const R={id:G.id,title:G.scene?.title||p.name,rank,firstTry:G.first,decisions:G.dec,score:it.score??0,status,rewinds:G.rewinds,wrong:G.wrong,hint:G.hinted,
+  const R={id:G.id,title:G.scene?.title||p.name,rank,firstTry:G.first,decisions:G.dec,score:it.score??0,scene:!!G.scene,status,rewinds:G.rewinds,wrong:G.wrong,hint:G.hinted,
    missed:G.scene?[]:[...mo.map(o=>'🖱 '+o.label),...mc.map(c=>'📻 '+label(c))],deductions:(p.deductions||[]).filter((d,i)=>it.deducted?.[i]).map(d=>d.label)};
   SFX.play('clear');
   await talk('instructor','서도희 교수',rank==='S'?'……한 번도 안 틀렸네요. 거기까지.':rank==='A'?'거기까지. 거의 완벽해요.':rank==='B'?'거기까지. 흐름은 잡았어요. 되감은 곳을 복습해요.':'거기까지. 순서가 아직 몸에 안 붙었어요. 다시 해 봐요.');
@@ -625,6 +656,7 @@ const CTCDrill=(()=>{
   frame.src='ctc/index.html?embed=1&t='+Date.now();
  }
  async function begin(id){
+  const sceneId=id;id=SCENES[id]?.problem||id;
   const lib=W.SimRemote.snapshot.ftsLibrary,pid=id.startsWith('P-')?id:'P-'+id;
   const single=s=>{const st=s.situations.length===1&&lib.situations.find(x=>x.id===s.situations[0]);return st&&st.problems.length===1&&st.problems[0]===pid;};
   const sc=lib.scenarios.find(s=>s.id===id)||lib.scenarios.find(single);
@@ -650,15 +682,15 @@ const CTCDrill=(()=>{
   const used=G.used=new Set([...JSON.stringify(p0).matchAll(/"(?:station|targetStation)":"([\w-]+)"/g)].map(m=>m[1]));
   const st=W.document.createElement('style');st.textContent='.ls-topbar,#extraLSBtn{display:none!important}'+(used.size<2?'.ctc-one-station{display:none!important}':'')+(used.size?`#stationTabs [data-view]${[...used].map(x=>`:not([data-view="${x}"])`).join('')}{display:none!important}`:'');st.textContent+='.ls-bottom{background:#0b131d!important;border-top:1px solid #213547!important;padding:8px 10px!important}.ls-bottom .station-tabs{gap:6px!important}.ls-bottom .station-tabs button{flex:1 1 0!important;padding:8px 10px!important;border:1px solid #213547!important;border-radius:9px!important;background:#111d2a!important;color:#8094a3!important;font-size:12.5px!important;box-shadow:none!important}.ls-bottom .station-tabs button:hover{color:#e9f1f5!important;border-color:#5fe3d0!important}.ls-bottom .station-tabs button.selected{background:#182838!important;color:#5fe3d0!important;border-color:#5fe3d0!important;font-weight:700}';
   W.document.head.appendChild(st);W.document.querySelector('.ls-bottom')?.classList.add('ctc-one-station');
-  $('.ctc-title').textContent=SCENES[id]?.title||p0.name;
+  $('.ctc-title').textContent=SCENES[sceneId]?.title||p0.name;
   $('.ctc-loading').hidden=true;$('.ctc-hud').hidden=false;$('.ctc-task').hidden=true;hud();hintPanel();
   tick=setInterval(update,300);
   // Briefing with the clock paused: the report, the problem, then the floor is the player's.
   SFX.play('alarm');
   const first=p0.communications[0],fr=first&&recipient(first),train=p0.setup?.trains?.[0]?.number;
-  if(!SCENES[id]){if(!fr?.incoming&&train&&/고장/.test(p0.voice||''))await say('harin',`${train} 기관사`,`철도관제, ${train}열차 이상! 차량고장으로 정상 운행이 어렵습니다. 이상!`,'urgent');
+  if(!SCENES[sceneId]){if(!fr?.incoming&&train&&/고장/.test(p0.voice||''))await say('harin',`${train} 기관사`,`철도관제, ${train}열차 이상! 차량고장으로 정상 운행이 어렵습니다. 이상!`,'urgent');
   await say('instructor','서도희 교수',`문제. 「${p0.name}」 관계 열차는 LS와 📋 상황에서 확인하세요.`);}
-  const scene=SCENES[id];
+  const scene=SCENES[sceneId];
   if(scene){G.scene=scene;hush();el.classList.add('desk');$('#ctcDesk').hidden=false;$('.dk-log').innerHTML='';$('.dk-main').innerHTML='';$('.dk-status').innerHTML='';W.dispatchEvent(new Event('resize'));return runScene(scene).catch(e=>{console.error(e);fail(e.message);});}
   await say('orpheia','오르페이아',`조치는 ${G.steps.length}단계예요. 단계마다 누구에게 무엇을 말할지, 어떤 조작을 할지 골라요. 틀리면 그 미래를 보여 드리고 되감을게요!`,'serious');
   hush();run().catch(e=>{console.error(e);fail(e.message);});

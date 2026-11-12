@@ -535,3 +535,14 @@ img.vn-stamp{width:min(34vw,360px);text-shadow:none}
 #ctcDrill.desk .dk-b{max-width:min(78%,760px)}
 #ctcDrill .dk-main{max-height:none;flex:1 1 auto;border-bottom:0}
 #ctcDrill.desk .ctc-toast{left:auto;right:calc(var(--dockW) + 36px);top:70px;bottom:auto}
+
+/* rush: waiting contacts carry a patience gauge */
+#ctcDrill .dk-c{overflow:hidden}
+#ctcDrill .dk-c.wait{border-color:#5fe3d066;background:#12283a}
+#ctcDrill .dk-g{position:absolute;left:0;right:0;bottom:0;height:4px;background:#0006;display:block}
+#ctcDrill .dk-g b{display:block;height:100%;background:var(--acc);transition:width .25s linear}
+#ctcDrill .dk-c.hot{border-color:var(--bad);animation:dkHot .6s infinite alternate}#ctcDrill .dk-c.hot .dk-g b{background:var(--bad)}
+@keyframes dkHot{from{box-shadow:0 0 0 0 #ff6b8a00}to{box-shadow:0 0 0 3px #ff6b8a44}}
+
+#ctcDrill .dk-c>span:not(.dk-face){display:flex;flex-direction:column;min-width:0}
+#ctcDrill .dk-c.wait{padding-bottom:10px}

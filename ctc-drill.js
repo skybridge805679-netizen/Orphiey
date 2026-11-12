@@ -374,6 +374,8 @@ const CTCDrill=(()=>{
  //  choice {t:'choice',ask,opts:[{text,ok:true,then},{text,bad,why}…]}
  //  ops    {t:'ops',who,cue,…,text,objs:[objective ids]}     done by hand on the LS; the engine has to recognise it
  //  rush   {t:'rush',cue,needs:[{id,who,patience,after,late:{bad,why},comm,…call fields}]}   several parties wait at once
+ //  move   {t:'move',runs:[{train,legs}],view,watch,text}       trains run on the LS while the player watches
+ //         a rush need may carry train/home/run/view (its run plays when the gauge runs out) and go (it runs once told)
  //  comm   {t:'comm',ids:[…]}                                 records communications in FTS so their reactions happen on the LS
  // Every wrong pick costs one forecast (◆): the outcome plays, then the same decision comes back with that pick struck out.
  const SCENES={};
@@ -454,13 +456,32 @@ const CTCDrill=(()=>{
   }
   await dkLines(b.then);
  }
+ // ── Trains move on the LS. The simulator's scenario motion runs a train window to window through routes and blocks;
+ //    its own "run on" stops short of stations where the main line splits (구로·용산), so a scene gives the legs itself.
+ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+ function findTrain(n){for(const [st,x] of Object.entries(W.SimRemote.snapshot.ls.stations))for(const [slot,rows] of Object.entries(x.windows))for(const r of rows)if(r.number===n)return {station:st,slot,uid:r.uid};return null;}
+ function runTrain(n,legs){
+  const f=findTrain(n);if(!f)return;
+  if(!Array.isArray(legs))return W.SimRemote.command({type:'scenario:move',auto:true,action:{op:'delete',station:f.station,slot:f.slot,uid:f.uid}});   // run on along the main line and out
+  for(const [st,slot] of legs)W.SimRemote.command({type:'scenario:move',auto:true,action:{op:'move',station:f.station,slot:f.slot,uid:f.uid,targetStation:st,targetSlot:slot,handover:true}});
+ }
+ // rewind: back to where it stood (a manual number move also cancels its pending legs)
+ function putBack(n,home,dir){
+  const f=findTrain(n);
+  if(!f)W.SimRemote.command({type:'numbers',action:{op:'insert',station:home[0],slot:home[1],number:n,direction:dir||'up'}});
+  else if(f.station!==home[0]||f.slot!==home[1])W.SimRemote.command({type:'numbers',action:{op:'move',station:f.station,slot:f.slot,uid:f.uid,targetStation:home[0],targetSlot:home[1]}});
+ }
+ const flow=speed=>W?.SimRemote.command({type:'clock',paused:false,speed});
+ const freeze=()=>{W?.SimRemote.command({type:'clock',speed:1});clock(true);};
+ const showStation=id=>{look('ls');if(id)W.document.querySelector(`#stationTabs [data-view="${id}"]`)?.click();};
+ async function watch(view,ms,text){showStation(view);dkStatus(text||'LS를 봐요……!','worry');main().innerHTML='<p class="dk-wait">🚆 열차가 움직이고 있어요…</p>';flow(8);await sleep(ms);freeze();}
  // A rush: several parties wait at once. Each has a patience gauge that drains only while the roster is open (reading
  // and talking never cost time). The player decides whom to take first; a gauge that runs out has its own outcome.
  async function dkRush(b){
   const sc=G.scene,done=new Set(),left=new Map(b.needs.map(n=>[n.id,n.patience]));
   const active=()=>b.needs.filter(n=>!done.has(n.id)&&(n.after||[]).every(a=>done.has(a)));
   while(done.size<b.needs.length){
-   clock(true);dkStatus(b.cue||'여러 곳이 주인님의 무전을 기다려요. 급한 쪽부터!');
+   flow(6);dkStatus(b.cue||'여러 곳이 주인님의 무전을 기다려요. 급한 쪽부터!');
    const got=await new Promise(res=>{
     let timer=0;
     const pct=n=>Math.max(0,Math.round(100*left.get(n.id)/n.patience));
@@ -474,11 +495,11 @@ const CTCDrill=(()=>{
       const btn=main().querySelector(`[data-id="${n.who}"]`),bar=btn?.querySelector('.dk-g b');if(bar){bar.style.width=pct(n)+'%';btn.classList.toggle('hot',pct(n)<30);}}
     },250);
    });
-   G.redraw=null;G.dock='';
-   if(got.late){const n=got.late;G.dec++;await outcome(n.late.said||'(늦음) '+(sc.roster.find(r=>r.id===n.who)?.name||''),n.late.bad,n.late.why);left.set(n.id,n.patience*.6);continue;}
+   G.redraw=null;G.dock='';freeze();
+   if(got.late){const n=got.late;G.dec++;if(n.run){runTrain(n.train,n.run);await watch(n.view,n.watch||5500,n.late.see);}await outcome(n.late.said||'(늦음) '+(sc.roster.find(r=>r.id===n.who)?.name||''),n.late.bad,n.late.why);if(n.run)putBack(n.train,n.home,n.dir);left.set(n.id,n.patience*.6);continue;}
    const need=active().find(n=>n.who===got.r.id);
    if(!need){main().innerHTML='<p class="dk-wait">📻 교신 중…</p>';await bubble('sangcheol','',`${got.r.call||got.r.name}, 관제 이상!`);await bubble(got.r.who,got.r.name,got.r.idle||'……네? 호출하셨습니까? 용건 없으시면 이상!');continue;}
-   await dkCall({...need,incoming:true});done.add(need.id);
+   await dkCall({...need,incoming:true});done.add(need.id);if(need.go){runTrain(need.train,need.go);if(need.view)showStation(need.view);}
    if(need.comm)for(const id of need.comm)W.SimRemote.command({type:'fts',op:'manual',key:'comm:'+id,checked:true});
   }
  }
@@ -550,6 +571,7 @@ const CTCDrill=(()=>{
    else if(b.t==='call')await dkCall(b);
    else if(b.t==='board')await dkBoard(b);
    else if(b.t==='rush')await dkRush(b);
+   else if(b.t==='move'){for(const r of b.runs)runTrain(r.train,r.legs);await watch(b.view,b.watch||5000,b.text);}
    else if(b.t==='choice')await dkChoice(b);
    else if(b.t==='ops')await dkOps(b);
    else if(b.t==='comm'){for(const id of b.ids)W.SimRemote.command({type:'fts',op:'manual',key:'comm:'+id,checked:true});clock(false);await new Promise(r=>setTimeout(r,b.wait??700));update();}

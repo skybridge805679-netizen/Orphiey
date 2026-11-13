@@ -4,8 +4,8 @@
 const DrillBlocks=(()=>{
  const H=(name,text,mood)=>['harin',name,text,mood],S=text=>['sangcheol','',text];
  // 후속열차 한 대: 지금 닿아 있는 역에 세운다. wrong은 [역 이름, 그 역을 골랐을 때의 결말] 목록.
- function follower({id,train,at,patience,home,view,wrong,ask,seeLate,lateBad,reply}){
-  return {id,who:id,after:['all'],patience,autoEnd:true,train,home,run:true,view,watch:7000,title:`${train} 기관사 (후속)`,
+ function follower({id,train,at,patience,home,dir,view,wrong,ask,seeLate,lateBad,reply}){
+  return {id,who:id,after:['all'],patience,autoEnd:true,train,home,dir,run:true,view,watch:7000,title:`${train} 기관사 (후속)`,
    ask:ask||`${train}은 고장열차 뒤를 따라와요. LS에서 지금 어느 역에 닿아 있는지 봐요.`,
    late:{said:`(늦음) ${train}열차`,see:seeLate||`${train}이 아무 지시도 받지 못하고 계속 달려요……!`,
     bad:lateBad||`${train}은 지시를 받지 못하고 계속 달렸다. 신호가 알아서 세워 주긴 했다. 역과 역 사이, 승강장도 없는 곳에. 승객들은 창밖의 방음벽을 40분 동안 감상했다.`,
@@ -59,17 +59,18 @@ const DrillBlocks=(()=>{
  }
  // 복구 완료: 전 열차 통보 → 팀장·운영실 보고. call 두 개를 배열로 돌려주므로 beats 안에서 ...B.recovery({…}) 로 펼쳐 쓴다.
  function recovery({place,what='차량고장',comm,cueAll,cueChief}){
+  const eun=(what.charCodeAt(what.length-1)-0xAC00)%28?'은':'는';   // 받침 있으면 은, 없으면 는
   return [
    {t:'call',who:'all',cue:cueAll||'사고는 풀렸어요. 하지만 주인님이 세워 둔 열차들은 아직 그 자리에 서 있어요.',whoWhy:'세운 열차는 관제가 풀어야 해요. 전 열차에 복구 완료를 알려요.',
     whoBad:{chief:'팀장은 만족했다. 본사도 만족했다. 역에 서 있는 열차들만 사정을 몰랐다. 그 열차들은 관제가 풀어 줄 때까지 서 있었다. 보고가 끝날 때까지.'},
     say:[
-     {text:`${what} 조치가 끝났다고 알린다`,line:`철도관제에서 알립니다. ${place} ${what}은 현 시각 조치 완료되었습니다.`,bad:'열차들은 「정상 운행하라」는 말을 들었다. 무엇이 끝났는지는 듣지 못했다. 기관사 한 명이 되물었다. 「그럼 아까 그건요?」',why:'무엇이 끝났는지를 먼저 알려요.'},
+     {text:`${what} 조치가 끝났다고 알린다`,line:`철도관제에서 알립니다. ${place} ${what}${eun} 현 시각 조치 완료되었습니다.`,bad:'열차들은 「정상 운행하라」는 말을 들었다. 무엇이 끝났는지는 듣지 못했다. 기관사 한 명이 되물었다. 「그럼 아까 그건요?」',why:'무엇이 끝났는지를 먼저 알려요.'},
      {text:'각 열차는 신호에 따라 정상 운행하게 한다',line:'각 열차는 신호에 따라 정상 운행하시고,',bad:'사고는 끝났다. 그러나 역에 세워 둔 열차들에는 아무도 가도 된다고 말해 주지 않았다. 그 열차들은 지금도 서 있다.',why:'정차와 추가 정차 지시를 풀어 줘야 해요. 「정상 운행」이 그 해제예요.'},
      {text:'지연된 열차는 회복운전하게 한다',line:'지연된 열차는 회복운전 바랍니다. 관제 이상!',reply:[H('전 열차','전 열차, 수신 이상!')],bad:'열차들은 다시 달렸다. 평소 속도로, 평소 정차 시간으로. 20분의 지연은 종착역까지 20분 그대로였고, 막차 환승 승객들은 눈앞에서 막차를 보냈다.',why:'지연을 줄이도록 회복운전을 지시해요.'},
     ],
     no:[{text:'관제가 승객들에게 직접 사과 방송을 한다',bad:'관제사의 떨리는 목소리가 전 열차 객실에 울려 퍼졌다. 「저…… 죄송합니다.」 누가, 왜, 무엇이 죄송한지는 아무도 몰랐다. 그 음성은 다음 날 알람 벨소리로 유행했다.',why:'안내방송은 기관사와 역의 몫이에요. 관제는 그들에게 지시해요.'}]},
    {t:'call',who:'chief',cue:cueChief||`열차들이 다시 움직여요. 그런데 본사 상황판에는 아직 「${place} ${what} 조치 중」이 떠 있어요.`,whoWhy:'시작을 보고했으면 끝도 보고해요.',
-    say:[{text:'조치가 끝나 모든 열차가 정상 운행 중이라고 보고한다',line:`관제팀장님, 관제운영실! ${place} ${what}은 현 시각 조치 완료되어 모든 열차 정상 운행하고 있습니다. 이상입니다.`,reply:[['instructor','관제팀장','수신. 수고했어요.']],bad:'본사 상황판에는 「조치 중」이 다음 날 아침까지 떠 있었다. 아침 회의의 첫 질문은 「아직도요?」였다.',why:'조치 완료와 정상 운행을 보고해야 상황이 닫혀요.'}],
+    say:[{text:'조치가 끝나 모든 열차가 정상 운행 중이라고 보고한다',line:`관제팀장님, 관제운영실! ${place} ${what}${eun} 현 시각 조치 완료되어 모든 열차 정상 운행하고 있습니다. 이상입니다.`,reply:[['instructor','관제팀장','수신. 수고했어요.']],bad:'본사 상황판에는 「조치 중」이 다음 날 아침까지 떠 있었다. 아침 회의의 첫 질문은 「아직도요?」였다.',why:'조치 완료와 정상 운행을 보고해야 상황이 닫혀요.'}],
     no:[{text:'사고 원인은 기관사 과실로 보인다고 보고한다',bad:'그 한마디는 보고서에 그대로 실렸다. 다음 날 밝혀진 원인은 부품 불량이었다. 기관사는 사과를 받았고, 관제사는 경위서를 썼다.',why:'확인하지 않은 원인은 보고하지 않아요.'}]},
    ...(comm?[{t:'comm',ids:comm}]:[]),
   ];

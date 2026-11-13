@@ -479,7 +479,8 @@ const CTCDrill=(()=>{
  // and talking never cost time). The player decides whom to take first; a gauge that runs out has its own outcome.
  async function dkRush(b){
   const sc=G.scene,done=new Set(),left=new Map(b.needs.map(n=>[n.id,n.patience]));
-  const active=()=>b.needs.filter(n=>!done.has(n.id)&&(n.after||[]).every(a=>done.has(a)));
+  const ids=new Set(b.needs.map(n=>n.id));   // after에 이 rush 밖의 id(앞 rush에서 이미 끝난 것)가 있으면 충족된 것으로 본다
+  const active=()=>b.needs.filter(n=>!done.has(n.id)&&(n.after||[]).every(a=>done.has(a)||!ids.has(a)));
   while(done.size<b.needs.length){
    flow(6);dkStatus(b.cue||'여러 곳이 주인님의 무전을 기다려요. 급한 쪽부터!');
    const got=await new Promise(res=>{
@@ -578,7 +579,7 @@ const CTCDrill=(()=>{
    else if(b.t==='do'){   // 관제사 대신 조수가 해 주는 열번 정리: rename [[옛,새]], del [번호], ctl [[역, 조작]]
     for(const [o,nw] of b.rename||[]){const f=findTrain(o);if(f)W.SimRemote.command({type:'numbers',action:{op:'rename',station:f.station,slot:f.slot,uid:f.uid,number:nw}});}
     for(const d of b.del||[]){const f=findTrain(d);if(f)W.SimRemote.command({type:'numbers',action:{op:'delete',station:f.station,slot:f.slot,uid:f.uid}});}
-    for(const [st,act] of b.ctl||[])W.SimRemote.command({type:'control',station:st,action:{...act,source:'LS'}});   // ctl [[역, {type:'mode'|'stop'|'route',…}]]
+    for(const [st,act] of b.ctl||[])W.SimRemote.command(st==='tick'?{type:'tick',seconds:act}:{type:'control',station:st,action:{...act,source:'LS'}});   // ['tick',초] 는 시계 감기 (접근쇄정 해정용)   // ctl [[역, {type:'mode'|'stop'|'route',…}]]
     await new Promise(r=>setTimeout(r,b.wait??500));update();}
    else if(b.t==='comm'){for(const id of b.ids)W.SimRemote.command({type:'fts',op:'manual',key:'comm:'+id,checked:true});clock(false);await new Promise(r=>setTimeout(r,b.wait??700));update();}
   }

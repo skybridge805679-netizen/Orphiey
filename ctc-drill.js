@@ -457,7 +457,7 @@ const CTCDrill=(()=>{
   await dkLines(b.then);
  }
  // ── Trains move on the LS. The simulator's scenario motion runs a train window to window through routes and blocks;
- //    its own "run on" stops short of stations where the main line splits (구로·용산), so a scene gives the legs itself.
+ //    "run on" follows the main line block by block and waits behind a train ahead (CTC LAB v0.39.59+).
  const sleep=ms=>new Promise(r=>setTimeout(r,ms));
  function findTrain(n){for(const [st,x] of Object.entries(W.SimRemote.snapshot.ls.stations))for(const [slot,rows] of Object.entries(x.windows))for(const r of rows)if(r.number===n)return {station:st,slot,uid:r.uid};return null;}
  function runTrain(n,legs){

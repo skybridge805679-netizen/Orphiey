@@ -96,7 +96,7 @@ CTCDrill.scene('ch01-stop',{problem:'em-05-1',title:'제1장 실습 · 세우기
     {text:'가까운 역에 세운다',bad:'멀쩡한 상1선까지 세웠다. 고장은 선로 하나에서 났는데 수도권 남부가 통째로 멈췄고, KTX 승객의 환불 문의가 고장열차 승객보다 많았다.',why:'인접선 지장이 없다고 확인했어요. 세우지 않고 주의운전으로 지나가게 해요.'},
     {text:'3분 추가 정차시킨다',bad:'A0168열차는 3분을 더 서 있다가, 평소 속도로 고장 지점 옆을 지나갔다. 3분은 아무것도 바꾸지 못했다.',why:'늦추는 게 아니라, 고장 지점을 조심해서 지나가게 해야 해요.'},
    ]},
-  {id:'k1210',who:'k1210',after:['all'],patience:30,autoEnd:true,train:'K1210',home:['geumcheon','5T'],run:[['geumcheon','B963T'],['guro','B959T'],['guro','B957T'],['guro','B953T']],view:'guro',watch:8500,title:'K1210 기관사 (후속)',ask:'K1210은 고장열차 바로 뒤를 따라와요. LS에서 지금 어느 역에 닿아 있는지 봐요.',
+  {id:'k1210',who:'k1210',after:['all'],patience:30,autoEnd:true,train:'K1210',home:['geumcheon','5T'],run:true,view:'guro',watch:8500,title:'K1210 기관사 (후속)',ask:'K1210은 고장열차 바로 뒤를 따라와요. LS에서 지금 어느 역에 닿아 있는지 봐요.',
    late:{said:'(늦음) K1210열차',see:'K1210이 금천구청역을 떠났어요! 고장열차 쪽으로 가고 있어요……!',bad:'K1210은 지시를 받지 못하고 금천구청역을 떠났다. 신호가 알아서 세워 주긴 했다. 역과 역 사이, 승강장도 없는 곳에. 승객들은 창밖의 방음벽을 40분 동안 감상했다.',why:'후속열차는 역을 떠나기 전에 세워야 해요. 고장열차에 가까운 열차일수록 급해요.'},
    say:[{text:'금천구청역에 정차시킨다',line:'K1210열차, 금천구청역 정차. 관제 이상!',reply:[['harin','K1210 기관사','K1210열차, 금천구청역 정차! 수신 이상!']],bad:'',why:''}],
    no:[
@@ -104,7 +104,7 @@ CTCDrill.scene('ch01-stop',{problem:'em-05-1',title:'제1장 실습 · 세우기
     {text:'주의운전으로 계속 오게 한다',bad:'K1210열차는 주의해서, 천천히, 고장열차 바로 뒤까지 왔다. 그리고 섰다. 역과 역 사이에. 두 열차는 사이좋게 꼼짝도 못 했다.',why:'같은 선로의 후속열차는 지나갈 수 없어요. 역 승강장에 세워요.'},
     {text:'3분 추가 정차시킨다',bad:'K1210열차는 3분을 더 서 있다가 출발했다. 고장열차는 3분 안에 고쳐지지 않았다.',why:'언제 풀릴지 몰라요. 시간을 정하지 않고 역에 세워 둬요.'},
    ]},
-  {id:'k1212',who:'k1212',after:['all'],patience:42,autoEnd:true,train:'K1212',home:['geumcheon','B967T'],run:[['geumcheon','B965T']],view:'geumcheon',watch:4000,title:'K1212 기관사 (후속)',ask:'K1212는 K1210 뒤를 따라와요. LS에서 지금 어느 역에 있나요?',
+  {id:'k1212',who:'k1212',after:['all'],patience:42,autoEnd:true,train:'K1212',home:['geumcheon','B967T'],run:true,view:'geumcheon',watch:5000,title:'K1212 기관사 (후속)',ask:'K1212는 K1210 뒤를 따라와요. LS에서 지금 어느 역에 있나요?',
    late:{said:'(늦음) K1212열차',see:'K1212가 석수역을 떠났어요! 앞에는 K1210이 서 있는데……!',bad:'K1212는 앞 열차가 선 줄도 모르고 달리다가 역 사이에 섰다. 승객 한 명이 비상통화장치에 대고 물었다. 「여기서 내려도 되나요?」',why:'뒤따르는 열차도 역에 있을 때 세워야 해요.'},
    say:[{text:'석수역에 정차시킨다',line:'K1212열차, 석수역 정차. 관제 이상!',reply:[['harin','K1212 기관사','(헛기침) K1212열차, 석수역 정차. 수신 이상!']],bad:'',why:''}],
    no:[
@@ -162,7 +162,8 @@ CTCDrill.scene('ch01-stop',{problem:'em-05-1',title:'제1장 실습 · 세우기
   ]},
  {t:'move',text:'열차들이 다시 움직여요. 주인님이 풀어 준 덕분이에요!',view:'guro',watch:8500,runs:[
   {train:'K1208'},
-  {train:'K1210',legs:[['geumcheon','B963T'],['guro','B959T'],['guro','B957T'],['guro','B953T']]},
-  {train:'K1212',legs:[['geumcheon','B965T'],['geumcheon','5T']]},
+  {train:'K1210'},
+  {train:'K1212'},
+  {train:'K1214'},
  ]},
 ]});

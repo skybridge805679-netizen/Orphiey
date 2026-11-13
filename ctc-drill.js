@@ -561,6 +561,7 @@ const CTCDrill=(()=>{
   G.redraw=draw;let sig='';
   while(G&&!objs.every(ok)){const s=objs.map(ok).join()+records.hint;if(s!==sig){sig=s;draw();if(sig.includes('true'))SFX.play('correct');}await new Promise(r=>setTimeout(r,250));}
   if(!G)return;G.redraw=null;G.dock='';G.busy=true;G.target=null;draw();SFX.play('correct');
+  if(b.settle)W.SimRemote.command({type:'tick',seconds:b.settle});   // 접근쇄정이 풀릴 만큼 시계를 감는다 (플레이어를 기다리게 하지 않는다)
  }
  async function runScene(sc){
   const beats=sc.beats;G.steps=beats.flatMap(b=>b.t==='rush'?b.needs.map(()=>({kind:'rush',beat:b})):['choice','board','ops','call'].includes(b.t)?[{kind:b.t,beat:b}]:[]);G.stepIndex=0;G.rw=FORECASTS;hud();
@@ -568,12 +569,17 @@ const CTCDrill=(()=>{
    if(!G)return;
    const k=G.steps.findIndex(s=>s.beat===b);if(k>=0){G.stepIndex=k;hud();}G.beat=b;
    if(b.t==='say')await dkLines(b.lines);
-   else if(b.t==='call')await dkCall(b);
+   else if(b.t==='call'){await dkCall(b);if(b.takes)W.SimRemote.command({type:'tick',seconds:b.takes});}   // takes: 이 무전을 하는 동안 흐른 시간(초). 접근쇄정 대기를 무전으로 메우는 데 쓴다.
    else if(b.t==='board')await dkBoard(b);
    else if(b.t==='rush')await dkRush(b);
    else if(b.t==='move'){for(const r of b.runs)runTrain(r.train,r.legs);await watch(b.view,b.watch||5000,b.text);}
    else if(b.t==='choice')await dkChoice(b);
    else if(b.t==='ops')await dkOps(b);
+   else if(b.t==='do'){   // 관제사 대신 조수가 해 주는 열번 정리: rename [[옛,새]], del [번호], ctl [[역, 조작]]
+    for(const [o,nw] of b.rename||[]){const f=findTrain(o);if(f)W.SimRemote.command({type:'numbers',action:{op:'rename',station:f.station,slot:f.slot,uid:f.uid,number:nw}});}
+    for(const d of b.del||[]){const f=findTrain(d);if(f)W.SimRemote.command({type:'numbers',action:{op:'delete',station:f.station,slot:f.slot,uid:f.uid}});}
+    for(const [st,act] of b.ctl||[])W.SimRemote.command({type:'control',station:st,action:{...act,source:'LS'}});   // ctl [[역, {type:'mode'|'stop'|'route',…}]]
+    await new Promise(r=>setTimeout(r,b.wait??500));update();}
    else if(b.t==='comm'){for(const id of b.ids)W.SimRemote.command({type:'fts',op:'manual',key:'comm:'+id,checked:true});clock(false);await new Promise(r=>setTimeout(r,b.wait??700));update();}
   }
   if(!G)return;G.stepIndex=G.steps.length-1;main().innerHTML='';

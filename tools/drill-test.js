@@ -29,9 +29,9 @@ const scene=process.argv[2]||'ch02-report',lateId=process.argv[3]||'';
   if(st.dock==='ops'){
    const todo=await p.evaluate(()=>[...document.querySelectorAll('.dk-task li:not(.done)')].map(x=>x.textContent));
    if(!opsShot&&todo.length){opsShot=true;await p.screenshot({path:DIR+`drill-${scene}-ops.png`});}
-   const t=todo[0];if(t){const st=/금천구청/.test(t)?'geumcheon':'guro';let a=null,m;
+   const t=todo[0];if(t){const ST={'금천구청':'geumcheon','구로':'guro','안양':'anyang','군포':'gunpo','금정':'geumjeong','종각':'jonggak','지하서울':'underground-seoul','석수':'seoksu','동묘앞':'dongmyo'};const st=ST[Object.keys(ST).find(k=>t.includes(k+'역'))]||'guro';let a=null,m;
     if(/CCM/.test(t))a={type:'mode',value:'CCM'};else if(/AUTO/.test(t))a={type:'mode',value:'AUTO'};
-    else if(m=t.match(/(\w+) 신호 취소/))a={type:'stop',id:m[1]};else if(m=t.match(/(\w+-\w+) (출발|장내) 진행/))a={type:'route',id:m[1]};
+    else if(m=t.match(/(\w+) 신호 취소/))a={type:'stop',id:m[1]};else if(m=t.match(/(\w+-\w+) (출발 진행|장내 진행|입환표지)/))a={type:'route',id:m[1]};
     const r=await p.evaluate(([st,a])=>JSON.stringify(CTCDrill.frame().SimRemote.command({type:'control',station:st,action:{...a,source:'LS'}})||'').slice(0,120),[st,a]);
     console.log('OPS',t.slice(0,40),JSON.stringify(a),r);}
    await p.waitForTimeout(500);continue;

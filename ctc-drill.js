@@ -577,6 +577,7 @@ const CTCDrill=(()=>{
    else if(b.t==='choice')await dkChoice(b);
    else if(b.t==='ops')await dkOps(b);
    else if(b.t==='do'){   // 관제사 대신 조수가 해 주는 열번 정리: rename [[옛,새]], del [번호], ctl [[역, 조작]]
+    for(const [st,slot,number,dir] of b.ins||[])W.SimRemote.command({type:'numbers',action:{op:'insert',station:st,slot,number,direction:dir||'up'}});   // ins [[화면,궤도,번호,방향]]
     for(const [o,nw] of b.rename||[]){const f=findTrain(o);if(f)W.SimRemote.command({type:'numbers',action:{op:'rename',station:f.station,slot:f.slot,uid:f.uid,number:nw}});}
     for(const d of b.del||[]){const f=findTrain(d);if(f)W.SimRemote.command({type:'numbers',action:{op:'delete',station:f.station,slot:f.slot,uid:f.uid}});}
     for(const [st,act] of b.ctl||[])W.SimRemote.command(st==='tick'?{type:'tick',seconds:act}:{type:'control',station:st,action:{...act,source:'LS'}});   // ['tick',초] 는 시계 감기 (접근쇄정 해정용)   // ctl [[역, {type:'mode'|'stop'|'route',…}]]

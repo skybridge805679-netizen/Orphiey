@@ -247,7 +247,7 @@ function finishChapter(next){
  const i=chapters.indexOf(curCh()),nx=next?byId[next]:chapters[i+1];persist();
  if(nx){S={...fresh(nx.id),flags:S.flags,day:S.day,phone:S.phone};autosave('장 시작');paint();return step();}
  busy=true;S.line=null;paint();const c=$('#vnCard');c.className='vn-card chapter';c.hidden=false;$('#vnBox').classList.add('quiet');
- c.innerHTML=`<small>TO BE CONTINUED</small><h2>다음 이야기는 준비 중이에요</h2><p>주인님, 여기까지 함께해 주셔서 고마워요. 회상에서 겪은 사건을 다시 연습할 수 있어요.</p><button class="primary">타이틀로</button>`;
+ c.innerHTML=meta.cleared?`<small>THE END</small><h2>${S.flags?.trueEnd?'번호 없는 열차 — TRUE END':'수료 — NORMAL END'}</h2><p>주인님, 끝까지 함께해 주셔서 고마워요. 부록에서 모든 실습을 다시 할 수 있어요.</p><button class="primary">타이틀로</button>`:`<small>TO BE CONTINUED</small><h2>다음 이야기는 준비 중이에요</h2><p>주인님, 여기까지 함께해 주셔서 고마워요. 회상에서 겪은 사건을 다시 연습할 수 있어요.</p><button class="primary">타이틀로</button>`;
  c.querySelector('button').onclick=e=>{e.stopPropagation();busy=false;title();};
 }
 

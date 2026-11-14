@@ -97,7 +97,6 @@ const Challenge=(()=>{
     say:[{text:`${train}을 구로역에서 차량교체하니 준비하게 한다`,line:`${train}열차 구로역에서 관제승인으로 차량교체합니다. 차량교체 준비해 주세요. 관제 이상!`,reply:[J('구로역','차량교체 준비. 구로역 수신 이상!')],bad:'',why:''}],
     no:[{text:`${train}을 구로역에서 무정차 통과시킨다고 알린다`,bad:'고장 난 열차가 승객을 태운 채 구로역을 지나쳤다. 교체할 차량은 구로역에 서 있었다.',why:'구로역에서 열차를 바꿔요.'}]},
   ]},
-  {t:'do',ctl:[['guro',{type:'mode',value:'CCM'}],['guro',{type:'route',id:'2A-5T'}],['guro',{type:'mode',value:'AUTO'}]]},
   {t:'call',who:String(train).toLowerCase(),cue:'두 역 모두 알아요. 열차는 움직일 수 있지만 멀쩡한 건 아니에요.',whoWhy:'사고 열차에 출발 지시를 내려요.',
    open:[S(`${train}열차, 출발 준비 되었습니까?`),H(`${train} 기관사`,'출발 준비 완료! 이상!')],
    say:[

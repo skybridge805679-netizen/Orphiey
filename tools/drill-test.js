@@ -40,6 +40,11 @@ const scene=process.argv[2]||'ch02-report',lateId=process.argv[3]||'';
    const todo=await p.evaluate(()=>[...document.querySelectorAll('.dk-task li:not(.done)')].map(x=>x.textContent));
    if(!opsShot&&todo.length){opsShot=true;await p.screenshot({path:DIR+`drill-${scene}-ops.png`});}
    const t=todo[0];
+   if(t&&/열차번호 .*이동/.test(t)){   // 반대선 운행 열번 수동 이동: 목표 조건의 역·칸으로 옮긴다 (UI 대신 같은 명령)
+    const r=await p.evaluate(label=>{const o=CTCDrill.debug().p.objectives.find(o=>label.includes(o.label));const c=o.condition,n=c.number;let f=null;for(const [st,x] of Object.entries(CTCDrill.frame().SimRemote.snapshot.ls.stations))for(const [slot,rows] of Object.entries(x.windows))for(const w of rows)if(w.number===n)f={st,slot,uid:w.uid};
+     const slot=c.slot||'1T';return JSON.stringify(CTCDrill.frame().SimRemote.command({type:'numbers',action:{op:'move',station:f.st,slot:f.slot,uid:f.uid,targetStation:c.station,targetSlot:slot,source:'LS'}}));},t);
+    console.log('MANUAL',t,r);await p.waitForTimeout(500);continue;
+   }
    if(t&&/열차번호.*(수정|삭제)|중복 알람 확인/.test(t)){
     const match=t.match(/열차번호 (\w+) → (\w+) 수정|열차번호 (\w+) 삭제/);
     await p.evaluate(()=>CTCDrill.look('mmi'));

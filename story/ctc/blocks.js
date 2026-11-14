@@ -16,7 +16,7 @@ const DrillBlocks=(()=>{
  }
  // 선행열차: 세우지 않고 mins분(기본 3분)씩 늦춘다.
  function ahead({id='ahead',trains='K1206, K1204',patience=70,reply,mins=3}){
-  return {id,who:id,after:['all'],patience,autoEnd:true,delayTrains:trains.split(',').map(n=>n.trim()),delaySeconds:mins*60,title:`${trains.replace(', ',' · ')} (선행)`,
+  return {id,who:id,after:['all'],patience,autoEnd:true,title:`${trains.replace(', ',' · ')} (선행)`,
    ask:'고장열차보다 앞서 가는 열차예요. 뒤가 막혔는데, 그냥 두면 어떻게 될까요?',
    late:{said:'(늦음) 선행열차',bad:'앞서 가던 열차들은 제 시각에 떠났다. 그 뒤로는 아무 열차도 오지 않았다. 역마다 승강장에 사람이 쌓였고, 40분 뒤 도착한 첫 열차는 문이 닫히지 않았다.',why:'뒤가 막히면 앞 열차와의 간격이 벌어져요. 선행열차도 잊지 않고 조정해요.'},
    say:[{text:`각 역에서 ${mins}분씩 추가 정차시킨다`,line:`${trains}열차. 각 역 ${mins}분씩 추가 정차. 간격 조정합니다. 관제 이상!`,reply:reply||[H('선행열차',`${trains} 수신 이상!`)],bad:'',why:''}],

@@ -192,7 +192,6 @@ CTCDrill.scene('ch06-fire',{problem:'em-06',title:'제6장 실습 · 불은 역�
  {t:'ops',text:'열차번호 G0454 삭제 (LS 열번창 우클릭)',objs:['delete-G0454']},
  {t:'ops',text:'열차번호 K0452 → G0452 수정 (LS 열번창 우클릭)',objs:['rename-G0452']},
  {t:'comm',ids:['n24']},
- {t:'do',ctl:[['geumcheon',{type:'mode',value:'CCM'}],['geumcheon',{type:'route',id:'2A-5T'}],['geumcheon',{type:'mode',value:'AUTO'}]]},   // 구로역 진로는 상2선 선행 K0450(추가정차 중)이 풀리는 복구 완료 뒤에 연다
  {t:'call',who:'k0452',title:'G0452 기관사',cue:'불이 났던 열차가 구원열차에 밀려 떠날 준비를 마쳤어요.',whoWhy:'회송 출발 지시예요.',
   open:[S('K0452열차, 고객 하차, 회송 준비 되었습니까?'),H('K0452 기관사','네! 회송 준비 되었습니다! 이상!')],
   say:[{text:'관제승인 7호 — 열차번호 G0452로 구로차량기지까지 회송, 신호 확인 출발',line:'K0452열차는 관제승인 7호로 G0452열차로 열차번호 변경하고 구로차량기지까지 회송 운행합니다. 신호 확인 출발. 관제 이상!',reply:[H('G0452 기관사','G0452열차, 신호 확인 출발! 이상!')],bad:'',why:''}],
@@ -204,7 +203,6 @@ CTCDrill.scene('ch06-fire',{problem:'em-06',title:'제6장 실습 · 불은 역�
  // ── 끝을 알린다
  ...B.recovery({place:'석수역',what:'열차화재',comm:['n26'],cueAll:'석수역 상2선이 비었어요. 상2선의 K0450은 아직 5분씩 늦추는 중이고, 관악역 뒤 열차들도 기다려요.'}),
  {t:'move',runs:[{train:'K0450'}],view:'guro',watch:12000,text:'복구 완료로 K0450의 추가정차가 풀려 구로역을 떠나요.'},   // v0.39.62 추가정차 열차가 첫 중간역 뒤 작업이 끊겨 서 있는 경우가 있어 다시 보낸다 (엔진 이슈 A7)
- {t:'do',ctl:[['tick',60],['geumcheon',{type:'mode',value:'CCM'}],['geumcheon',{type:'route',id:'3B-B963T'}],['geumcheon',{type:'mode',value:'AUTO'}],['guro',{type:'mode',value:'CCM'}],['guro',{type:'route',id:'2A-5T'}],['guro',{type:'route',id:'3A-B949T'}],['guro',{type:'mode',value:'AUTO'}]]},
  {t:'move',runs:[],view:'geumcheon',watch:9000,text:'K0450이 풀리자 줄줄이 움직여요. G0452도 차량기지로 가요.'},
  {t:'say',lines:[
   I('불은 역에서 내린다. 옆 선로는 불 옆에 세우지 않는다. 오늘 두 가지예요.'),

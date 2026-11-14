@@ -153,7 +153,6 @@ CTCDrill.scene('ch08-dongmyo',{problem:'em-02',title:'제8장 실습 · 뒤집�
  // ── 앞 열차 회송: 시범
  {t:'say',lines:[I('K0602 회송은 7장과 같아요. 제가 할게요. 동묘앞역과 K0602에 운행중지·회송, 승객 하차까지. 열차번호 G0602 변경은 주인님이 MMI에서 해 주세요.')]},
  {t:'ops',text:'열차번호 K0602 → G0602 수정 (LS 열번창 우클릭)',objs:['rename-G0602']},
- {t:'do',ctl:[['dongmyo',{type:'mode',value:'CCM'}],['dongmyo',{type:'route',id:'3A-B015T'}]]},   // 동묘앞역은 CCM으로 남긴다(곧 단선지령식에서 다시 막으므로)
  {t:'comm',ids:['n13','n14','n15']},
  {t:'move',runs:[],view:'dongmyo',watch:8000,text:'G0602가 이문차량기지로 떠나요. 탈선한 K0604만 남았어요.'},
 
@@ -200,8 +199,8 @@ CTCDrill.scene('ch08-dongmyo',{problem:'em-02',title:'제8장 실습 · 뒤집�
   ],
   no:[{text:'탈선 현장 옆이니 동묘앞역은 무정차 통과시킨다',bad:'K0608은 동묘앞역을 지나쳤다. 하선 승강장에서 안내를 받고 건너온 승객들이 그 뒷모습을 보았다.',why:'하선 승강장에 서서 태워요. 주의운전만 하면 돼요.'}]},
  {t:'comm',ids:['n21']},
- {t:'say',lines:[O('승인한 하선 진로로 시청역에서 신설동역까지 운행해요. 실제 도착을 확인하세요.','smile')]},
- {t:'move',runs:[{train:'K0608',legs:[['jonggak','1T'],['dongmyo','B011T']]}],view:'dongmyo',watch:12000,text:'K0608이 하선을 거꾸로 달려 탈선 현장 옆을 지나가요……'},
+ {t:'say',lines:[O('K0608이 하선을 거꾸로 달려 탈선 현장 옆을 지나가요. LS는 반대 선로 열차를 따라가지 못해서 열번이 시청역에 남아 있어요. 신설동역에 닿으면 열번을 직접 옮겨 주세요.','explain')]},
+ {t:'ops',text:'열차번호 K0608 시청역 → 신설동역 이동 (LS 열번창 우클릭 → 열차번호 이동)',objs:['move-K0608']},   // 대본: 반대선 운행으로 열번 수동 이동. 손으로 옮기면 종각 51-1T·동묘앞 24-B015T가 해정된다(C1)
  {t:'waitTrain',train:'K0608',station:'dongmyo',slot:'B011T',text:'하선 단선 구간 운행 열차의 신설동역 도착을 확인하세요.'},
 
  // ── 탈선 복구, 그리고 구원
@@ -228,8 +227,8 @@ CTCDrill.scene('ch08-dongmyo',{problem:'em-02',title:'제8장 실습 · 뒤집�
   say:[{text:'관제승인 12호 — 하선 단선지령식에서 상용폐색으로 복귀한다고 알린다',line:'각 역은 관제승인 12호로 종각~동묘앞역 간 하선 지령식에서 상용폐색으로 복귀합니다. 관제 이상!',reply:[J('다섯 역 전부','상용폐색 복귀. 수신 이상.')],bad:'',why:''}],
   autoEnd:true,no:[{text:'혹시 모르니 오늘 막차까지 단선지령식을 유지한다',bad:'밤 근무 관제사는 그날 무전을 400번 했다.',why:'단선 운행할 이유가 없어지면 바로 되돌려요.'}]},
  {t:'comm',ids:['n26']},
- {t:'do',ctl:[['tick',30],['dongmyo',{type:'stop',id:'24'}],['jonggak',{type:'stop',id:'51'}],['tick',35],['dongmyo',{type:'route',id:'3A-B015T'}],['dongmyo',{type:'mode',value:'AUTO'}],['jonggak',{type:'mode',value:'AUTO'}]]},
- {t:'say',lines:[O('단선 구간이 비었어요. 입환표지 진로를 해정하고, 두 역 AUTO로 돌려 두고, G0604 출발 진로도 열었어요.','smile')]},
+ {t:'do',ctl:[['dongmyo',{type:'mode',value:'AUTO'}],['jonggak',{type:'mode',value:'AUTO'}]]},
+ {t:'say',lines:[O('단선 구간이 비었어요. 동묘앞역·종각역 AUTO 전환, 확인!','smile')]},
  {t:'call',who:'k0604',cue:'연결됐어요. K0604 객실은 비어 있어요. 승객은 아까 걸어서 대피했으니까요.',whoWhy:'탈선 복구한 열차를 회송시켜요.',
   open:[S('K0604열차, 관제 이상.'),H('K0604 기관사','K0604열차, 이상.')],
   say:[

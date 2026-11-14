@@ -152,7 +152,7 @@ CTCDrill.scene('ch03-rescue',{problem:'em-05',title:'제3장 실습 · 데리러
   ],
   no:[{text:'늦었으니 최고속도로 회복운전',bad:'K1212는 낯선 선로를 최고속도로 달렸다. 가산디지털단지역 옆을 지날 때, 승강장에 내려 있던 1,000명의 머리카락이 한 방향으로 날렸다.',why:'회복운전은 사고가 끝난 뒤의 일이에요.'}]},
  {t:'comm',ids:['n15']},
- {t:'move',runs:[{train:'K1204'},{train:'K1206'}],view:'geumcheon',watch:9000,text:'K1212가 상1선으로 넘어가요……!'},
+ {t:'move',runs:[],view:'geumcheon',watch:9000,text:'K1212가 상1선으로 넘어가요……!'},
 
  // ── 구원 출발
  {t:'say',lines:[H('K1210 기관사','철도관제, K1210열차! 고객 하차 완료, 전령자 승차했습니다! 이상!','urgent'),['jian','독산역 전령자','……전령자, 운전실에 탔습니다. 흔들리네요, 여기.']]},
@@ -186,8 +186,6 @@ CTCDrill.scene('ch03-rescue',{problem:'em-05',title:'제3장 실습 · 데리러
  {t:'comm',ids:['n17']},
  {t:'say',lines:[O('합병 승인과 G1210 열번 삭제를 확인했어요. 이제 한 열차로 회송해요.','smile')]},
  {t:'ops',text:'회송 열차번호 K1208 → G1208 수정 (LS 열번창 우클릭)',objs:['rename-G1208']},
- {t:'do',ctl:[['guro',{type:'mode',value:'CCM'}],['guro',{type:'route',id:'2A-5T'}],['guro',{type:'route',id:'3A-B949T'}],['guro',{type:'mode',value:'AUTO'}]]},
- {t:'say',lines:[O('G1208은 시각표에 없는 열차라서 AUTO가 길을 열어 주지 않아요. 주인님이 다시 연 구로역 장내 2A와 출발 3A를 확인했어요.','explain')]},
  {t:'call',who:'k1208',cue:'열 칸에 열 칸, 스무 칸짜리 열차가 됐어요. 맨 앞의 K1208 기관사가 출발 지시를 기다려요. 옆 선로에는 아까 보낸 K1212가 있죠.',
   whoWhy:'합병한 열차의 맨 앞, K1208 기관사에게 출발 지시를 내려요.',
   open:[S('K1208열차, 출발 준비 되었습니까?'),H('K1208 기관사','네! 출발 준비 되었습니다! 이상!')],

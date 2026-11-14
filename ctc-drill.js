@@ -520,7 +520,7 @@ const CTCDrill=(()=>{
    if(got.late){const n=got.late;G.dec++;if(n.run){runTrain(n.train,n.run);await watch(n.view,n.watch||5500,n.late.see);}await outcome(n.late.said||'(늦음) '+(sc.roster.find(r=>r.id===n.who)?.name||''),n.late.bad,n.late.why);if(n.run)putBack(n.train,n.home,n.dir);left.set(n.id,n.patience*.6);continue;}
    const need=active().find(n=>n.who===got.r.id);
    if(!need){main().innerHTML='<p class="dk-wait">📻 교신 중…</p>';await bubble('sangcheol','',`${got.r.call||got.r.name}, 관제 이상!`);await bubble(got.r.who,got.r.name,got.r.idle||'……네? 호출하셨습니까? 용건 없으시면 이상!');continue;}
-   await dkCall({...need,incoming:true});done.add(need.id);if(need.delayTrains){const now=Object.values(W.SimRemote.snapshot.states)[0].clock;G.delays??=[];for(const train of need.delayTrains)G.delays.push({train,at:now+need.delaySeconds});}if(need.go){runTrain(need.train,need.go);if(need.view)showStation(need.view);}
+   await dkCall({...need,incoming:true});done.add(need.id);if(need.go){runTrain(need.train,need.go);if(need.view)showStation(need.view);}
    if(need.comm)for(const id of need.comm)W.SimRemote.command({type:'fts',op:'manual',key:'comm:'+id,checked:true});
   }
  }
@@ -698,7 +698,6 @@ const CTCDrill=(()=>{
  // ── Watch the FTS: recognised operations, situation changes, the end.
  function update(){
   if(!G||!W?.SimRemote?.snapshot?.fts)return;const s=session(),it=item();if(!s||!it)return;
-  const now=Object.values(W.SimRemote.snapshot.states)[0].clock;for(const delay of G.delays||[])if(!delay.sent&&now>=delay.at){delay.sent=true;runTrain(delay.train);}
   G.visited??=new Set();for(const [station,s] of Object.entries(W.SimRemote.snapshot.ls.stations))for(const [slot,rows] of Object.entries(s.windows))for(const r of rows)G.visited.add(r.number+'@'+station+'/'+slot);
   let faultStyle=W.document.getElementById('drill-display-fault');
   if(!faultStyle){faultStyle=W.document.createElement('style');faultStyle.id='drill-display-fault';W.document.head.append(faultStyle);}
@@ -794,14 +793,6 @@ const CTCDrill=(()=>{
   // decisions are not timed: give the problem a long limit so FTS never closes it on the clock
   const relaxed=structuredClone(lib),ids=new Set(relaxed.situations.filter(x=>sc.situations.includes(x.id)).flatMap(x=>x.problems));
   for(const x of relaxed.problems)if(ids.has(x.id))x.limit=Math.max(x.limit||0,7200);for(const x of relaxed.situations)if(sc.situations.includes(x.id)&&x.limit)x.limit=Math.max(x.limit,7200);
-  // VN에서는 출발 지시가 끝나기 전 진로만 열었다고 열차를 출발시키지 않는다.
-  // 내장 CTC의 자동 출발 준비 조건(any: 통보 OR 진로 목표)을 게임에서만 보정한다.
-  if(SCENES[sceneId])for(const p of relaxed.problems)if(ids.has(p.id))for(const r of p.reactions||[]){
-   const gate=c=>{if(!c)return c;if(c.type==='any'&&c.conditions?.some(x=>x.type==='communication')&&c.conditions.some(x=>x.type==='objective'))return {type:'all',conditions:c.conditions.filter(x=>x.type==='communication')};return {...c,...(c.conditions?{conditions:c.conditions.map(gate)}:{})};};
-   r.when=gate(r.when);
-   const departure={'r-g0450':'n17','r-g0602':'n15','r-g0604':'n25'}[r.id];
-   if(departure)r.when={type:'all',conditions:[r.when,{type:'communication',id:departure}]};
-  }
   W.SimRemote.command({type:'fts',op:'library',library:relaxed});
   const r=W.SimRemote.command({type:'fts',op:'start',scenario:sc.id,professor:'001',student:'tester'});
   if(!r?.ok)throw Error(r?.message||'교육을 시작하지 못했어요.');

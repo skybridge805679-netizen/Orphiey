@@ -169,6 +169,7 @@ CTCDrill.scene('ch07-collision',{problem:'em-03',title:'제7장 실습 · 두 �
    {text:'안내방송하고 고객을 모두 하차시키게 한다',line:'안내방송 하시고 고객 모두 하차시켜 주시기 바랍니다. 관제 이상!',reply:[H('K0450 기관사','K0450열차, 고객 모두 하차했습니다. 이상.')],bad:'K0450은 승객 몇 명을 태운 채 차량기지로 갔다. 그들은 졸고 있었다.',why:'회송 전에 모두 내렸는지 확인해요.'},
   ],
   no:[{text:'파손된 운전실을 앞으로 해서 회송하게 한다',bad:'K0450 기관사는 부서진 뒤 운전실로 걸어가 앉았다. 앞 유리 대신 바람이 들어왔다.',why:'회송은 멀쩡한 앞 운전실로, 원래 방향으로 가요.'}]},
+ {t:'move',runs:[{train:'K0446'},{train:'K0448'}],view:'guro',watch:18000,text:'5분씩 늦추던 상2선 선행열차 K0446·K0448이 먼저 구로역을 떠나요. 그래야 G0450이 지나갈 수 있어요.'},   // 엔진에 「각 역 추가 정차」가 없어 선행열차가 제자리에 서 있으므로 직접 보낸다 (docs/CTC-LAB-엔진-이슈.md A4)
  {t:'ops',text:'열차번호 K0450 → G0450 수정 (LS 열번창 우클릭)',objs:['rename-G0450']},
  {t:'do',ctl:[['geumcheon',{type:'mode',value:'CCM'}],['geumcheon',{type:'route',id:'2A-5T'}],['geumcheon',{type:'route',id:'3B-B963T'}],['geumcheon',{type:'mode',value:'AUTO'}],['guro',{type:'mode',value:'CCM'}],['guro',{type:'route',id:'2A-5T'}],['guro',{type:'route',id:'3A-B949T'}],['guro',{type:'mode',value:'AUTO'}]]},
  {t:'say',lines:[S('K0450열차, 관제승인 2호로 열차번호 G0450으로 변경하고 구로차량기지까지 회송 운행합니다. 신호 확인 출발. 관제 이상!'),H('G0450 기관사','G0450열차, 신호 확인 출발.'),O('열번은 G0450으로 고쳤고, 금천구청역 진로도 열었어요.','smile')]},

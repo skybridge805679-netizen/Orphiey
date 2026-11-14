@@ -582,7 +582,7 @@ const CTCDrill=(()=>{
     for(const [st,slot,number,dir] of b.ins||[])W.SimRemote.command({type:'numbers',action:{op:'insert',station:st,slot,number,direction:dir||'up'}});   // ins [[화면,궤도,번호,방향]]
     for(const [o,nw] of b.rename||[]){const f=findTrain(o);if(f)W.SimRemote.command({type:'numbers',action:{op:'rename',station:f.station,slot:f.slot,uid:f.uid,number:nw}});}
     for(const d of b.del||[]){const f=findTrain(d);if(f)W.SimRemote.command({type:'numbers',action:{op:'delete',station:f.station,slot:f.slot,uid:f.uid}});}
-    for(const [st,act] of b.ctl||[])W.SimRemote.command(st==='tick'?{type:'tick',seconds:act}:{type:'control',station:st,action:{...act,source:'LS'}});   // ['tick',초] 는 시계 감기 (접근쇄정 해정용)   // ctl [[역, {type:'mode'|'stop'|'route',…}]]
+    for(const [st,act] of b.ctl||[]){const r=W.SimRemote.command(st==='tick'?{type:'tick',seconds:act}:{type:'control',station:st,action:{...act,source:'LS'}});if(r&&r.ok===false)console.warn('[do] 거부:',st,JSON.stringify(act),r.message);}   // ['tick',초] 는 시계 감기 (접근쇄정 해정용)   // ctl [[역, {type:'mode'|'stop'|'route',…}]]
     await new Promise(r=>setTimeout(r,b.wait??500));update();}
    else if(b.t==='comm'){for(const id of b.ids)W.SimRemote.command({type:'fts',op:'manual',key:'comm:'+id,checked:true});clock(false);await new Promise(r=>setTimeout(r,b.wait??700));update();}
   }

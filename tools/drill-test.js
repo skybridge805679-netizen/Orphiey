@@ -5,7 +5,7 @@ const scene=process.argv[2]||'ch02-report',lateId=process.argv[3]||'';
 (async()=>{
  const b=await chromium.launch();const p=await b.newPage({viewport:{width:1440,height:810}});
  const errs=[];p.on('pageerror',e=>errs.push(e.message));
- p.on('console',m=>{if(m.type()==='error'&&!/404|textLength/.test(m.text()))errs.push('c: '+m.text().slice(0,200));});
+ p.on('console',m=>{if(m.type()==='warning'&&/\[do\]/.test(m.text()))console.log('DO',m.text());if(m.type()==='error'&&!/404|textLength/.test(m.text()))errs.push('c: '+m.text().slice(0,200));});
  await p.goto('http://localhost:8765/index.html');await p.waitForTimeout(700);
  if(scene==='challenge')console.log('CHALLENGE',JSON.stringify(await p.evaluate(f=>{window.__R=null;const info=Challenge._build(f);CTCDrill.mode({forecasts:2,salt:String(Math.random()),keepHint:true});CTCDrill.start('challenge',R=>window.__R=R);return info;},lateId.includes(':')?{base:lateId.split(':')[0],doc:lateId.split(':')[1]}:null)));   // 도전 모드: 무작위 장면 + 상황 변경 (힌트는 테스트용으로 유지)
  else await p.evaluate(s=>{window.__R=null;CTCDrill.start(s,R=>window.__R=R);},scene);
@@ -39,7 +39,7 @@ const scene=process.argv[2]||'ch02-report',lateId=process.argv[3]||'';
   }
   if(st.dock==='who'){await p.click('.dk-c.hinted');await p.waitForTimeout(60);continue;}
   if(st.dock==='call'||st.dock==='choice'){const h=await p.$('.dk-p.hinted');if(h)await h.click();else await p.click('.dk-end');await p.waitForTimeout(60);continue;}
-  if(st.moving){if(!mv){mv=true;console.log('MOVE from:',await where());}await p.waitForTimeout(300);continue;}else if(mv){mv=false;console.log('MOVE to  :',await where());console.log('JOBS',await p.evaluate(()=>{const s=CTCDrill.frame().SimRemote.snapshot;return JSON.stringify((s.scenario.jobs||[]).filter(j=>/G12/.test(j.number)).map(j=>[j.number,j.status,j.wait||j.reason||j.waiting,JSON.stringify(j).slice(0,400)])).slice(0,500)+' sig '+JSON.stringify(s.states.guro.signals).slice(0,300)+' routes '+Object.keys(s.states.guro.routes).join(',')+' mode '+s.states.guro.mode;}));}
+  if(st.moving){if(!mv){mv=true;console.log('MOVE from:',await where());}await p.waitForTimeout(300);continue;}else if(mv){mv=false;console.log('MOVE to  :',await where());console.log('JOBS',await p.evaluate(()=>{const s=CTCDrill.frame().SimRemote.snapshot;return JSON.stringify((s.scenario.jobs||[]).filter(j=>/^G/.test(j.number)&&j.phase!=='done').map(j=>[j.number,j.reason||j.wait,j.station+'/'+j.from+'→'+j.to])).slice(0,600)+' sig '+JSON.stringify(s.states.guro.signals).slice(0,300)+' routes '+Object.keys(s.states.guro.routes).join(',')+' mode '+s.states.guro.mode;}));}
   if(st.talking){await p.keyboard.press('Space');await p.waitForTimeout(20);continue;}
   await p.waitForTimeout(60);
  }

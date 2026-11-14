@@ -39,6 +39,19 @@ const {chromium}=require(require('child_process').execSync('npm root -g').toStri
   await q.getByRole('button',{name:'A 지시',exact:true}).click();
   for(let i=0;i<100;i++){if(await q.locator('.dk-c[data-id="b"].wait').count())break;await q.keyboard.press('Space');await q.waitForTimeout(60);}
   assert.match(await q.locator('.ctc-score').innerText(),/첫 시도 1\/2/,'재촉 뒤 호출은 첫 시도 하나를 잃음');
-  console.log('PASS: 힌트 끔 게이지 숨김·재촉 무전·재촉 감점, 출발 지시 순서 UI, 체크 없는 알람 확인 거부, 선택 알람만 확인, 구원 취소 후 합병 목표 없음');
+  // 힌트 끔: 기다리는 상대도 평소와 같은 배경(강조 없음)
+  const bgs=await q.evaluate(()=>{const w=document.querySelector('.dk-c.wait'),n=document.querySelector('.dk-c:not(.wait)');return w&&n?[getComputedStyle(w).backgroundColor,getComputedStyle(n).backgroundColor]:null;});
+  if(bgs)assert.equal(bgs[0],bgs[1],'힌트 끔이면 기다리는 상대를 강조하지 않음');
+  // 순서: 먼저 해야 할 무전 차례에 뒤의 LS 조작을 먼저 하면 「먼저 취급」 결말
+  const e=await b.newPage();await e.goto('http://localhost:8765/');
+  const gate3=e.locator('.sound-gate');if(await gate3.count()){await gate3.click();await gate3.waitFor({state:'detached'});}
+  await e.evaluate(()=>{CTCDrill.scene('early-op-check',{problem:'em-05',roster:[{id:'driver',who:'harin',name:'K1212 기관사',call:'K1212열차'},{id:'ls',name:'LS 조작'}],whoBad:{},beats:[
+    {t:'call',incoming:true,who:'driver',whoBad:{ls:'먼저취급결말'},say:[{text:'출발 정지 통보',line:'K1212열차, 금천구청역 출발 정지됩니다. 관제 이상!'}],autoEnd:true},
+    {t:'ops',text:'금천구청역 CCM',objs:['ccm-geumcheon']}]});CTCDrill.start('early-op-check',()=>{});});
+  await e.getByRole('button',{name:'출발 정지 통보',exact:true}).waitFor({timeout:30000});
+  await e.evaluate(()=>CTCDrill.frame().SimRemote.command({type:'control',station:'geumcheon',action:{type:'mode',value:'CCM',source:'LS'}}));
+  await e.waitForFunction(()=>!document.querySelector('.ctc-forecast').hidden,null,{timeout:8000});
+  assert.match(await e.locator('.ctc-fc-body').innerText(),/먼저 취급[\s\S]*먼저취급결말/,'먼저 취급 결말');
+  console.log('PASS: 순서 앞지른 LS 조작 결말, 힌트 끔 강조 없음, 힌트 끔 게이지 숨김·재촉 무전·재촉 감점, 출발 지시 순서 UI, 체크 없는 알람 확인 거부, 선택 알람만 확인, 구원 취소 후 합병 목표 없음');
  }finally{await b.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

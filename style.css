@@ -577,5 +577,6 @@ img.vn-stamp{width:min(34vw,360px);text-shadow:none}
 .mm-side button{padding:9px 10px;font-size:14px}
 /* 힌트 끔: 게이지를 숨긴다(정답 순서가 보이지 않게). 재촉 무전을 보낸 상대만 📢 표시 */
 #ctcDrill .dk-contacts.blind .dk-g{visibility:hidden}
-#ctcDrill .dk-c.nag{border-color:#ffb85c}#ctcDrill .dk-c.nag::after{content:'📢';position:absolute;top:5px;right:7px;font-size:11px;line-height:1}
+#ctcDrill .dk-contacts.blind .dk-c.wait:not(:hover){border-color:transparent;background:var(--d2)}#ctcDrill .dk-contacts.blind .dk-c.wait{padding-bottom:7px}   /* 힌트 끔: 기다리는 상대를 강조하지 않는다(배경·테두리를 평소와 같게) */
+#ctcDrill .dk-c.nag{border-color:#ffb85c}#ctcDrill .dk-c.nag::before{content:'📢';position:absolute;top:3px;right:6px;font-size:11px;line-height:1}
 #ctcDrill .dk-b.nag p{color:#ffd9a0}

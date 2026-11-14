@@ -532,6 +532,10 @@ const CTCDrill=(()=>{
    G.redraw=null;G.dock='';freeze();
    if(got.late){const n=got.late;lated.add(n.id);G.dec++;if(n.run){runTrain(n.train,n.run);await watch(n.view,n.watch||5500,n.late.see);}await outcome(n.late.said||'(늦음) '+(sc.roster.find(r=>r.id===n.who)?.name||''),n.late.bad,n.late.why);if(n.run)putBack(n.train,n.home,n.dir);left.set(n.id,n.patience*.6);continue;}
    const need=active().find(n=>n.who===got.r.id);
+   const early=!need&&b.needs.find(n=>n.who===got.r.id&&!done.has(n.id));   // 할 일은 있지만 먼저 끝나야 할 호출(after)이 남았다
+   if(early){const names=(early.after||[]).filter(a=>!done.has(a)).map(a=>sc.roster.find(r=>r.id===(b.needs.find(n=>n.id===a)?.who||a))?.name||a).join(', ');G.dec++;
+    await outcome(`${got.r.name} 먼저 호출`,early.orderBad||`${got.r.name}은 지시를 받았다. 그런데 그보다 먼저 들어야 할 ${names||'곳'}은 아직 아무것도 몰랐다.`,early.orderWhy||`${names||'먼저 알려야 할 곳'}부터 불러요.`);continue;}
+   if(!need&&blind()&&got.r.id!=='ls'){G.dec++;hud();}   // 힌트 끔: 용건 없는 상대를 찔러 보는 것도 판단 하나를 쓴다
    if(!need){main().innerHTML='<p class="dk-wait">📻 교신 중…</p>';await bubble('sangcheol','',`${got.r.call||got.r.name}, 관제 이상!`);await bubble(got.r.who,got.r.name,got.r.idle||'……네? 호출하셨습니까? 용건 없으시면 이상!');continue;}
    if(nagged.has(need.id)&&!lated.has(need.id)){G.dec++;hud();}   // 재촉받은 뒤에야 부르면 첫 시도 하나를 잃는다(늦음 결말까지는 아님)
    await dkCall({...need,incoming:true});done.add(need.id);if(need.go){runTrain(need.train,need.go);if(need.view)showStation(need.view);}
@@ -653,19 +657,44 @@ const CTCDrill=(()=>{
   for(const [station,a] of b.ctl||[]){
    if(station==='tick'){W.SimRemote.command({type:'tick',seconds:a});continue;}
    const name=W.SimNetwork.catalog[station]?.name||station;
-   const state=()=>W.SimRemote.snapshot.states[station];
-   const check=a.type==='mode'?()=>state().mode===a.value:a.type==='route'?()=>!!state().routes[a.id]:a.type==='stop'?()=>state().signals[a.id]==='STOP':null;
+   const check=ctlCheck(station,a);
    if(!check)throw Error('지원하지 않는 수동 조작: '+a.type);
    const label=a.type==='mode'?`${name}역 ${a.value} 전환`:a.type==='route'?`${name}역 ${a.id} 진로 설정`:`${name}역 ${a.id} 신호 취소`;
    const condition=a.type==='mode'?{type:'mode',station,value:a.value}:a.type==='route'?{type:'route',station,route:a.id}:{type:'signalStop',station,signal:a.id};
    await dkOps({tasks:[{id:'manual-'+station+'-'+(a.id||a.value),label,condition,check}],text:label});
   }
  }
+ function ctlCheck(station,a){const state=()=>W.SimRemote.snapshot.states[station];return a.type==='mode'?()=>state().mode===a.value:a.type==='route'?()=>!!state().routes[a.id]:a.type==='stop'?()=>state().signals[a.id]==='STOP':null;}
+ // 먼저 해야 할 무전·판단이 남았는데 그 뒤의 LS 조작을 먼저 해 버린 경우를 잡는다(LS를 바로 만질 수 있으므로).
+ //  플레이어 조작(LS·MMI 기록)이 있었던 역에서, 뒤쪽 ops·do 비트의 목표가 새로 이루어졌고, 그 비트 앞에 아직 끝나지 않은 call·rush·choice·board가 있으면 「먼저 취급」 결말.
+ function earlyWatch(sc){
+  const beats=sc.beats,DEC=['call','rush','choice','board'],flagged=new Set(),queue=[];let busy=false;
+  const owner=new Map(),ctl=[];
+  beats.forEach((b,j)=>{if(b.t==='ops')for(const id of b.objs||[])if(!owner.has(id))owner.set(id,j);
+   if(b.t==='do')for(const [st,a] of b.ctl||[])if(st!=='tick'){const c=ctlCheck(st,a);if(c)ctl.push({j,st,a,c,was:null});}});
+  const stOf=id=>{const m=id.match(/^(?:ccm|auto|stop|route)-([a-z-]+?)(?:-[0-9A-Z].*)?$/);return m?.[1]||null;};
+  const opsAt=()=>{const o={};for(const [st,x] of Object.entries(W.SimRemote.snapshot.states))o[st]=(x.logs||[]).filter(l=>l&&(l.source==='LS'||l.source==='MMI')).length;return o;};
+  let base=opsAt();const touched={};   // 역 → 마지막 플레이어 조작 시각
+  const pending=j=>{const i=beats.indexOf(G.beat);for(let k=G.beatDone?i+1:i;k<j;k++)if(DEC.includes(beats[k]?.t))return k;return -1;};
+  const flag=(key,j,label,st)=>{if(flagged.has(key))return;flagged.add(key);const k=pending(j);if(k<0)return;
+   const b=beats[k],r=sc.roster.find(r=>r.id===b.who);
+   queue.push({said:`(먼저 취급) ${label}`,bad:b.whoBad?.ls||`관제는 ${r?.name?r.name+'에게 ':''}알리기도 전에 LS부터 취급했다. 신호가 예고 없이 바뀌었고, 현장의 누구도 그 이유를 몰랐다.`,why:b.whoWhy||'설비를 취급하기 전에, 먼저 알려야 할 사람에게 무전부터 해요.'});drain();};
+  const drain=async()=>{if(busy||!queue.length)return;busy=true;while(queue.length&&G){const q=queue.shift();G.dec++;G.wrong++;await outcome(q.said,q.bad,q.why);}busy=false;};
+  const tick=()=>{if(!G||G.ending)return;const now=Date.now(),o=opsAt();for(const st in o)if(o[st]>(base[st]||0))touched[st]=now;base=o;
+   const recent=st=>st&&touched[st]&&now-touched[st]<3000,it=item(),objs=view().objectives;
+   for(const [id,j] of owner)if(it.obj?.[id]!=null&&!flagged.has('o:'+id)){const st=stOf(id);if(recent(st)||!st&&/^(?:rename|delete|ack)-/.test(id)){flag('o:'+id,j,objs.find(o=>o.id===id)?.label||id,st);}else flagged.add('o:'+id);}
+   for(const w of ctl){let v=false;try{v=!!w.c();}catch(e){}if(w.was===false&&v&&recent(w.st))flag('c:'+w.j+w.st+(w.a.id||w.a.value),w.j,`${W.SimNetwork.catalog[w.st]?.name||w.st}역 ${w.a.type==='mode'?w.a.value+' 전환':w.a.type==='route'?w.a.id+' 진로':w.a.id+' 신호 취소'}`,w.st);w.was=v;}};
+  for(const w of ctl){try{w.was=!!w.c();}catch(e){w.was=null;}}
+  for(const [id] of owner)if(item()?.obj?.[id]!=null)flagged.add('o:'+id);
+  const t=setInterval(tick,250);return {stop:()=>clearInterval(t)};
+ }
  async function runScene(sc){
   const beats=sc.beats;G.steps=beats.flatMap(b=>b.t==='rush'?b.needs.map(()=>({kind:'rush',beat:b})):['choice','board','ops','call','source','do'].includes(b.t)?[{kind:b.t,beat:b}]:[]);G.stepIndex=0;G.rw=fcMax();hud();
+  const ew=earlyWatch(sc);
+  try{
   for(const b of beats){
    if(!G)return;
-   const k=G.steps.findIndex(s=>s.beat===b);if(k>=0){G.stepIndex=k;hud();}G.beat=b;
+   const k=G.steps.findIndex(s=>s.beat===b);if(k>=0){G.stepIndex=k;hud();}G.beat=b;G.beatDone=false;
    if(b.t==='say')await dkLines(b.lines);
    else if(b.t==='source')await sourceCalls(b);
    else if(b.t==='displayFault'){G.displayFault=b.number?{number:b.number,...findTrain(b.number)}:null;update();}
@@ -679,7 +708,9 @@ const CTCDrill=(()=>{
    else if(b.t==='ops')await dkOps(b);
    else if(b.t==='do')await manualActions(b);
    else if(b.t==='comm'){for(const id of b.ids)W.SimRemote.command({type:'fts',op:'manual',key:'comm:'+id,checked:true});clock(false);await new Promise(r=>setTimeout(r,b.wait??700));update();if(b.ids.includes('n1')&&view().objectives.some(o=>o.id==='ack-incident')&&item().obj?.['ack-incident']==null)await dkOps({objs:['ack-incident'],screen:'mmi',text:'사고 열차번호 중복 알림을 체크하고 확인하세요.'});}
+   if(G)G.beatDone=true;
   }
+  }finally{ew.stop();}
   if(!G)return;G.stepIndex=G.steps.length-1;main().innerHTML='';
   clock(false);for(let k=0;k<24&&G&&item().status==='진행';k++)await new Promise(r=>setTimeout(r,250));
   if(!G)return;if(item().status==='진행')W.SimRemote.command({type:'fts',op:'next'});

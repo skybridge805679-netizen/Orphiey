@@ -306,8 +306,19 @@ function menu(k){
 }
 
 // ── Title.
+// 브라우저는 사용자가 한 번 누르기 전에는 소리를 못 내게 막는다. 그래서 첫 화면 앞에 「눌러서 시작」 화면을 두고, 그 클릭이 소리 허용(BGM의 첫 입력)이 되어 타이틀 곡이 타이틀 화면부터 나오게 한다.
+// 음악 파일이 하나도 없으면(타이틀 곡 없음) 치워 버린다.
+function soundGate(){
+ if(BGM.status().unlocked||document.querySelector('.sound-gate'))return;
+ const g=document.createElement('div');g.className='sound-gate';g.innerHTML='<div><small>RAILWAY DISPATCH VISUAL NOVEL</small><b>오르페이아</b><p>화면을 눌러 시작해요 ♪</p></div>';
+ document.body.append(g);
+ const done=e=>{if(e.type==='keydown'&&['Shift','Control','Alt','Meta','Escape','CapsLock','Tab'].includes(e.key))return;e.preventDefault();e.stopPropagation();remove();};
+ const remove=()=>{g.classList.add('out');setTimeout(()=>g.remove(),400);document.removeEventListener('keydown',done,true);};
+ g.addEventListener('pointerdown',done,true);g.addEventListener('click',e=>{e.stopPropagation();},true);document.addEventListener('keydown',done,true);
+ BGM.whenReady().then(()=>{if(!BGM.ready.has('bgm_title')&&g.isConnected){g.remove();document.removeEventListener('keydown',done,true);}});
+}
 function title(){
- BGM.play('bgm_title');stopAuto();clearTimeout(typing?.t);typing=null;busy=false;skip=false;auto=false;S=null;
+ BGM.play('bgm_title');soundGate();stopAuto();clearTimeout(typing?.t);typing=null;busy=false;skip=false;auto=false;S=null;
  if(run){cancelStory();stopMedia();run=null;}document.body.classList.remove('in-drill');document.body.classList.add('vn-mode');closeDialogs();
  const cont=latest();
  $('#main').innerHTML=`<section class="vn-title"><img class="vn-title-bg${ART_READY.has(meta.cleared?'title_key_visual_clear.png':'title_key_visual.png')?' kv'+(meta.cleared?' kv-clear':''):''}" src="${asset(meta.cleared?art('title_key_visual_clear.png',art('title_key_visual.png',art('bg_spring_cherry.png','bg_control_room_night.png'))):art('title_key_visual.png','bg_control_room_night.png'))}" alt=""><img class="vn-title-chr" src="${asset(art('title_key_visual.png','')?'':'orpheia_sd_maid_v2.png')}" alt="" ${art('title_key_visual.png','')?'hidden':''}><div class="vn-title-body"><small>RAILWAY DISPATCH VISUAL NOVEL</small>${ART_READY.has('title_logo.png')?`<img class="vn-title-logo" src="${asset('title_logo.png')}" alt="오르페이아 — 電脳侍女의 비상관제 일지">`:'<h1>오르페이아<span>電脳侍女의 비상관제 일지</span></h1>'}${meta.cleared?'<p class="vn-cleared">ALL CLEAR · 회상과 갤러리가 모두 열렸어요</p>':''}<nav>

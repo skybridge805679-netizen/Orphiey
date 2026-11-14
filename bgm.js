@@ -50,5 +50,5 @@ const BGM=(()=>{
  function setVolume(v){set.volume=v;persist();decks[front].volume=level();}
  function setMuted(m){set.muted=m;persist();decks[front].volume=level();}
  const status=()=>({found:ready.size,total:TRACKS.length,current:cur,unlocked});
- return {current:()=>cur,play,scene,setVolume,setMuted,settings:()=>({...set}),tracks:TRACKS,ready,status};
+ return {current:()=>cur,play,scene,setVolume,setMuted,settings:()=>({...set}),tracks:TRACKS,ready,status,whenReady:()=>probed};
 })();

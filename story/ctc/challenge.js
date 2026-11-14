@@ -255,9 +255,9 @@ const Challenge=(()=>{
     const c=def.beats[i+3];c.say[1]={text:'45km 이하 서행, 동묘앞역 상출발 수신호를 확인하고 출발',line:'관제승인으로 서행 45키로 이하 운행하시고, 동묘앞역 상출발 수신호 현시하였으니 확인하고 출발하세요. 관제 이상!',reply:[H('G0604 기관사','G0604열차, 45키로 이하 서행, 수신호 확인 출발. 이상.')],bad:'G0604는 출발신호를 기다렸다. 출발신호는 열리지 않았다. 고장 난 선로전환기 너머의 신호였으니까. 역무원은 수신호를 든 채 20분을 서 있었다.',why:'신호가 아니라 수신호로 가요. 그걸 기관사에게 분명히 말해요.'};
    }},
   {id:'k602cannot',base:'ch08-dongmyo',name:'앞 열차 회송 불가',apply(def){
-    const i=at(def,b=>b.t==='say'&&b.lines.some(l=>/K0602 회송은 7장과 같아요/.test(l[2])));const j=at(def,b=>b.t==='ops'&&(b.objs||[]).includes('move-K0608'));
-    if(i<0||j<0)return false;
-    const demo=def.beats.splice(i,4);   // say, do, comm, move (K0602 회송 시범)
+    const i=at(def,b=>b.t==='call'&&/K0602부터/.test(b.cue||'')),e=at(def,b=>b.t==='move'&&/G0602가 이문차량기지/.test(b.text||''));const j=at(def,b=>b.t==='ops'&&(b.objs||[]).includes('move-K0608'));
+    if(i<0||e<i||j<0)return false;
+    const demo=def.beats.splice(i,e-i+1);   // K0602 회송: 역·기관사 지시, 열번, 출발 지시, comm, move
     const jj=at(def,b=>b.t==='ops'&&(b.objs||[]).includes('move-K0608'));
     def.beats.splice(jj+1,0,{t:'say',lines:[S('K0602열차, 회송 가능 여부 재통보 바랍니다.'),H('K0602 기관사','후부 응급조치 끝났습니다. 회송 가능합니다. 이상.')]},...demo);
     def.beats.splice(i,0,

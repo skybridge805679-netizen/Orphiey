@@ -748,7 +748,6 @@ const CTCDrill=(()=>{
   let comms=p.communications.filter(c=>c.points!==0),objs=p.objectives,scopeReason='원본 전체 절차';
   if(sid==='ch01-stop'){comms=comms.filter(c=>range(1,3).includes(c.id));objs=[];scopeReason='1장 초기 열차 통제 수업';}
   else if(sid==='ch02-report'){comms=comms.filter(c=>range(1,8).includes(c.id));objs=[];scopeReason='2장 초기 통제·현장 보고 수업';}
-  else if(sid==='final-exam'){comms=comms.filter(c=>[...range(1,8),...range(13,15)].includes(c.id));objs=objs.filter(o=>!/(?:rename|move|ack|delete)-G/.test(o.id));scopeReason='최종장 모터카 철수·운행선 변경 시험';}
   if(docs.includes('bogie')){comms=p.communications.filter(c=>[...range(1,8),'n19'].includes(c.id));objs=[];scopeReason='구원 취소·자력운행·차량교체';}
   if(docs.includes('selfrun')){comms=p.communications.filter(c=>[...range(1,14),'n26'].includes(c.id));objs=[];scopeReason='화재 차량 자력운행·차량교체';}
   const mo=objs.filter(o=>it.obj?.[o.id]==null),mc=comms.filter(c=>it.comm?.[c.id]==null);

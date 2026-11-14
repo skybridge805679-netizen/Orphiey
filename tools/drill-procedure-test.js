@@ -1,7 +1,7 @@
 // 순서 회귀 검사. 실행: node tools/drill-procedure-test.js
 'use strict';
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
-const scenes={};const ctx=vm.createContext({CTCDrill:{scene:(id,s)=>scenes[id]=s}});
+const scenes={};const ctx=vm.createContext({CTCDrill:{scene:(id,s)=>scenes[id]=s,sceneDef:id=>scenes[id]}});
 for(const f of ['blocks.js','drill-ch03.js','drill-final.js'])vm.runInContext(fs.readFileSync('story/ctc/'+f,'utf8'),ctx,{filename:f});
 const s=scenes['ch03-rescue'],beats=s.beats;
 const op=id=>beats.findIndex(b=>b.t==='ops'&&b.objs.includes(id));

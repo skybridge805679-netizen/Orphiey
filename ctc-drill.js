@@ -438,7 +438,9 @@ const CTCDrill=(()=>{
   if(!b.incoming)await dkWho(b);
   const r=G.scene.roster.find(x=>x.id===b.who)||{},title=b.title||r.name||'';
   await dkLines(b.open);
-  G.dec++;let first=true;const said=new Set(),items=[...b.say.filter(x=>!x.beforeGuro||(()=>{const f=findTrain(x.beforeGuro);return f&&(f.station==='geumcheon'||f.station==='guro'&&/^B63[13579]T$/.test(f.slot));})()).map(x=>({...x,last:x.last||/확인.{0,3}출발|합병 승인/.test(x.line||''),phase:/확인.{0,3}출발/.test(x.line||'')?2:/합병 승인/.test(x.line||'')?1:x.last?2:0,need:true})),...(b.no||[])].sort((x,y)=>b.ordered?0:hash(x.text+G.p0.id+(CH?.salt||''))-hash(y.text+G.p0.id+(CH?.salt||'')));
+  G.dec++;let first=true;const said=new Set(),before=x=>{const f=findTrain(x.beforeGuro);return !!f&&(f.station==='geumcheon'||f.station==='guro'&&/^B63[13579]T$/.test(f.slot));},   // beforeGuro: 그 열차가 아직 상1선(구로 진입 전)에 있을 때만 필수. 이미 지나갔으면 같은 문장이 오답이 된다
+   gone=b.say.filter(x=>x.beforeGuro&&!before(x)).map(x=>({text:x.text,bad:x.elseBad||'관제는 「상1선에 선행 열차가 있으니 주의운전」이라고 했다. 상1선에는 아무것도 없었다. 그 열차는 이미 구로역을 지나 있었다. 기관사는 있지도 않은 열차를 찾느라 시속 25킬로미터로 구로역까지 기어갔다.',why:x.elseWhy||'주의 통보는 지금 실제로 있는 열차에 대해서만 해요. LS에서 그 열차가 어디 있는지 확인하고 말해요.'})),
+   items=[...b.say.filter(x=>!x.beforeGuro||before(x)).map(x=>({...x,last:x.last||/확인.{0,3}출발|합병 승인/.test(x.line||''),phase:/확인.{0,3}출발/.test(x.line||'')?2:/합병 승인/.test(x.line||'')?1:x.last?2:0,need:true})),...(b.no||[]),...gone].sort((x,y)=>b.ordered?0:hash(x.text+G.p0.id+(CH?.salt||''))-hash(y.text+G.p0.id+(CH?.salt||'')));
   for(;;){
    clock(true);dkStatus(said.size?'더 할 말이 있나요? 다 했으면 「관제 이상!」으로 끝내요.':b.ask||'연결됐어요. 무엇을 말할까요?',first?'':'worry');
    const got=await new Promise(res=>{
@@ -576,7 +578,7 @@ const CTCDrill=(()=>{
   const ok=o=>o.check?o.check():item().obj?.[o.id]!=null;
   G.target=targets(objs);const st0=[...G.target.st][0];look(b.screen||'ls');if(st0)W.document.querySelector(`#stationTabs [data-view="${st0}"]`)?.click();
   dkStatus('LS·MMI에서 직접 취급하고 결과를 확인해요.');G.dock='ops';clock(false);G.busy=false;
-  const draw=()=>{main().innerHTML=`<h4>🖱 설비·열번·알람 조작</h4><div class="dk-task"><b>${esc(b.text)}</b><ul>${objs.map(o=>`<li class="${ok(o)?'done':''}">${ok(o)?'✔':'○'} ${esc(o.label)}</li>`).join('')}</ul>${records.hint?'<p class="dk-note">힌트 · 신호는 LS에서, 열번 수정·삭제와 알람 체크·확인은 MMI에서도 취급할 수 있어요.</p>':''}</div>`;};
+  const draw=()=>{main().innerHTML=`<h4>🖱 설비·열번·알람 조작</h4><div class="dk-task"><b>${esc(b.text)}</b><ul>${objs.map(o=>`<li class="${ok(o)?'done':''}">${ok(o)?'✔':'○'} ${esc(o.label)}</li>`).join('')}</ul>${records.hint?'<p class="dk-note">힌트 · 신호와 열번 수정·삭제는 LS에서(열번창을 우클릭하면 메뉴가 떠요. MMI에서도 돼요). 열번 중복 알람 체크·확인은 MMI 알람창에서 해요.</p>':''}</div>`;};
   G.redraw=draw;let sig='';
   while(G&&!objs.every(ok)){const missed=objs.find(o=>item().missed?.[o.id]!=null);if(missed)throw Error('필수 조작을 놓쳤어요: '+missed.label);const s=objs.map(ok).join()+records.hint;if(s!==sig){sig=s;draw();if(sig.includes('true'))SFX.play('correct');}await new Promise(r=>setTimeout(r,250));}
   if(!G)return;G.redraw=null;G.dock='';G.busy=true;G.target=null;draw();SFX.play('correct');
@@ -631,7 +633,7 @@ const CTCDrill=(()=>{
   const tasks=[];
   for(const number of b.del||[]){const ack=view().objectives.find(o=>o.id==='ack-'+number);if(ack&&item().obj?.[ack.id]==null)await dkOps({objs:[ack.id],screen:'mmi',text:'구원연결 중복 알람을 체크하고 확인하세요.'});const before=findTrain(number);if(!before)throw Error('삭제할 열차가 없습니다: '+number);tasks.push({id:'manual-delete-'+number,label:`열차번호 ${number} 삭제`,condition:{number,station:before.station},check:()=>!findTrain(number)});}
   for(const [old,number] of b.rename||[]){const before=findTrain(old);if(!before)throw Error('변경할 열차가 없습니다: '+old);tasks.push({id:'manual-rename-'+number,label:`열차번호 ${old} → ${number} 수정`,condition:{number:old,station:before.station},check:()=>{const now=findTrain(number);return now?.uid===before.uid&&!findTrain(old);}});}
-  if(tasks.length)await dkOps({tasks,text:'승인된 열차번호 변경·삭제를 직접 취급하고 결과를 확인하세요.',screen:'mmi'});
+  if(tasks.length)await dkOps({tasks,text:'승인된 열차번호 변경·삭제를 직접 취급하고 결과를 확인하세요. (LS 열번창 우클릭)',screen:'ls'});
   for(const [station,a] of b.ctl||[]){
    if(station==='tick'){W.SimRemote.command({type:'tick',seconds:a});continue;}
    const name=W.SimNetwork.catalog[station]?.name||station;

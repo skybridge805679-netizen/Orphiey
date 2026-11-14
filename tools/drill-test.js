@@ -1,4 +1,4 @@
-// 실습 장면 자동 플레이: node tools/drill-test.js <장면id> [늦게 부를 need id]   (python3 -m http.server 8765 를 먼저 띄운다)
+// 실습 장면 자동 플레이: node tools/drill-test.js <장면id> [늦게 부를 need id]  |  도전 모드: node tools/drill-test.js challenge [장면id:문서상황변경id]   (python3 -m http.server 8765 를 먼저 띄운다)
 const {chromium}=require(require('child_process').execSync('npm root -g').toString().trim()+'/playwright');
 const DIR=require('os').tmpdir()+'/';
 const scene=process.argv[2]||'ch02-report',lateId=process.argv[3]||'';
@@ -7,7 +7,7 @@ const scene=process.argv[2]||'ch02-report',lateId=process.argv[3]||'';
  const errs=[];p.on('pageerror',e=>errs.push(e.message));
  p.on('console',m=>{if(m.type()==='error'&&!/404|textLength/.test(m.text()))errs.push('c: '+m.text().slice(0,200));});
  await p.goto('http://localhost:8765/index.html');await p.waitForTimeout(700);
- if(scene==='challenge')console.log('CHALLENGE',JSON.stringify(await p.evaluate(()=>{window.__R=null;const info=Challenge._build();CTCDrill.mode({forecasts:2,salt:String(Math.random()),keepHint:true});CTCDrill.start('challenge',R=>window.__R=R);return info;})));   // 도전 모드: 무작위 장면 + 상황 변경 (힌트는 테스트용으로 유지)
+ if(scene==='challenge')console.log('CHALLENGE',JSON.stringify(await p.evaluate(f=>{window.__R=null;const info=Challenge._build(f);CTCDrill.mode({forecasts:2,salt:String(Math.random()),keepHint:true});CTCDrill.start('challenge',R=>window.__R=R);return info;},lateId.includes(':')?{base:lateId.split(':')[0],doc:lateId.split(':')[1]}:null)));   // 도전 모드: 무작위 장면 + 상황 변경 (힌트는 테스트용으로 유지)
  else await p.evaluate(s=>{window.__R=null;CTCDrill.start(s,R=>window.__R=R);},scene);
  await p.waitForFunction(()=>CTCDrill.debug(),null,{timeout:30000});
  await p.evaluate(()=>{const h=document.querySelector('#ctcHint');if(!h.checked){h.checked=true;h.dispatchEvent(new Event('change'));}});   // 도전 모드에서는 힌트 칸이 숨겨져 있어서 클릭 대신 직접 켠다

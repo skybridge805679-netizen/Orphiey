@@ -7,9 +7,10 @@ const scene=process.argv[2]||'ch02-report',lateId=process.argv[3]||'';
  const errs=[];p.on('pageerror',e=>errs.push(e.message));
  p.on('console',m=>{if(m.type()==='error'&&!/404|textLength/.test(m.text()))errs.push('c: '+m.text().slice(0,200));});
  await p.goto('http://localhost:8765/index.html');await p.waitForTimeout(700);
- await p.evaluate(s=>{window.__R=null;CTCDrill.start(s,R=>window.__R=R);},scene);
+ if(scene==='challenge')console.log('CHALLENGE',JSON.stringify(await p.evaluate(()=>{window.__R=null;const info=Challenge._build();CTCDrill.mode({forecasts:2,salt:String(Math.random()),keepHint:true});CTCDrill.start('challenge',R=>window.__R=R);return info;})));   // 도전 모드: 무작위 장면 + 상황 변경 (힌트는 테스트용으로 유지)
+ else await p.evaluate(s=>{window.__R=null;CTCDrill.start(s,R=>window.__R=R);},scene);
  await p.waitForFunction(()=>CTCDrill.debug(),null,{timeout:30000});
- await p.click('#ctcHint');
+ await p.evaluate(()=>{const h=document.querySelector('#ctcHint');if(!h.checked){h.checked=true;h.dispatchEvent(new Event('change'));}});   // 도전 모드에서는 힌트 칸이 숨겨져 있어서 클릭 대신 직접 켠다
  const where=()=>p.evaluate(()=>{const o=[];for(const [st,s] of Object.entries(CTCDrill.frame().SimRemote.snapshot.ls.stations))for(const [slot,rows] of Object.entries(s.windows))for(const r of rows)o.push(r.number+'='+st+'/'+slot);return o.sort().join(' ');});
  console.log('start:',await where());
  let stuck=0,last='',fc=0,rushN=0,idle=false,opsShot=false,mv=false;

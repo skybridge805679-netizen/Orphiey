@@ -546,3 +546,14 @@ img.vn-stamp{width:min(34vw,360px);text-shadow:none}
 
 #ctcDrill .dk-c>span:not(.dk-face){display:flex;flex-direction:column;min-width:0}
 #ctcDrill .dk-c.wait{padding-bottom:10px}
+
+/* 도전 모드 */
+.vn-title nav button.challenge{border-color:#ffb86b;color:#ffd9a8}
+.challenge #ctcScript,.challenge label:has(#ctcHint){display:none}
+.ch-result{position:fixed;inset:0;z-index:90;display:grid;place-items:center;background:#040c14e6}
+.ch-card{width:min(560px,90vw);padding:28px 32px;border-radius:16px;border:1px solid #ffb86b66;background:#0b1c2a;color:#e7f3f4;text-align:center}
+.ch-card small{color:#ffb86b;letter-spacing:.08em}.ch-card h2{margin:8px 0 4px;font-size:20px}
+.ch-card .score{font-size:64px;font-weight:800;margin:6px 0;color:#78eadb}.ch-card .rank-C{color:#ff8a8a}.ch-card .rank-B{color:#ffd27a}
+.ch-tw{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}.ch-tw span{padding:4px 10px;border-radius:999px;background:#2a2012;border:1px solid #ffb86b55;color:#ffd9a8;font-size:13px}
+.ch-rec{color:#9fb8c0;font-size:13px}.ch-btns{display:flex;gap:10px;justify-content:center;margin-top:16px}
+.ch-btns button{padding:10px 20px;border-radius:10px;border:1px solid #2c4b58;background:#06141f;color:#e7f3f4;cursor:pointer}.ch-btns button.primary{background:#ffb86b;color:#1a1206;border-color:#ffb86b}

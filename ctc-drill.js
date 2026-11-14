@@ -271,7 +271,7 @@ const CTCDrill=(()=>{
  function hud(){
   if(!G.steps)return;const n=G.steps.length,i=Math.min(G.stepIndex+1,n);
   $('.ctc-step').textContent=`단계 ${i} / ${n}`;
-  $('.ctc-score').innerHTML=(G.scene?`<span title="예측 연산 남은 횟수">예측 연산</span><span class="fc-pips">${Array.from({length:FORECASTS},(_,k)=>`<i class="${k<G.rw?'on':''}"></i>`).join('')}</span>`:'')+(G.dec?`<b>첫 시도 ${G.first}/${G.dec}</b>`:'');
+  $('.ctc-score').innerHTML=(G.scene?`<span title="예측 연산 남은 횟수">예측 연산</span><span class="fc-pips">${Array.from({length:fcMax()},(_,k)=>`<i class="${k<G.rw?'on':''}"></i>`).join('')}</span>`:'')+(G.dec?`<b>첫 시도 ${G.first}/${G.dec}</b>`:'');
   $('.ctc-hud').style.setProperty('--prog',(n?100*G.stepIndex/n:0)+'%');
  }
  function hintPanel(){
@@ -383,6 +383,8 @@ const CTCDrill=(()=>{
  const ACTS={stop:'다음 역에 정차',caution:'주의운전',hold:'3분 추가 정차',run:'그대로 운행'};
  const GROUPS=['adjacent','follow','ahead'],GNAME={adjacent:'인접선 열차',follow:'후속열차',ahead:'선행열차'};
  const FORECASTS=3;
+ let CH=null;   // 도전 모드 설정 {forecasts, salt} — story/ctc/challenge.js 가 CTCDrill.mode()로 켠다
+ const fcMax=()=>CH?.forecasts||FORECASTS;
  const main=()=>$('.dk-main');
  function icon(who,name,mood){
   const role=roleFace(who,name,mood),f=role||(who==='orpheia'?FACE['orpheia'+(mood&&FACE['orpheia_'+mood]?'_'+mood:'')]:FACE[who]);
@@ -411,7 +413,7 @@ const CTCDrill=(()=>{
   fc.style.backgroundImage=has('ui_forecast_bg.png')?`url(${asset('ui_forecast_bg.png')})`:'';fc.hidden=false;if(typeof BGM!=='undefined')BGM.play('bgm_forecast');
   await new Promise(res=>fc.querySelector('button').onclick=res);
   fc.hidden=true;SFX.play('rewind');if(typeof BGM!=='undefined')BGM.play('bgm_emergency');
-  if(G.rw<=0){G.over=true;G.rw=FORECASTS;hud();await bubble('orpheia','','예측 연산이 과열됐어요……! 잠깐만 식힐게요. 이번 실습은 랭크 C로 기록돼요.','worry');}
+  if(G.rw<=0){G.over=true;G.rw=fcMax();hud();await bubble('orpheia','','예측 연산이 과열됐어요……! 잠깐만 식힐게요. 이번 실습은 랭크 C로 기록돼요.','worry');}
  }
  // Whom to call next. The cue names the situation, never the party.
  async function dkWho(b){
@@ -434,7 +436,7 @@ const CTCDrill=(()=>{
   if(!b.incoming)await dkWho(b);
   const r=G.scene.roster.find(x=>x.id===b.who)||{},title=b.title||r.name||'';
   await dkLines(b.open);
-  G.dec++;let first=true;const said=new Set(),items=[...b.say.map(x=>({...x,need:true})),...(b.no||[])].sort((x,y)=>hash(x.text+G.p0.id)-hash(y.text+G.p0.id));
+  G.dec++;let first=true;const said=new Set(),items=[...b.say.map(x=>({...x,need:true})),...(b.no||[])].sort((x,y)=>hash(x.text+G.p0.id+(CH?.salt||''))-hash(y.text+G.p0.id+(CH?.salt||'')));
   for(;;){
    clock(true);dkStatus(said.size?'더 할 말이 있나요? 다 했으면 「관제 이상!」으로 끝내요.':b.ask||'연결됐어요. 무엇을 말할까요?',first?'':'worry');
    const got=await new Promise(res=>{
@@ -480,7 +482,7 @@ const CTCDrill=(()=>{
  async function dkRush(b){
   const sc=G.scene,done=new Set(),left=new Map(b.needs.map(n=>[n.id,n.patience]));
   const ids=new Set(b.needs.map(n=>n.id));   // after에 이 rush 밖의 id(앞 rush에서 이미 끝난 것)가 있으면 충족된 것으로 본다
-  const active=()=>b.needs.filter(n=>!done.has(n.id)&&(n.after||[]).every(a=>done.has(a)||!ids.has(a)));
+  const active=()=>b.needs.filter(n=>!done.has(n.id)&&(n.afterCount||0)<=done.size&&(n.after||[]).every(a=>done.has(a)||!ids.has(a)));   // afterCount: 다른 호출이 n개 끝난 뒤에 끼어드는 호출
   while(done.size<b.needs.length){
    flow(6);dkStatus(b.cue||'여러 곳이 주인님의 무전을 기다려요. 급한 쪽부터!');
    const got=await new Promise(res=>{
@@ -538,7 +540,7 @@ const CTCDrill=(()=>{
   await dkLines(b.then);
  }
  async function dkChoice(b){
-  G.dec++;let first=true;const struck=new Set(),opts=b.opts.map((o,i)=>({...o,key:o.ok?'ok':'x'+i})).sort((x,y)=>hash(x.text+G.p0.id)-hash(y.text+G.p0.id));
+  G.dec++;let first=true;const struck=new Set(),opts=b.opts.map((o,i)=>({...o,key:o.ok?'ok':'x'+i})).sort((x,y)=>hash(x.text+G.p0.id+(CH?.salt||''))-hash(y.text+G.p0.id+(CH?.salt||'')));
   for(;;){
    clock(true);dkStatus(struck.size?'예측을 되감았어요. 다시 골라요, 주인님.':b.ask,struck.size?'worry':'');
    const got=await new Promise(res=>{
@@ -565,7 +567,7 @@ const CTCDrill=(()=>{
   if(b.settle)W.SimRemote.command({type:'tick',seconds:b.settle});   // 접근쇄정이 풀릴 만큼 시계를 감는다 (플레이어를 기다리게 하지 않는다)
  }
  async function runScene(sc){
-  const beats=sc.beats;G.steps=beats.flatMap(b=>b.t==='rush'?b.needs.map(()=>({kind:'rush',beat:b})):['choice','board','ops','call'].includes(b.t)?[{kind:b.t,beat:b}]:[]);G.stepIndex=0;G.rw=FORECASTS;hud();
+  const beats=sc.beats;G.steps=beats.flatMap(b=>b.t==='rush'?b.needs.map(()=>({kind:'rush',beat:b})):['choice','board','ops','call'].includes(b.t)?[{kind:b.t,beat:b}]:[]);G.stepIndex=0;G.rw=fcMax();hud();
   for(const b of beats){
    if(!G)return;
    const k=G.steps.findIndex(s=>s.beat===b);if(k>=0){G.stepIndex=k;hud();}G.beat=b;
@@ -664,6 +666,7 @@ const CTCDrill=(()=>{
  }
  function close(R){
   clearInterval(tick);clearInterval(typer);clearTimeout(toastTimer);el.hidden=true;document.body.classList.remove('in-ctc');
+  if(CH){if(CH.hint!==undefined)records.hint=CH.hint;CH=null;el.classList.remove('challenge');}
   try{W?.SimRemote.command({type:'fts',op:'stop'});}catch{}
   frame.src='about:blank';W=null;M=null;G=null;advanceFn=null;el.classList.remove('show-mmi','desk');$('#ctcDesk').hidden=true;onDone?.(R);
  }
@@ -672,6 +675,7 @@ const CTCDrill=(()=>{
  // `id` is a script id (yongsan-5, em-05-1 …), a problem id (P-…) or an FTS scenario id (SC-…).
  function start(id,done){
   if(!el)build();onDone=done;el.hidden=false;el.classList.remove('peek','desk');$('#ctcDesk').hidden=true;document.body.classList.add('in-ctc');
+  if(CH&&!CH.keepHint&&CH.hint===undefined){CH.hint=records.hint;records.hint=false;}el.classList.toggle('challenge',!!CH);
   $('#ctcHint').checked=!!records.hint;$('.ctc-loading').hidden=false;el.classList.remove('show-mmi');el.querySelectorAll('.ctc-view button').forEach(b=>b.classList.toggle('on',b.dataset.view==='ls'));$('.ctc-view i').hidden=true;
   const old=$('#ctcMMI'),fresh=document.createElement('iframe');fresh.id='ctcMMI';fresh.title=old.title;old.replaceWith(fresh);
   for(const s of ['.ctc-dialogue','#ctcRadioPanel','#ctcHintPanel','.ctc-toast','.ctc-forecast','.ctc-hud','.ctc-task'])$(s).hidden=true;
@@ -727,5 +731,5 @@ const CTCDrill=(()=>{
  }
  function fail(msg){$('.ctc-loading').hidden=true;G=G||{log:[]};say('orpheia','오르페이아',msg+' 이야기로 돌아갈게요.','worry').then(()=>close({id:'',error:msg}));}
  // Test helpers.
- return {start,look,scene:(id,def)=>{SCENES[id]=def;},mmi:()=>M,debug:()=>G&&{dock:G.dock||'',rw:G.rw,view:G.view,p:view(),item:item(),order:G.order,steps:G.steps,stepIndex:G.stepIndex,busy:G.busy,ending:G.ending,talking:!!advanceFn,choosing:!$('#ctcRadioPanel').hidden,task:!$('.ctc-task').hidden,target:G.target},frame:()=>W,recipient,label,opener};
+ return {start,look,scene:(id,def)=>{SCENES[id]=def;},sceneDef:id=>SCENES[id],sceneIds:()=>Object.keys(SCENES),mode:cfg=>{CH=cfg?{...cfg}:null;},mmi:()=>M,debug:()=>G&&{dock:G.dock||'',rw:G.rw,view:G.view,p:view(),item:item(),order:G.order,steps:G.steps,stepIndex:G.stepIndex,busy:G.busy,ending:G.ending,talking:!!advanceFn,choosing:!$('#ctcRadioPanel').hidden,task:!$('.ctc-task').hidden,target:G.target},frame:()=>W,recipient,label,opener};
 })();

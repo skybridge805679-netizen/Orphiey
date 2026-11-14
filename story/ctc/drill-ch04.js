@@ -2,7 +2,7 @@
 // 제4장 실습 「옆 선로도 세운다」 — 사상사고(CTC LAB 04: 금정역 하2선, K0809).
 //  · 앞부분(수보 · 전 열차 · 통제 · 역 · 보고)은 차량고장과 뼈대가 같다. 다른 것만 판단으로 낸다.
 //  · 이 사고만의 판단: 열차무선방호장치 / 인접선 열차도 세운다 / 112·119 / 인접선 지장 확인 → 방호장치 해제 → 인접선 먼저 재개(최초 열차 주의운전)
-//  · 운행선 변경(K0811 안양~군포 하1선)은 3장에서 배웠으므로 교수가 시범으로 한다(t:'do').
+//  · 운행선 변경 통보와 설비 취급도 관제사가 직접 수행한다.
 //  · 농담을 줄인다. 오답 결말은 지연·혼란·민망함까지만 쓰고, 사상자는 그리지 않는다.
 (()=>{
 const B=DrillBlocks,H=(n,t,m)=>['harin',n,t,m],S=t=>['sangcheol','',t],O=(t,m)=>['orpheia','',t,m],I=t=>['instructor','',t];
@@ -151,23 +151,13 @@ CTCDrill.scene('ch04-casualty',{problem:'em-04',title:'제4장 실습 · 옆 선
  {t:'comm',ids:['n12']},
  {t:'move',runs:[],view:'gunpo',watch:9000,text:'옆 선로의 열차들이 사고 지점 옆을 천천히 지나가요……'},
 
- // ── 길어지는 복구: 운행선 변경은 시범으로
- {t:'say',lines:[
-  H('K0809 기관사','철도관제, K0809열차. 사상자 구호 조치가 늦어지고 있습니다. 이상.'),
-  S('구호 조치 되는 대로 통보해 주세요. 관제 이상.'),
-  I('하2선은 한참 막혀요. 안양역의 K0811은 어떻게 하죠?'),
-  S('……옆 선로로 돌립니다. 안양~군포역 간 하1선.'),
-  I('맞아요. 그건 어제 했으니까, 오늘은 제가 할게요. 보고 있어요.'),
- ]},
- {t:'do',ctl:[['anyang',{type:'mode',value:'CCM'}],['anyang',{type:'stop',id:'4B'}],['gunpo',{type:'mode',value:'CCM'}],['gunpo',{type:'stop',id:'1A'}],['gunpo',{type:'stop',id:'1B'}],['tick',40]],wait:600},
- {t:'say',lines:[
-  I('팀장과 운영실에 통보했고, K0811에는 「안양역 출발 정지됩니다」. 안양역 4B를 막았어요. 접근쇄정 30초.'),
-  I('그 30초 동안 안양, 명학, 금정, 군포역에 알렸어요. 명학역은 승하차 위치가 바뀌니 안내방송, 금정역은 하1선에 승강장이 없으니 무정차 통과.'),
-  O('어제 주인님이 하신 거랑 똑같아요! 말하고, 막고, 그 사이에 알리고……','smile'),
- ]},
- {t:'do',ctl:[['anyang',{type:'route',id:'4B-B660T'}],['anyang',{type:'mode',value:'AUTO'}],['gunpo',{type:'route',id:'1B-1T'}],['gunpo',{type:'mode',value:'AUTO'}]],wait:600},
- {t:'comm',ids:['n13','n14','n15','n16','n17']},
- {t:'move',runs:[],view:'anyang',watch:9000,text:'K0811이 하1선으로 넘어가요. ……열고, 보낸다.'},
+ // ── 복구 지연: 원본 통보와 운행선 변경을 직접 수행
+ {t:'source',ids:['n13','n14','n15']},
+ {t:'do',ctl:[['anyang',{type:'mode',value:'CCM'}],['anyang',{type:'stop',id:'4B'}],['gunpo',{type:'mode',value:'CCM'}],['gunpo',{type:'stop',id:'1A'}],['gunpo',{type:'stop',id:'1B'}]]},
+ {t:'source',ids:['n16'],takes:40},
+ {t:'do',ctl:[['anyang',{type:'route',id:'4B-B660T'}],['anyang',{type:'mode',value:'AUTO'}],['gunpo',{type:'route',id:'1B-1T'}],['gunpo',{type:'mode',value:'AUTO'}]]},
+ {t:'source',ids:['n17']},
+ {t:'move',runs:[],view:'anyang',watch:9000,text:'K0811이 하1선으로 넘어가요.'},
 
  // ── 조치 완료, 회송
  {t:'say',lines:[
@@ -191,7 +181,7 @@ CTCDrill.scene('ch04-casualty',{problem:'em-04',title:'제4장 실습 · 옆 선
   no:[{text:'승강장 출입을 막아 승객이 내리지 못하게 한다',bad:'K0809의 문은 열리지 않았다. 승객들은 차량기지까지 가는 건가 하고 술렁였다.',why:'회송 전에 승객은 금정역에서 내려요.'}]},
  {t:'comm',ids:['n18','n19']},
  {t:'do',rename:[['K0809','G0809']]},
- {t:'say',lines:[O('승객이 다 내렸어요. 열차번호는 제가 고쳐 뒀어요. K0809 → G0809.','smile')]},
+ {t:'say',lines:[O('승객이 다 내렸어요. 열차번호 K0809 → G0809 변경을 확인했어요.','smile')]},
  {t:'call',who:'k0809',title:'G0809 기관사',cue:'빈 열차가 금정역에 서 있어요. 기관사가 마지막 지시를 기다려요.',whoWhy:'회송 출발 지시예요.',
   open:[S('K0809열차, 고객 하차 및 출발 준비 되었습니까?'),H('K0809 기관사','고객 하차 및 출발 준비 되었습니다. 이상.')],
   say:[{text:'관제승인 4호 — 열차번호 G0809로 병점차량기지까지 회송, 신호 확인 출발',line:'관제승인 4호로 열차번호 G0809로 변경하고 병점차량기지까지 회송 운행합니다. 신호 확인 출발. 관제 이상!',reply:[H('G0809 기관사','G0809열차, 신호 확인 출발. 이상.')],bad:'',why:''}],

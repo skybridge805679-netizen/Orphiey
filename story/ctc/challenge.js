@@ -12,7 +12,8 @@ const Challenge=(()=>{
  const POOL=['ch02-report','ch03-rescue','ch04-casualty','ch05-flood','ch06-fire','ch07-collision','ch08-dongmyo','final-exam'];
  const RULES={forecasts:2,patience:.6};
  const KEY='orpheia-challenge-v1';   // 'orpheia.' 으로 시작하는 키는 시뮬레이터 초기화 때 지워지므로 쓰지 않는다
- const rnd=()=>{const a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]/2**32;};
+ let seededRandom=null;
+ const rnd=()=>{if(seededRandom)return seededRandom();const a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]/2**32;};
  const pick=a=>a[Math.floor(rnd()*a.length)];
  const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
  const load=()=>{try{return JSON.parse(localStorage.getItem(KEY))||{};}catch{return {};}};
@@ -60,13 +61,13 @@ const Challenge=(()=>{
    {t:'choice',title:'사라진 점유',ask:`방금까지 있던 ${t.call}이 LS에서 사라졌어요. 그 선로로 곧 다른 열차를 보내야 해요.`,opts:[
     {text:'기관사를 불러 현재 위치를 직접 확인한다',ok:true},
     {text:'LS에 없으니 빈 선로로 보고 다음 열차를 보낸다',bad:'다음 열차가 그 선로로 들어섰다. 열차는 사라지지 않았다. 화면에서만 사라졌을 뿐이었다. 신호가 세워 주었고, 두 열차 사이는 40미터였다.',why:'LS는 설비예요. 설비가 틀릴 수 있어요. 열차 위치는 기관사에게 물어서 확인해요.'},
-    {text:'LS가 다시 표시해 줄 때까지 기다린다',bad:'관제는 화면을 보며 기다렸다. 화면은 돌아오지 않았다. 20분 뒤 신호 담당이 전화를 받았다. 「궤도회로 단선입니다. 한 시간 걸립니다.」',why:'기다리지 않고 물어요. 무전이 있어요.'},
+    {text:'LS가 다시 표시해 줄 때까지 기다린다',bad:'관제는 화면을 보며 기다렸다. 화면은 돌아오지 않았다. 20분 뒤 신호 담당이 전화를 받았다. 「표시장치 장애입니다. 점검이 필요합니다.」',why:'기다리지 않고 물어요. 무전이 있어요.'},
     {text:'열번을 원래 자리에 다시 넣어 두고 넘어간다',bad:'관제는 열번을 손으로 다시 넣었다. 화면은 깨끗해졌다. 그 열차가 정말 거기 있는지는 여전히 아무도 몰랐다.',why:'화면을 고치는 게 아니라 사실을 확인해요.'},
    ]},
-   {t:'say',lines:[['sangcheol','',`${t.call}, 관제 이상! 현재 위치 알려 주세요.`],[t.who,t.name,`${t.call}, 지시받은 역에 그대로 정차 중입니다! 이상!`],['sangcheol','','정차 중 확인. 신호 담당에 궤도회로 점검 요청하겠습니다. 관제 이상!']]}]},
+   {t:'say',lines:[['sangcheol','',`${t.call}, 관제 이상! 현재 위치 알려 주세요.`],[t.who,t.name,`${t.call}, 지시받은 역에 그대로 정차 중입니다! 이상!`],['sangcheol','','정차 중 확인. 신호 담당에 표시장치 점검 요청하겠습니다. 관제 이상!']]}]},
   {id:'eager',kind:'choice',name:'임의 출발',make:t=>[
-   {t:'say',lines:[['instructor','','상황 변경.'],[t.who,t.name,`철도관제! ${t.call}, 승객 항의가 심합니다! 신호가 열려 있으니 출발하겠습니다!`,'urgent']]},
-   {t:'choice',title:'임의 출발',ask:`세워 둔 ${t.call}이 출발하겠다고 해요. 신호는 정말 열려 있어요.`,opts:[
+   {t:'say',lines:[['instructor','','상황 변경.'],[t.who,t.name,`철도관제! ${t.call}, 승객 항의가 심합니다! 출발해도 되겠습니까? 더는 기다리기 어렵습니다!`,'urgent']]},
+   {t:'choice',title:'임의 출발',ask:`세워 둔 ${t.call}이 출발하겠다고 해요. 출발 여부는 관제 지시와 현재 신호를 함께 확인해야 해요.`,opts:[
     {text:'관제 지시 없이 출발하지 말라고 다시 지시하고, 지연 안내방송을 하게 한다',ok:true},
     {text:'신호가 열려 있으니 출발해도 된다고 한다',bad:'열차는 출발했다. 신호는 다음 역까지만 열려 있었다. 그다음 신호는 정지였고, 그곳은 역과 역 사이였다. 승객 항의는 두 배가 되었다.',why:'신호는 한 구간만 말해 줘요. 전체를 보는 건 관제예요. 세운 이유가 풀리지 않았어요.'},
     {text:'항의하는 승객을 내리게 한다',bad:'항의하던 승객 열 명이 내렸다. 남은 890명도 내리고 싶어 했다. 기관사는 문 앞에서 한 명씩 설득했다.',why:'승객에게 필요한 건 하차가 아니라 이유예요. 안내방송을 하게 해요.'},
@@ -96,6 +97,7 @@ const Challenge=(()=>{
     say:[{text:`${train}을 구로역에서 차량교체하니 준비하게 한다`,line:`${train}열차 구로역에서 관제승인으로 차량교체합니다. 차량교체 준비해 주세요. 관제 이상!`,reply:[J('구로역','차량교체 준비. 구로역 수신 이상!')],bad:'',why:''}],
     no:[{text:`${train}을 구로역에서 무정차 통과시킨다고 알린다`,bad:'고장 난 열차가 승객을 태운 채 구로역을 지나쳤다. 교체할 차량은 구로역에 서 있었다.',why:'구로역에서 열차를 바꿔요.'}]},
   ]},
+  {t:'do',ctl:[['guro',{type:'mode',value:'CCM'}],['guro',{type:'route',id:'2A-5T'}],['guro',{type:'mode',value:'AUTO'}]]},
   {t:'call',who:String(train).toLowerCase(),cue:'두 역 모두 알아요. 열차는 움직일 수 있지만 멀쩡한 건 아니에요.',whoWhy:'사고 열차에 출발 지시를 내려요.',
    open:[S(`${train}열차, 출발 준비 되었습니까?`),H(`${train} 기관사`,'출발 준비 완료! 이상!')],
    say:[
@@ -105,16 +107,19 @@ const Challenge=(()=>{
    no:[{text:'조치됐으니 종착역까지 정상 영업하게 한다',bad:`${train}은 응급조치만 한 채 종착역까지 달렸다. 일곱 정거장 뒤에 다시 섰다. 이번에는 역과 역 사이였다.`,why:'응급조치는 임시예요. 가까운 구로역에서 차량을 바꿔요.'},
     {text:'지연을 만회하도록 회복운전하게 한다',bad:`${train}은 속도를 냈다. ${why}`,why:'응급조치만 한 차량은 서두르지 않아요.'}]},
  ];
+ const swapArrival=train=>[
+  {t:'waitTrain',train,station:'guro',slot:'5T',text:'구로역 도착을 확인한 뒤 차량교체를 진행하세요.'},
+  {t:'call',who:'guro',cue:'구로역에 도착했어요. 차량교체 완료와 승객 인계를 확인하세요.',say:[{text:'차량교체 및 승객 인계 완료를 확인한다',line:`구로역, ${train}열차 차량교체 및 승객 인계 완료했습니까?`,reply:[J('구로역','차량교체 및 승객 인계 완료했습니다. 이상.')],bad:'차량교체가 끝났는지 확인하지 않았습니다.',why:'도착과 교체 완료는 별도로 확인하세요.'}],autoEnd:true},
+ ];
  const DOC=[
   {id:'derail',base:'ch07-collision',major:true,name:'탈선',apply(def){
-    const iTwo=at(def,b=>b.t==='choice'&&b.title==='두 열차'),iGo=at(def,b=>b.t==='call'&&(b.title||'').startsWith('G0454')),iMerge=at(def,cueIs('연결됐어요. K0452 객실')),iSt=at(def,cueIs('K0452가 석수역 승강장에 들어와요'));
+    const iTwo=at(def,b=>b.t==='choice'&&b.title==='두 열차'),iGo=at(def,b=>b.t==='call'&&(b.title||'').startsWith('G0454')),iMerge=at(def,cueIs('연결됐어요. K0452 객실')),iSt=at(def,cueIs('K0452를 석수역 승강장으로 보내기 전에'));
     if([iTwo,iGo,iMerge,iSt].some(i=>i<0))return false;
     // 뒤쪽부터 고친다 (앞에 끼우면 번호가 밀리므로)
     Object.assign(def.beats[iSt],{cue:'탈선 복구를 마친 K0452가 빈 차로 회송해요. 석수역에는 걸어서 대피해 온 승객들이 아직 있어요.',
      say:[{text:'K0452가 회송 운행하니 고객 안내방송을 하게 한다',line:'K0452열차는 구로차량기지로 회송 운행합니다. 대피한 고객 안내방송 해 주세요. 관제 이상!',reply:[J('석수역','석수역 수신, 이상.')],bad:'대피해 온 승객들은 승강장에 들어오는 K0452를 보고 다시 타려고 줄을 섰다. 문은 열리지 않았다.',why:'회송열차라는 걸 역이 승객에게 알려야 해요.'}]});
     Object.assign(def.beats[iMerge],{cue:'연결됐어요. K0452 객실은 비어 있어요. 승객들은 아까 걸어서 대피했으니까요.',
-     say:[{text:'두 열차의 합병을 승인한다',line:'K0452열차와 G0454열차는 관제승인으로 열차 합병 승인하고,',bad:'두 열차는 연결된 채로 서 있었다. 한 열차인지 두 열차인지 서류상으로는 아무도 몰랐다.',why:'합병 승인이 있어야 한 열차로 움직여요.'},
-      {text:'복구한 차량이니 주의운전으로 회송, 진로 확인 출발',line:'탈선 복구한 차량이니 주의운전으로 회송 운행합니다. 진로 확인 출발. 관제 이상!',reply:[H('K0452 기관사','K0452열차, 주의운전, 진로 확인 출발. 이상.')],bad:'합병한 열차는 평소 속도로 출발했다. 방금 레일 위에 다시 올려놓은 바퀴가 첫 번째 분기기에서 크게 흔들렸다.',why:'탈선했던 차량이에요. 복구 뒤에도 주의운전이에요.'}],
+     say:[{text:'복구한 차량이니 주의운전으로 회송, 진로 확인 출발',line:'탈선 복구한 차량이니 주의운전으로 회송 운행합니다. 진로 확인 출발. 관제 이상!',reply:[H('K0452 기관사','K0452열차, 주의운전, 진로 확인 출발. 이상.')],bad:'합병한 열차는 평소 속도로 출발했다. 방금 레일 위에 다시 올려놓은 바퀴가 첫 번째 분기기에서 크게 흔들렸다.',why:'탈선했던 차량이에요. 복구 뒤에도 주의운전이에요.'}],
      no:[{text:'석수역에 세워 승객을 태우게 한다',bad:'탈선했던 열차의 문이 석수역에서 열렸다. 아무도 타지 않았다. 다들 한 시간 전에 그 열차에서 사다리로 내려온 사람들이었다.',why:'탈선 복구 차량은 회송해요.'}]});
     def.beats.splice(iGo-1,0,
      {t:'call',who:'recovery',cue:'구원열차를 보내기 전이에요. 탈선한 차량은 레일 위에 다시 올라왔을까요? 선로는 멀쩡할까요?',whoWhy:'탈선은 복구 완료와 시설물 피해를 확인한 뒤에 구원해요.',
@@ -194,6 +199,7 @@ const Challenge=(()=>{
    }},
   {id:'circuit',base:'ch05-flood',name:'궤도회로 낙하',apply(def){
     const i=at(def,cueIs('물에 둘러싸여 있던 K1135'));if(i<0)return false;
+    def.beats[i].say.splice(2,0,{text:'폐색 7~6호주 궤도회로 낙하: 15km 이하 주의운전과 다음 신호 확인',line:'관제승인으로 폐색 7~6호주 사이 궤도회로 낙하 구간은 15키로 이하 주의운전하고 폐색 6호주 신호 현시 확인하세요.',reply:[H('K1135 기관사','궤도회로 낙하, 15키로 이하 주의운전, 폐색 6호주 신호 확인. 수신 이상.')],bad:'기관사는 궤도회로 고장 구간의 운행 조건을 전달받지 못했습니다.',why:'교수의 설명으로 끝내지 말고 기관사에게 지시하고 복창을 받으세요.'});
     def.beats.splice(i,0,
      {t:'say',lines:[I('상황 변경.'),I('종각~지하서울역 간 하선, 폐색 7~6호주 사이 궤도회로가 낙하했어요. 열차가 없는데 LS에는 점유로 떠요. 물 때문이에요.')]},
      {t:'choice',title:'궤도회로 낙하',ask:'하선을 재개하려는데 그 구간 궤도회로가 낙하했어요. 그 구간 신호는 정지로 나와요.',opts:[
@@ -214,7 +220,8 @@ const Challenge=(()=>{
       {text:'믿을 수 없으니 한 번 더 재기동해 보라고 한다',bad:'기관사는 방금 살려 놓은 열차를 껐다 켰다. 이번에는 켜지지 않았다.',why:'확인은 검수반에게 물어서 해요.'}]},
      {t:'say',lines:[S('기동검수반, 차량 상태 재통보 바랍니다.'),['orpheia','기동검수반','고장대차 차단 조치하여 운행 가능하나, 구로역 차량교체 바랍니다! 이상!'],S('운행 가능, 구로역 차량교체. 수신. 열차 운행 재개하겠으니 안전한 장소로 대피하여 주시기 바랍니다.'),['orpheia','기동검수반','대피 완료! 수신 이상!']]},
      ...swapEnd({train:'K1208',place:'가산디지털단지역',stationLine:'K1208열차 정상운행합니다. 안내방송 해 주세요. 관제 이상!',why:'대차 하나를 차단한 열차의 제동은 평소보다 약했다.'}),
-     {t:'move',runs:[{train:'K1204'},{train:'K1206'},{train:'K1208'}],view:'guro',watch:9000,text:'K1208이 스스로 움직여요……!'},
+     {t:'move',runs:[{train:'K1204'},{train:'K1206'},{train:'K1208',legs:[['guro','5T']]}],view:'guro',watch:9000,text:'K1208이 스스로 움직여요……!'},
+     ...swapArrival('K1208'),
      ...B.recovery({place:'가산디지털단지역',comm:['n19'],cueAll:'고장열차가 떠났어요. 독산·금천구청·석수역의 열차들은 아직 서 있어요.'}),
      {t:'move',runs:[{train:'K1210'},{train:'K1212'},{train:'K1214'}],view:'guro',watch:8000,text:'세워 둔 열차들이 다시 달려요!'},
      {t:'say',lines:[I('구원할 뻔한 열차가 제 발로 갔네요. 계획은 상황을 따라가요.')]}];
@@ -232,7 +239,8 @@ const Challenge=(()=>{
      {t:'say',lines:[S('완전부동취급했다고요? 자력 운행 가능합니까?'),R('운행 가능합니다. 이상!'),S('자력 운행 가능, 수신.')]},
      ...swapEnd({train:'K0452',place:'석수역',stationLine:'K0452열차 조치 완료로 정상운행합니다. 안내방송 해 주세요. 관제 이상!',why:'한 량의 전기를 끊은 열차는 평소보다 힘이 약했다.'}),
      ...B.recovery({place:'석수역',what:'열차화재',comm:['n26'],cueAll:'K0452가 출발 준비를 마쳤어요. 상2선의 K0450은 아직 5분씩 늦추는 중이고, 관악·안양역 열차들도 기다려요.'}),
-     {t:'move',runs:[{train:'K0452'},{train:'K0454'},{train:'K0456'}],view:'geumcheon',watch:10000,text:'K0452가 제 힘으로 석수역을 떠나요.'},
+     {t:'move',runs:[{train:'K0452',legs:[['geumcheon','5T'],['guro','5T']]},{train:'K0454'},{train:'K0456'}],view:'geumcheon',watch:10000,text:'K0452가 제 힘으로 석수역을 떠나요.'},
+     ...swapArrival('K0452'),
      {t:'say',lines:[I('구원열차는 출발도 안 했네요. 그게 제일 좋은 구원이에요.')]}];
    }},
   {id:'point23b',base:'ch08-dongmyo',name:'선로전환기 불량',apply(def){
@@ -264,38 +272,56 @@ const Challenge=(()=>{
  ];
 
  // 장면 하나를 복제해 도전용으로 바꾼다.
- function build(force){   // force={base,doc} 는 테스트용 (예: {base:'ch07-collision',doc:'derail'})
-  const base=force?.base||pick(POOL),def=structuredClone(CTCDrill.sceneDef(base)),used=[];
+ function buildScene(force){   // force={base,doc} 는 테스트용 (예: {base:'ch07-collision',doc:'derail'})
+  const base=force?.base||pick(POOL);if(!POOL.includes(base))throw Error('알 수 없는 도전 장면: '+base);
+  let def=structuredClone(CTCDrill.sceneDef(base));const used=[];
   for(const b of def.beats)if(b.t==='rush')for(const n of b.needs)n.patience=Math.max(8,Math.round(n.patience*RULES.patience));
   // 문서의 상황 변경: 그 사고에 있는 것 중에서. 큰 것(major)은 60% 확률로 하나만, 아니면 작은 것 1~2개.
   const docs=DOC.filter(t=>t.base===base),majors=docs.filter(t=>t.major),minors=docs.filter(t=>!t.major);
-  const chosen=force?.doc?docs.filter(t=>force.doc.split('+').includes(t.id)):majors.length&&(rnd()<(base==='ch07-collision'?.8:.6)||!minors.length)?[pick(majors)]:shuffle(minors).slice(0,1+Math.floor(rnd()*2));
-  for(const t of chosen)if(t.apply(def)!==false)used.push(t);
+  const requested=force&&Object.hasOwn(force,'doc')?String(force.doc||'').split('+').filter(Boolean):null;
+  if(requested&&requested.some(id=>!docs.some(t=>t.id===id)))throw Error('장면에 없는 상황변경: '+requested.join('+'));
+  if(requested&&new Set(requested).size!==requested.length)throw Error('중복 상황변경');
+  const chosen=requested?requested.map(id=>docs.find(t=>t.id===id)):majors.length&&(rnd()<(base==='ch07-collision'?.8:.6)||!minors.length)?[pick(majors)]:shuffle(minors).slice(0,1+Math.floor(rnd()*2));
+  if(chosen.some(t=>t.major)&&chosen.length>1)throw Error('주요 상황변경은 다른 문서 상황변경과 함께 적용할 수 없습니다.');
+  for(const t of chosen){const draft=structuredClone(def);if(t.apply(draft)===false)throw Error('상황변경 적용 위치를 찾지 못했습니다: '+t.id);def=draft;used.push(t);}
   const rushes=def.beats.filter(b=>b.t==='rush');
-  const trains=def.roster.slice(1).filter(r=>/^[ak]\d/.test(r.id)),station=def.roster.find(r=>r.id==='station'),chief=def.roster.find(r=>r.id==='chief');
-    // rush형: 무작위 rush 1~2곳에, 그 rush에 없는 상대를 끼워 넣는다
-  let rk=0;
-  for(const b of shuffle(rushes).slice(0,1+Math.floor(rnd()*2))){
-   const busy=new Set(b.needs.map(n=>n.who));let got=null;
-   for(const t of shuffle(TWISTS.filter(t=>t.kind==='rush'&&!used.includes(t)))){
-    const free=(t.who==='train'?trains:t.who==='station'?[station]:[chief]).filter(r=>r&&!busy.has(r.id));
-    if(free.length){got=[t,pick(free)];break;}
+  const allowed=TWISTS.filter(t=>!force?.twists||force.twists.includes(t.id));
+  if(force?.twists?.some(id=>!TWISTS.some(t=>t.id===id)))throw Error('알 수 없는 공통 상황변경');
+  const stops=rushes.flatMap(b=>b.needs.filter(n=>n.train&&n.home&&n.at).map(n=>({beat:b,need:n})));
+  if(base==='ch03-rescue')stops.push({beat:def.beats.find(b=>b.t==='comm'),need:{id:'k1212',who:'k1212',train:'K1212',home:['geumcheon','5T'],at:'금천구청역'}});
+  const station=def.roster.find(r=>r.id==='station'),chief=def.roster.find(r=>r.id==='chief');
+  const selected=force?.twists?allowed:shuffle(allowed).slice(0,1+Math.floor(rnd()*2));
+  for(const t of selected){
+   if(t.who==='chief'||t.who==='station'){
+    const r=t.who==='chief'?chief:station,b=rushes.find(b=>!b.needs.some(n=>n.who===r?.id));
+    if(!r)throw Error('상황변경 통보 대상 없음: '+t.id);
+    if(b)b.needs.push({...t.make(r),id:'tw-'+t.id,afterCount:1});else {const at=def.beats.indexOf(rushes[0]);def.beats.splice(at+1,0,{...t.make(r),t:'call',incoming:true});}
+    used.push(t);continue;
    }
-   if(!got)continue;const [t,r]=got;
-   b.needs.push({...t.make(r),id:'tw'+(rk++),afterCount:1+Math.floor(rnd()*Math.max(1,b.needs.length-1))});used.push(t);
+   if(!stops.length)throw Error('상황변경에 필요한 정차 열차 없음: '+t.id);
+   const {beat,need}=pick(stops),r=def.roster.find(r=>r.id===need.who);
+   const st={id:'tw-station-'+need.id,who:'jian',name:need.at,call:need.at};
+   if(!def.roster.some(r=>r.id===st.id))def.roster.push(st);
+   let added;
+   if(t.kind==='rush'){
+    const call={...t.make(r),id:'tw-'+t.id,t:'call',incoming:true};added=[call];
+    if(t.id==='sick')added.push({t:'call',who:st.id,cue:`${need.at}에 정차한 ${r.call}에서 환자를 인계해요.`,say:[{text:'119 지원과 환자 인수를 지시한다',line:`${need.at}, ${r.call}의 응급환자 인수하고 119 지원 요청 바랍니다. 관제 이상!`,reply:[['jian',need.at,'환자 인수 및 119 지원 요청하겠습니다. 수신 이상.']],bad:'환자를 받을 역에 지시하지 않았습니다.',why:'기관사에게 예고한 지시를 역에도 전달하세요.'}],autoEnd:true});
+   }else added=t.make(r,st);
+   if(t.id==='ghost')added=[{t:'displayFault',number:need.train},...added,{t:'say',lines:[['instructor','','표시장치 점검 후 표시가 복구되었습니다. 실제 열차 위치와 다시 대조하세요.']]},{t:'displayFault',number:null}];
+   // Immediately after its stop order: no departed, renamed or missing train can be selected.
+   def.beats.splice(def.beats.indexOf(beat)+1,0,{t:'requireTrain',number:need.train,home:need.home},...added);
+   used.push(t);
   }
-  // choice형: 첫 rush 뒤의 무작위 자리에 1~2개
-  if(trains.length){
-   const first=def.beats.indexOf(rushes[0]);
-   for(const t of shuffle(TWISTS.filter(t=>t.kind==='choice')).slice(0,1+Math.floor(rnd()*2))){
-    const safe=def.beats.map((b,i)=>i).filter(i=>i>first&&['call','rush','ops','choice'].includes(def.beats[i].t));   // 판단 비트 바로 앞에만 끼운다
-    if(!safe.length)break;
-    def.beats.splice(pick(safe),0,...t.make(pick(trains),station));used.push(t);
-   }
-  }
+  def.challenge={base,docs:chosen.map(t=>t.id),twists:used.filter(t=>!chosen.includes(t)).map(t=>t.id),seed:force?.seed??null};
   def.title='도전 · '+def.title.replace(/^(제\d+장 실습|실기시험) · /,'');
   CTCDrill.scene('challenge',def);
-  return {base,twists:used.map(t=>t.name)};
+  return {base,docs:chosen.map(t=>t.id),twistIds:used.map(t=>t.id),seed:force?.seed??null,twists:used.map(t=>t.name)};
+ }
+
+ function build(force){
+  const previous=seededRandom;
+  if(force&&Object.hasOwn(force,'seed')){let state=Number(force.seed)>>>0;seededRandom=()=>{state=(Math.imul(state,1664525)+1013904223)>>>0;return state/4294967296;};}
+  try{return buildScene(force);}finally{seededRandom=previous;}
  }
 
  function result(R,info){
@@ -306,6 +332,8 @@ const Challenge=(()=>{
   box.innerHTML=R.error?`<div class="ch-card"><small>도전 모드</small><h2>시뮬레이터를 불러오지 못했어요</h2><p>${R.error}</p><div class="ch-btns"><button data-a="title">타이틀로</button></div></div>`
    :`<div class="ch-card"><small>도전 결과 · ${info.twists.length?'상황 변경 '+info.twists.length+'건':'상황 변경 없음'}</small><h2>${R.title}</h2><p class="score rank-${R.rank}">${R.rank}</p>
    <p>판단 첫 시도 정답 ${R.firstTry} / ${R.decisions}${R.rewinds?` · 예측 되감기 ${R.rewinds}회`:''}</p>
+   <p>${R.procedureComplete?'선택된 상황변경의 필수 절차 완료':'필수 절차 미완료'}</p>
+   ${(R.missed||[]).length?'<ul>'+R.missed.map(x=>'<li>'+String(x).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))+'</li>').join('')+'</ul>':''}
    <p class="ch-tw">${info.twists.map(t=>`<span>⚡ ${t}</span>`).join('')||'<span>교수님이 봐주셨어요</span>'}</p>
    <p class="ch-rec">연속 A 이상 ${rec.streak||0}회 · 최고 ${rec.best||0}회 · 도전 ${rec.plays}회 (S ${rec.ranks.S||0} · A ${rec.ranks.A||0} · B ${rec.ranks.B||0} · C ${rec.ranks.C||0})</p>
    <div class="ch-btns"><button class="primary" data-a="again">다시 도전 ▶</button><button data-a="title">타이틀로</button></div></div>`;

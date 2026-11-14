@@ -188,8 +188,9 @@ CTCDrill.scene('ch05-flood',{problem:'em-01',title:'제5장 실습 · 물은 레
   ],
   no:[{text:'시청역은 승강장 반대편이니 무정차 통과하게 한다',bad:'K1137은 시청역을 그냥 지나쳤다. 상선 승강장에는 안내를 받고 건너온 용산 방면 승객들이 서 있었다.',why:'시청역 상선 승강장에 서서 태워요. 출입문 방향만 주의하면 돼요.'}]},
  {t:'comm',ids:['n15']},
- {t:'say',lines:[O('반대 선로라서 열차번호가 저절로 따라가지 않아요. 열번은 제가 손으로 옮길게요!','smile')]},
+ {t:'say',lines:[O('승인한 역방향 진로로 열차가 운행해요. 도착할 때까지 실제 위치를 확인하세요.','smile')]},
  {t:'move',runs:[{train:'K1137',legs:[['jonggak','B045T'],['underground-seoul','1T']]}],view:'jonggak',watch:12000,text:'K1137이 상선을 거꾸로 달려요……!'},
+ {t:'waitTrain',train:'K1137',station:'underground-seoul',slot:'1T',text:'단선 구간 운행 열차의 지하서울역 도착을 확인하세요.'},
 
  // ── 물이 빠지면: 상용폐색 복귀
  {t:'say',lines:[
@@ -205,7 +206,7 @@ CTCDrill.scene('ch05-flood',{problem:'em-01',title:'제5장 실습 · 물은 레
   {text:'하선 복구가 완전히 끝나는 내일 아침',bad:'상선은 밤새 단선지령식으로 운영되었다. 열차가 지나갈 때마다 관제가 무전으로 하나씩 보냈다. 밤 근무 관제사는 그날 무전을 400번 했다.',why:'단선 운행할 이유가 없어지면 바로 되돌려요.'},
  ]},
  {t:'do',ctl:[['jonggak',{type:'mode',value:'AUTO'}],['underground-seoul',{type:'mode',value:'AUTO'}]],wait:600},
- {t:'say',lines:[O('K1137 지하서울역 도착, 종각~지하서울역 간 상선 열차 없음 확인! 두 역은 제가 AUTO로 돌려 뒀어요.','smile')]},
+ {t:'say',lines:[O('K1137 지하서울역 도착, 종각~지하서울역 간 상선 열차 없음 확인! 두 역 AUTO 복귀를 확인했어요.','smile')]},
  {t:'comm',ids:['n20']},
  {t:'call',who:'k1135',cue:'물에 둘러싸여 있던 K1135가 처음으로 움직일 차례예요. 하선 침수 지점을 처음 지나는 열차예요.',
   whoWhy:'하선 재개는 시청역의 K1135부터예요.',

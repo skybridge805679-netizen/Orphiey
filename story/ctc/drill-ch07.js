@@ -63,7 +63,7 @@ CTCDrill.scene('ch07-collision',{problem:'em-03',title:'제7장 실습 · 두 �
    {text:'K0450에도 방호장치를 따로 동작시키게 한다',bad:'두 번째 방호장치 경보가 울렸다. 주변 열차들은 이미 서 있었다. 기관사들은 경보가 두 개인 이유를 관제에 물었다.',why:'방호장치는 신고한 열차 하나로 충분해요. 앞 열차에는 방송과 확인을 지시해요.'},
   ]},
  {t:'comm',ids:['n1','n2']},
- {t:'say',lines:[O('MMI에 「열차번호 중복」 알람이 떴어요. 두 열차가 한 궤도 위에 있어서예요. 확인은 제가 해 둘게요.','serious')]},
+ {t:'say',lines:[O('MMI에 「열차번호 중복」 알람이 떴어요. 두 열차가 한 궤도 위에 있어서예요. MMI에서 알람을 체크하고 확인해야 해요.','serious')]},
 
  // ── 알리고, 세운다
  {t:'rush',cue:'인접선부터예요.',needs:[
@@ -169,19 +169,22 @@ CTCDrill.scene('ch07-collision',{problem:'em-03',title:'제7장 실습 · 두 �
    {text:'안내방송하고 고객을 모두 하차시키게 한다',line:'안내방송 하시고 고객 모두 하차시켜 주시기 바랍니다. 관제 이상!',reply:[H('K0450 기관사','K0450열차, 고객 모두 하차했습니다. 이상.')],bad:'K0450은 승객 몇 명을 태운 채 차량기지로 갔다. 그들은 졸고 있었다.',why:'회송 전에 모두 내렸는지 확인해요.'},
   ],
   no:[{text:'파손된 운전실을 앞으로 해서 회송하게 한다',bad:'K0450 기관사는 부서진 뒤 운전실로 걸어가 앉았다. 앞 유리 대신 바람이 들어왔다.',why:'회송은 멀쩡한 앞 운전실로, 원래 방향으로 가요.'}]},
- {t:'do',rename:[['K0450','G0450']],ctl:[['geumcheon',{type:'mode',value:'CCM'}],['geumcheon',{type:'route',id:'2A-5T'}],['geumcheon',{type:'mode',value:'AUTO'}]]},
+ {t:'do',rename:[['K0450','G0450']],ctl:[['geumcheon',{type:'mode',value:'CCM'}],['geumcheon',{type:'route',id:'2A-5T'}],['geumcheon',{type:'route',id:'3B-B963T'}],['geumcheon',{type:'mode',value:'AUTO'}],['guro',{type:'mode',value:'CCM'}],['guro',{type:'route',id:'2A-5T'}],['guro',{type:'route',id:'3A-B949T'}],['guro',{type:'mode',value:'AUTO'}]]},
  {t:'say',lines:[S('K0450열차, 관제승인 2호로 열차번호 G0450으로 변경하고 구로차량기지까지 회송 운행합니다. 신호 확인 출발. 관제 이상!'),H('G0450 기관사','G0450열차, 신호 확인 출발.'),O('열번은 G0450으로 고쳤고, 금천구청역 진로도 열었어요.','smile')]},
  {t:'comm',ids:['n16','n17']},
  {t:'move',runs:[],view:'geumcheon',watch:8000,text:'G0450이 사고 지점을 떠나요. 이제 K0452 혼자 남았어요.'},
 
- // ── 시범: 운행선 변경과 구원 준비
- {t:'say',lines:[
-  I('K0452 구원 준비와 K0456 운행선 변경은 어제와 같아요. 제가 할게요.'),
-  I('관악역과 K0454에 운행중지·구원·전령자. K0452에는 「열차 이동하지 마시고 후부로 가서 연결 준비」. 그리고 안양역 K0456은 상1선으로.'),
- ]},
- {t:'do',rename:[['K0454','G0454']],ctl:[['anyang',{type:'mode',value:'CCM'}],['anyang',{type:'stop',id:'3B'}],['anyang',{type:'stop',id:'3C'}],['tick',90],['geumcheon',{type:'mode',value:'CCM'}],['geumcheon',{type:'stop',id:'2A'}],['geumcheon',{type:'route',id:'2B-5T'}],['geumcheon',{type:'mode',value:'AUTO'}],['anyang',{type:'route',id:'3B-B655T'}],['anyang',{type:'mode',value:'AUTO'}]],wait:800},
- {t:'comm',ids:['n18','n19','n20','n21','n22','n23']},
+ // ── 구원 준비와 운행선 변경: 원본 지시·복창과 수동 조작
+ {t:'waitTrain',train:'G0450',station:'guro',slot:'5T',text:'앞 열차의 구로역 진입을 확인하고 변경 진로를 준비하세요.'},
+ {t:'source',ids:['n18', 'n19', 'n20', 'n21']},
+ {t:'source',ids:['n22'],segment:'signal'},
+ {t:'waitTrain',train:'A1002',station:'geumcheon',slot:'4T',text:'선행열차의 금천구청역 통과를 실제 위치로 확인한 뒤 진입 신호를 취급하세요.'},
+ {t:'do',ctl:[["anyang", {"type": "mode", "value": "CCM"}], ["anyang", {"type": "stop", "id": "3B"}], ["anyang", {"type": "stop", "id": "3C"}], ["geumcheon", {"type": "mode", "value": "CCM"}], ["geumcheon", {"type": "stop", "id": "2A"}], ["geumcheon", {"type": "stop", "id": "2B"}]]},
+ {t:'source',ids:['n22'],segment:'stations',takes:100},
+ {t:'do',ctl:[['geumcheon',{type:'route',id:'2B-5T'}],['geumcheon',{type:'route',id:'3B-B963T'}],['geumcheon',{type:'mode',value:'AUTO'}],['anyang',{type:'route',id:'3B-B655T'}],['anyang',{type:'mode',value:'AUTO'}]]},
+ {t:'source',ids:['n23']},
  {t:'move',runs:[],view:'anyang',watch:8000,text:'K0456이 상1선으로 넘어가요.'},
+ {t:'do',rename:[['K0454','G0454']]},
  {t:'say',lines:[H('K0454 기관사','철도관제, K0454열차! 고객 하차, 운전실에 전령자 승차했습니다! 이상!'),O('열번은 G0454로 바꿔 뒀어요. 이번 사고 열차는 승강장이 아니라 역 사이에 있어요!','serious')]},
  {t:'call',who:'k0454',title:'G0454 기관사 (구원열차)',cue:'구원열차가 출발을 기다려요.',whoWhy:'준비가 끝난 구원열차에 출발 지시를 내려요.',
   open:[S('전령자 승차 확인!')],
@@ -195,36 +198,40 @@ CTCDrill.scene('ch07-collision',{problem:'em-03',title:'제7장 실습 · 두 �
   then:[S('K0452열차와 사고복구반은 구원열차 관악역 출발했습니다. 안전한 장소로 대피하시기 바랍니다. 관제 이상!'),['orpheia','사고복구반','대피 완료. 수신 이상.']]},
  {t:'comm',ids:['n24','n25'],wait:1200},
  {t:'move',runs:[],view:'geumcheon',watch:11000,text:'G0454가 K0452 뒤로 다가가요……'},
+ {t:'ops',screen:'mmi',text:'구원연결 중복 알림 체크·확인',objs:['ack-G0454']},
 
  // ── 뒤 열차: 연결하고, 역까지 가서 내린다
  {t:'say',lines:[
   S('G0454열차, K0452열차와 구원연결 및 견인시험, 제동시험 완료했습니까?'),
   H('G0454 기관사','네! 구원연결 했습니다. 이상.'),
-  O('연결됐으니 G0454 열번은 지울게요.','smile'),
+  O('연결과 시험을 확인했어요. 합병을 승인한 뒤 G0454 열번을 직접 삭제하세요.','serious'),
  ]},
+ {t:'call',who:'k0452',cue:'구원연결과 견인·제동시험을 확인했어요. 두 열차의 합병 승인이 필요해요.',say:[
+   {text:'관제승인 7호 — 두 열차 합병 승인',line:'K0452열차와 G0454열차는 관제승인 7호로 열차 합병 승인하고,',bad:'두 열차는 연결된 채로 서 있었다. 서류상으로 한 열차인지 두 열차인지 아무도 몰랐다.',why:'두 열차가 한 열차로 움직이려면 합병 승인이 필요해요.'}
+ ],autoEnd:true},
  {t:'do',del:['G0454']},
+ {t:'call',who:'station',cue:'K0452를 석수역 승강장으로 보내기 전에 역에 먼저 알려요. 한 시간을 갇혀 있던 승객들이 내려요.',whoWhy:'승객이 내릴 역에 알려요.',
+  open:[S('석수역, 관제 이상.'),J('석수역','석수역, 이상.')],
+  say:[{text:'K0452가 운행중지·회송하니 고객 안내방송을 하게 한다',line:'K0452열차는 관제승인 8호로 석수역에서 운행중지하고 구로차량기지로 회송 운행합니다. 고객 안내방송 해 주세요. 관제 이상!',reply:[J('석수역','석수역 수신, 이상. ……구급대원 두 명, 승강장에 대기시키겠습니다.')],bad:'승객들이 내렸다. 역은 미리 몰랐다. 한 시간 갇혀 있던 사람들 앞에 아무도 없었다.',why:'승객이 내리는 역에 미리 알려요.'}],
+  autoEnd:true,
+  no:[{text:'역무원은 회송열차를 배웅만 하게 한다',bad:'역무원은 승강장 끝에서 손을 흔들었다. 승객들은 그 옆을 지나 출구를 찾아 헤맸다.',why:'내리는 승객을 안내해요.'}]},
  {t:'call',who:'k0452',cue:'연결됐어요. K0452 객실에는 아직 승객이 있어요. 역 사이에서 한 시간을 기다린 사람들이에요.',
   whoWhy:'합병을 승인하고, 승객을 어디서 내릴지 지시해요.',
   open:[S('K0452열차, 관제 이상.'),H('K0452 기관사','K0452열차, 이상.')],
   say:[
-   {text:'관제승인 7호 — 두 열차 합병 승인',line:'K0452열차와 G0454열차는 관제승인 7호로 열차 합병 승인하고,',bad:'두 열차는 연결된 채로 서 있었다. 서류상으로 한 열차인지 두 열차인지 아무도 몰랐다.',why:'두 열차가 한 열차로 움직이려면 합병 승인이 필요해요.'},
    {text:'관제승인 8호 — 석수역에서 운행중지',line:'K0452열차는 관제승인 8호로 석수역에서 운행중지합니다.',bad:'K0452는 석수역을 지나 차량기지로 향했다. 객실의 승객들은 역 사이에서 한 시간을 기다린 뒤, 또 한 시간을 차량기지까지 갔다.',why:'영업을 그만두는 곳을 정해 줘요. 가장 가까운 석수역이에요.'},
    {text:'석수역까지 안전하게 운행 후 고객 하차, 진로 확인 출발',line:'석수역까지 안전하게 운행 후 고객 하차시켜 주시기 바랍니다. 진로 확인 출발. 관제 이상!',reply:[H('K0452 기관사','K0452열차, 진로 확인 출발. 이상.')],bad:'K0452는 석수역에 섰다. 문은 열리지 않았다. 기관사는 내리라는 말을 듣지 못했다.',why:'역에 닿으면 승객을 내려요. 그걸 분명히 말해요.'},
   ],
   no:[{text:'연결이 끝났으니 지금 승객을 선로로 내리게 한다',bad:'승객들은 역 사이 선로로 내려섰다. 석수역 승강장은 300미터 앞이었다. 열차로 가면 1분이었다.',why:'연결됐으니 열차로 역까지 가요. 선로로 내릴 이유가 없어요.'}]},
  {t:'comm',ids:['n26']},
- {t:'call',who:'station',cue:'K0452가 석수역 승강장에 들어와요. 한 시간을 갇혀 있던 승객들이 내려요.',whoWhy:'승객이 내릴 역에 알려요.',
-  open:[S('석수역, 관제 이상.'),J('석수역','석수역, 이상.')],
-  say:[{text:'K0452가 운행중지·회송하니 고객 안내방송을 하게 한다',line:'K0452열차는 관제승인 8호로 석수역에서 운행중지하고 구로차량기지로 회송 운행합니다. 고객 안내방송 해 주세요. 관제 이상!',reply:[J('석수역','석수역 수신, 이상. ……구급대원 두 명, 승강장에 대기시키겠습니다.')],bad:'승객들이 내렸다. 역은 미리 몰랐다. 한 시간 갇혀 있던 사람들 앞에 아무도 없었다.',why:'승객이 내리는 역에 미리 알려요.'}],
-  autoEnd:true,
-  no:[{text:'역무원은 회송열차를 배웅만 하게 한다',bad:'역무원은 승강장 끝에서 손을 흔들었다. 승객들은 그 옆을 지나 출구를 찾아 헤맸다.',why:'내리는 승객을 안내해요.'}]},
  {t:'do',rename:[['K0452','G0452']]},
+ {t:'do',ctl:[['tick',60],['geumcheon',{type:'mode',value:'CCM'}],['geumcheon',{type:'route',id:'2A-5T'}],['geumcheon',{type:'route',id:'3B-B963T'}],['geumcheon',{type:'mode',value:'AUTO'}],['guro',{type:'mode',value:'CCM'}],['guro',{type:'route',id:'2A-5T'}],['guro',{type:'route',id:'3A-B949T'}],['guro',{type:'mode',value:'AUTO'}]]},
  {t:'say',lines:[S('K0452열차, 관제승인 9호로 열차번호 G0452로 변경하고 구로차량기지까지 회송 운행합니다. 신호 확인 출발. 관제 이상!'),H('G0452 기관사','G0452열차, 신호 확인 출발. 이상.')]},
  {t:'comm',ids:['n27'],wait:1200},
 
  // ── 끝을 알린다
  ...B.recovery({place:'석수역',what:'열차충돌사고',comm:['n28'],cueAll:'석수역 상2선이 비어 가요. 상2선 앞의 K0448·K0446은 아직 5분씩 늦추는 중이에요.'}),
- {t:'do',ctl:[['tick',60],['geumcheon',{type:'mode',value:'CCM'}],['geumcheon',{type:'route',id:'2A-5T'}],['geumcheon',{type:'route',id:'3B-B963T'}],['geumcheon',{type:'mode',value:'AUTO'}],['guro',{type:'mode',value:'CCM'}],['guro',{type:'route',id:'2A-5T'}],['guro',{type:'route',id:'3A-B949T'}],['guro',{type:'mode',value:'AUTO'}]]},
+
  {t:'move',runs:[],view:'geumcheon',watch:9000,text:'멈춰 있던 상2선이 다시 흘러요. 회송열차 두 대도 차량기지로.'},
  {t:'say',lines:[
   I('사고 열차가 둘이면 판단도 둘이에요. 움직일 수 있는 쪽은 스스로, 못 움직이는 쪽은 데리러.'),

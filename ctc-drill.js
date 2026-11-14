@@ -191,7 +191,7 @@ const CTCDrill=(()=>{
  // ── MMI terminal, drawn for the game: the same engine commands as the simulator's MMI (source "MMI").
  const SIG={GO:'go',STOP:'stop'};
  function mmiStations(){const s=W.SimRemote.snapshot.states;return W.SimNetwork.stations.map(x=>x.id).filter(id=>G.used.has(id)&&s[id]);}
- function alarms(){return [...(M?.document||W.document).querySelectorAll('.mmi-alarm #alarmText p')].map(x=>x.textContent.replace(/\s+/g,' ').trim()).filter(t=>!/열차번호 중복/.test(t));}
+ function alarms(){return [...(M?.document||W.document).querySelectorAll('.mmi-alarm #alarmText p')].map(x=>x.textContent.replace(/\s+/g,' ').trim());}
  function mmi(force){
   const box=$('#ctcTerm');if(!G||!W||(G.view!=='mmi'&&!force))return;
   const snap=W.SimRemote.snapshot,list=mmiStations(),mm=G.mm;if(!list.includes(mm.station))mm.station=list[0]||'';
@@ -212,7 +212,7 @@ const CTCDrill=(()=>{
    <div class="mm-detail">${mm.signal?`<h4>신호기 ${esc(mm.signal)} <small>${esc(core.signals[mm.signal]?.kind||'')} · 현재 ${state.signals[mm.signal]==='STOP'?'정지':'진행'}</small></h4><button data-do="stop" class="mm-stop${T&&T.st?.has(st)&&T.stop?.has(mm.signal)?' target':''}">■ 신호 정지</button><div class="mm-routes">${routes.map(r=>`<button data-route="${esc(r)}" class="${state.routes[r]?'set':''}${tg('route',r)}">${esc(r)}</button>`).join('')||'<span>이 신호기에서 시작하는 진로가 없어요.</span>'}</div>`:'<p>신호기를 고르면 정지 취급과 진로 설정을 할 수 있어요. (CCM 모드에서만)</p>'}</div>
    <div class="mm-set"><b>설정된 진로</b>${Object.keys(state.routes).map(r=>`<span>${esc(r)}</span>`).join('')||'<span class="none">없음</span>'}</div></section>
   <aside class="mm-right"><h4>열차번호 <small>${esc(nm(st))}역 열번창</small></h4><div class="mm-trains">${wins.map(w=>`<div><b>${esc(w.number)}</b><small>${esc(w.slot)}</small><button class="${tg('num',w.number)}" data-edit="rename" data-uid="${w.uid}" data-slot="${esc(w.slot)}" data-n="${esc(w.number)}">수정</button><button data-edit="move" data-uid="${w.uid}" data-slot="${esc(w.slot)}" data-n="${esc(w.number)}">이동</button><button data-edit="delete" data-uid="${w.uid}" data-slot="${esc(w.slot)}" data-n="${esc(w.number)}">삭제</button></div>`).join('')||'<p>이 역 열번창에 열차가 없어요.</p>'}</div>${form}
-   <h4>알람 <small>${al.length}건</small>${al.length?'<button data-do="ack" class="mm-ack">확인</button>':''}</h4><div class="mm-alarms">${al.map(a=>`<p>${esc(a)}</p>`).join('')||'<p class="none">미확인 알람 없음</p>'}</div>
+   <h4>알람 <small>${al.length}건</small>${al.length?'<button data-do="ack" class="mm-ack">확인</button>':''}</h4><div class="mm-alarms">${al.map((a,i)=>`<p><label><input type="checkbox" data-alarm-check="${i}" aria-label="알람 확인 표시" ${[...(M?.document||W.document).querySelectorAll('.mmi-alarm #alarmText input[type=checkbox]')][i]?.checked?'checked':''}>${esc(a)}</label></p>`).join('')||'<p class="none">미확인 알람 없음</p>'}</div>
    <h4>이벤트 로그</h4><div class="mm-log">${state.logs.slice(0,7).map(l=>`<p class="${l.result==='완료'?'':'bad'}">${esc(l.message||'')}</p>`).join('')}</div>
    <div class="mm-msg ${mm.bad?'bad':''}">${esc(mm.msg||'')}</div></aside>`;
   const said=r=>{mm.msg=r?.message||'';mm.bad=r?.ok===false;SFX.play(mm.bad?'wrong':'confirm');if(mm.bad)toast('거부됐어요: '+mm.msg,'worry');mm.sig='';mmi(true);update();};
@@ -222,13 +222,14 @@ const CTCDrill=(()=>{
   box.querySelectorAll('[data-sig]').forEach(b=>b.onclick=()=>{mm.signal=b.dataset.sig;SFX.play('select');mmi(true);});
   box.querySelectorAll('[data-route]').forEach(b=>b.onclick=()=>ctl({type:'route',id:b.dataset.route}));
   box.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>{const d=b.dataset;if(d.edit==='delete'){if(confirm(`${d.n} 열차번호를 삭제할까요? (지적확인환호)`))num({op:'delete',station:st,slot:d.slot,uid:d.uid});}else{mm.form={type:d.edit,uid:d.uid,slot:d.slot,number:d.n,to:st};mmi(true);}});
+  box.querySelectorAll('[data-alarm-check]').forEach(x=>x.onchange=()=>{const original=[...(M?.document||W.document).querySelectorAll('.mmi-alarm #alarmText input[type=checkbox]')][+x.dataset.alarmCheck];if(original&&original.checked!==x.checked)original.click();});
   box.querySelector('#mmSt')?.addEventListener('change',e=>{mm.form.to=e.target.value;mmi(true);});
   box.querySelectorAll('[data-do]').forEach(b=>b.onclick=()=>{const d=b.dataset.do,f=mm.form;
    if(d==='stop')ctl({type:'stop',id:mm.signal});
    else if(d==='cancel'){mm.form=null;mmi(true);}
    else if(d==='rename'){const v=box.querySelector('#mmNew').value.trim().toUpperCase();mm.form=null;num({op:'rename',station:st,slot:f.slot,uid:f.uid,number:v});}
    else if(d==='move'){const to=box.querySelector('#mmSt').value,slot=box.querySelector('#mmSlot').value;mm.form=null;num({op:'move',station:st,slot:f.slot,uid:f.uid,targetStation:to,targetSlot:slot});}
-   else if(d==='ack'){const d2=(M?.document||W.document);d2.querySelectorAll('.mmi-alarm #alarmText input[type=checkbox]').forEach(x=>{if(!x.checked)x.click();});d2.querySelector('.mmi-alarm [data-alarm-ok]')?.click();said({ok:true,message:'알람 확인'});}});
+   else if(d==='ack'){const d2=(M?.document||W.document);if(![...d2.querySelectorAll('.mmi-alarm #alarmText input[type=checkbox]')].some(x=>x.checked)){said({ok:false,message:'확인할 알람을 먼저 체크해 주세요.'});return;}d2.querySelector('.mmi-alarm [data-alarm-ok]')?.click();said({ok:true,message:'알람 확인'});}});
  }
  function dlg(html){$('.ctc-dlg-body').innerHTML=html;$('#ctcDlg').showModal();}
  // Role-play face icons (docs/리부트-에셋-생성지침.md) once delivered; until then the standing's head crop.
@@ -437,11 +438,11 @@ const CTCDrill=(()=>{
   if(!b.incoming)await dkWho(b);
   const r=G.scene.roster.find(x=>x.id===b.who)||{},title=b.title||r.name||'';
   await dkLines(b.open);
-  G.dec++;let first=true;const said=new Set(),items=[...b.say.map(x=>({...x,need:true})),...(b.no||[])].sort((x,y)=>hash(x.text+G.p0.id+(CH?.salt||''))-hash(y.text+G.p0.id+(CH?.salt||'')));
+  G.dec++;let first=true;const said=new Set(),items=[...b.say.filter(x=>!x.beforeGuro||(()=>{const f=findTrain(x.beforeGuro);return f&&(f.station==='geumcheon'||f.station==='guro'&&/^B63[13579]T$/.test(f.slot));})()).map(x=>({...x,last:x.last||/확인.{0,3}출발|합병 승인/.test(x.line||''),phase:/확인.{0,3}출발/.test(x.line||'')?2:/합병 승인/.test(x.line||'')?1:x.last?2:0,need:true})),...(b.no||[])].sort((x,y)=>b.ordered?0:hash(x.text+G.p0.id+(CH?.salt||''))-hash(y.text+G.p0.id+(CH?.salt||'')));
   for(;;){
    clock(true);dkStatus(said.size?'더 할 말이 있나요? 다 했으면 「관제 이상!」으로 끝내요.':b.ask||'연결됐어요. 무엇을 말할까요?',first?'':'worry');
    const got=await new Promise(res=>{
-    const draw=()=>{const done=items.every(x=>!x.need||said.has(x));main().innerHTML=`<h4>📻 ${esc(title)}</h4><div class="dk-say">${items.filter(x=>!said.has(x)&&!x.gone).map(x=>`<button type="button" class="dk-p${records.hint&&x.need?' hinted':''}" data-k="${items.indexOf(x)}">${esc(x.text)}</button>`).join('')}</div>${b.autoEnd?'':`<button type="button" class="dk-end${records.hint&&done?' hinted':''}">관제 이상! (송신 끝)</button>`}`;
+    const draw=()=>{const done=items.every(x=>!x.need||said.has(x));main().innerHTML=`<h4>📻 ${esc(title)}</h4><div class="dk-say">${items.filter(x=>!said.has(x)&&!x.gone&&(!b.ordered||!x.need||x===items.find(y=>y.need&&!said.has(y)))&&(b.ordered||!x.last||items.every(y=>!y.need||y.phase>=x.phase||said.has(y)))).map(x=>`<button type="button" class="dk-p${records.hint&&x.need?' hinted':''}" data-k="${items.indexOf(x)}">${esc(x.text)}</button>`).join('')}</div>${b.autoEnd?'':`<button type="button" class="dk-end${records.hint&&done?' hinted':''}">관제 이상! (송신 끝)</button>`}`;
      main().querySelectorAll('[data-k]').forEach(x=>x.onclick=()=>res(items[+x.dataset.k]));const e=main().querySelector('.dk-end');if(e)e.onclick=()=>res(null);};
     G.redraw=draw;G.dock='call';draw();
    });
@@ -478,6 +479,20 @@ const CTCDrill=(()=>{
  const freeze=()=>{W?.SimRemote.command({type:'clock',speed:1});clock(true);};
  const showStation=id=>{look('ls');if(id)W.document.querySelector(`#stationTabs [data-view="${id}"]`)?.click();};
  async function watch(view,ms,text){showStation(view);dkStatus(text||'LS를 봐요……!','worry');main().innerHTML='<p class="dk-wait">🚆 열차가 움직이고 있어요…</p>';flow(8);await sleep(ms);freeze();}
+ async function waitTrain(b){
+  const key=b.train+'@'+b.station+'/'+b.slot;
+  G.movementChecks??=new Set();
+  if(G.visited?.has(key)){G.movementChecks.add(key);return;}
+  showStation(b.station);dkStatus(b.text||`${b.train}의 ${b.slot} 통과를 확인하세요.`);
+  main().innerHTML='<p class="dk-wait">🚆 열차가 움직이고 있어요… 통과 확인 대기</p>';flow(8);
+  const started=Date.now();
+  while(G&&!G.visited?.has(key)){
+   update();if(!findTrain(b.train))throw Error('통과 확인 전에 열차가 사라졌습니다: '+b.train);
+   if(Date.now()-started>60000){freeze();throw Error(b.train+' 통과 미확인: '+b.station+'/'+b.slot);}
+   await sleep(100);
+  }
+  G.movementChecks.add(key);freeze();
+ }
  // A rush: several parties wait at once. Each has a patience gauge that drains only while the roster is open (reading
  // and talking never cost time). The player decides whom to take first; a gauge that runs out has its own outcome.
  async function dkRush(b){
@@ -503,7 +518,7 @@ const CTCDrill=(()=>{
    if(got.late){const n=got.late;G.dec++;if(n.run){runTrain(n.train,n.run);await watch(n.view,n.watch||5500,n.late.see);}await outcome(n.late.said||'(늦음) '+(sc.roster.find(r=>r.id===n.who)?.name||''),n.late.bad,n.late.why);if(n.run)putBack(n.train,n.home,n.dir);left.set(n.id,n.patience*.6);continue;}
    const need=active().find(n=>n.who===got.r.id);
    if(!need){main().innerHTML='<p class="dk-wait">📻 교신 중…</p>';await bubble('sangcheol','',`${got.r.call||got.r.name}, 관제 이상!`);await bubble(got.r.who,got.r.name,got.r.idle||'……네? 호출하셨습니까? 용건 없으시면 이상!');continue;}
-   await dkCall({...need,incoming:true});done.add(need.id);if(need.go){runTrain(need.train,need.go);if(need.view)showStation(need.view);}
+   await dkCall({...need,incoming:true});done.add(need.id);if(need.delayTrains){const now=Object.values(W.SimRemote.snapshot.states)[0].clock;G.delays??=[];for(const train of need.delayTrains)G.delays.push({train,at:now+need.delaySeconds});}if(need.go){runTrain(need.train,need.go);if(need.view)showStation(need.view);}
    if(need.comm)for(const id of need.comm)W.SimRemote.command({type:'fts',op:'manual',key:'comm:'+id,checked:true});
   }
  }
@@ -541,7 +556,7 @@ const CTCDrill=(()=>{
   await dkLines(b.then);
  }
  async function dkChoice(b){
-  G.dec++;let first=true;const struck=new Set(),opts=b.opts.map((o,i)=>({...o,key:o.ok?'ok':'x'+i})).sort((x,y)=>hash(x.text+G.p0.id+(CH?.salt||''))-hash(y.text+G.p0.id+(CH?.salt||'')));
+  G.dec++;let first=true;const struck=new Set(),opts=b.opts.map((o,i)=>({...o,key:o.ok?'ok':'x'+i})).sort((x,y)=>b.ordered?0:hash(x.text+G.p0.id+(CH?.salt||''))-hash(y.text+G.p0.id+(CH?.salt||'')));
   for(;;){
    clock(true);dkStatus(struck.size?'예측을 되감았어요. 다시 골라요, 주인님.':b.ask,struck.size?'worry':'');
    const got=await new Promise(res=>{
@@ -557,35 +572,95 @@ const CTCDrill=(()=>{
  // An operation on the LS. The clock runs while the player works; the engine has to recognise every part.
  async function dkOps(b){
   if(b.who)await dkWho(b);await dkLines(b.open);
-  const objs=b.objs.map(id=>view().objectives.find(o=>o.id===id)).filter(Boolean),it0=item();
-  const ok=o=>{const it=item();return it.obj?.[o.id]!=null||it.missed?.[o.id]!=null;};
-  G.target=targets(objs);const st0=[...G.target.st][0];look('ls');if(st0)W.document.querySelector(`#stationTabs [data-view="${st0}"]`)?.click();
-  dkStatus('LS에서 직접 취급해요. 제가 지켜보고 있을게요!');G.dock='ops';clock(false);G.busy=false;
-  const draw=()=>{main().innerHTML=`<h4>🖱 LS 조작</h4><div class="dk-task"><b>${esc(b.text)}</b><ul>${objs.map(o=>`<li class="${ok(o)?'done':''}">${ok(o)?'✔':'○'} ${esc(o.label)}</li>`).join('')}</ul>${records.hint?'<p class="dk-note">힌트 · LS 위쪽 CCM → 예 · 신호기를 눌러 정지 → 예 · AUTO → 예</p>':''}</div>`;};
+  const objs=b.tasks||b.objs.map(id=>{const o=view().objectives.find(o=>o.id===id);if(!o)throw Error('없는 조작 목표: '+id);return o;});
+  const ok=o=>o.check?o.check():item().obj?.[o.id]!=null;
+  G.target=targets(objs);const st0=[...G.target.st][0];look(b.screen||'ls');if(st0)W.document.querySelector(`#stationTabs [data-view="${st0}"]`)?.click();
+  dkStatus('LS·MMI에서 직접 취급하고 결과를 확인해요.');G.dock='ops';clock(false);G.busy=false;
+  const draw=()=>{main().innerHTML=`<h4>🖱 설비·열번·알람 조작</h4><div class="dk-task"><b>${esc(b.text)}</b><ul>${objs.map(o=>`<li class="${ok(o)?'done':''}">${ok(o)?'✔':'○'} ${esc(o.label)}</li>`).join('')}</ul>${records.hint?'<p class="dk-note">힌트 · 신호는 LS에서, 열번 수정·삭제와 알람 체크·확인은 MMI에서도 취급할 수 있어요.</p>':''}</div>`;};
   G.redraw=draw;let sig='';
-  while(G&&!objs.every(ok)){const s=objs.map(ok).join()+records.hint;if(s!==sig){sig=s;draw();if(sig.includes('true'))SFX.play('correct');}await new Promise(r=>setTimeout(r,250));}
+  while(G&&!objs.every(ok)){const missed=objs.find(o=>item().missed?.[o.id]!=null);if(missed)throw Error('필수 조작을 놓쳤어요: '+missed.label);const s=objs.map(ok).join()+records.hint;if(s!==sig){sig=s;draw();if(sig.includes('true'))SFX.play('correct');}await new Promise(r=>setTimeout(r,250));}
   if(!G)return;G.redraw=null;G.dock='';G.busy=true;G.target=null;draw();SFX.play('correct');
   if(b.settle)W.SimRemote.command({type:'tick',seconds:b.settle});   // 접근쇄정이 풀릴 만큼 시계를 감는다 (플레이어를 기다리게 하지 않는다)
  }
+ // Source-backed procedure steps preserve the original communications and their read-backs.
+ function sourceUtterances(text){
+  const out=[];let current=null,notes=false;
+  for(const raw of String(text).split('\n')){
+   const line=raw.trim();if(/^B$/.test(line))break;
+   if(/^(?:※|==|L\/S)|CCM|AUTO|→/.test(line)){notes=true;continue;}
+   const m=line.match(/^\((관|기|관제팀장[^)]*|[^)]*역|[^)]*복구반|[^)]*검수반)\)\s*(.*)$/);
+   if(m){notes=false;current={sp:m[1],text:m[2]};out.push(current);}
+   else if(current&&!notes&&line&&!/^\(/.test(line))current.text+=' '+line;
+  }
+  return out.map(x=>({...x,text:x.text.replace(/[_❶❷❸❹]/g,'').replace(/\s+\d{2}-\d+$/,'').trim()}));
+ }
+ async function sourceCalls(b){
+  for(const id of b.ids){
+   const c=view().communications.find(c=>c.id===id);if(!c)throw Error('없는 원본 통보: '+id);
+   const all=sourceUtterances(c.text),parts=b.segment==='signal'?all.slice(0,2):b.segment==='stations'?all.slice(2):all;
+   // A numbered source item may contain several radio recipients. Each needs its own call.
+   const groups=[];
+   for(let i=0;i<parts.length;){
+    const chunk=[];if(parts[i].sp==='관')chunk.push(parts[i++]);
+    while(i<parts.length&&parts[i].sp!=='관')chunk.push(parts[i++]);
+    const reply=chunk.find(x=>x.sp!=='관'),target=reply?.sp||'기';
+    const previous=groups.at(-1);
+    if(previous?.target===target)previous.parts.push(...chunk);else groups.push({target,parts:chunk});
+   }
+   for(const [g,group] of groups.entries()){
+    const recipients=group.target.includes(',')&&group.target.endsWith('역')?group.target.split(',').map(x=>x.trim().replace(/역$/,'')+'역'):[group.target];
+    for(const target of recipients){
+     const expanded=group.parts.map(x=>({...x,sp:x.sp==='관'?x.sp:target,text:x.sp==='관'?x.text:x.text.replace(group.target,target)}));
+     const speech=expanded.map(x=>'('+x.sp+') '+x.text).join('\n'),r=recipient({...c,text:speech});
+     if(target.endsWith('역')){r.name=target;r.who='jian';}
+     const who='source-'+id+'-'+(b.segment||'all')+'-'+g+'-'+target;
+     if(!G.scene.roster.some(x=>x.id===who))G.scene.roster.push({id:who,name:r.name,who:r.who,call:r.name});
+     const say=[],open=[];
+     for(const x of expanded){const line={...role(x.sp,x.text),text:x.text},row=[line.who,line.name,line.text];if(line.who==='sangcheol')say.push({text:line.text,line:line.text,reply:[],bad:'필요한 지시 또는 확인이 전달되지 않았습니다.',why:'원본 절차의 지시와 수신 확인을 빠뜨리지 마세요.'});else if(say.length)say.at(-1).reply.push(row);else open.push(row);}
+     if(!say.length)throw Error('관제 지시가 없는 통보: '+id);
+     await dkCall({who,incoming:r.incoming,ordered:true,title:r.name,cue:'현재 상황에 필요한 통보와 확인을 진행하세요.',whoWhy:'관계자에게 지시를 전달하고 복창을 확인하세요.',open,say});
+    }
+   }
+   if(b.segment!=='signal')W.SimRemote.command({type:'fts',op:'manual',key:'comm:'+id,checked:true});
+   if(b.takes)W.SimRemote.command({type:'tick',seconds:b.takes});
+  }
+ }
+ // Scenario setup may insert its cast; control and number changes are player operations.
+ async function manualActions(b){
+  for(const [station,slot,number,dir] of b.ins||[])W.SimRemote.command({type:'numbers',action:{op:'insert',station,slot,number,direction:dir||'up'}});
+  const tasks=[];
+  for(const number of b.del||[]){const ack=view().objectives.find(o=>o.id==='ack-'+number);if(ack&&item().obj?.[ack.id]==null)await dkOps({objs:[ack.id],screen:'mmi',text:'구원연결 중복 알람을 체크하고 확인하세요.'});const before=findTrain(number);if(!before)throw Error('삭제할 열차가 없습니다: '+number);tasks.push({id:'manual-delete-'+number,label:`열차번호 ${number} 삭제`,condition:{number,station:before.station},check:()=>!findTrain(number)});}
+  for(const [old,number] of b.rename||[]){const before=findTrain(old);if(!before)throw Error('변경할 열차가 없습니다: '+old);tasks.push({id:'manual-rename-'+number,label:`열차번호 ${old} → ${number} 수정`,condition:{number:old,station:before.station},check:()=>{const now=findTrain(number);return now?.uid===before.uid&&!findTrain(old);}});}
+  if(tasks.length)await dkOps({tasks,text:'승인된 열차번호 변경·삭제를 직접 취급하고 결과를 확인하세요.',screen:'mmi'});
+  for(const [station,a] of b.ctl||[]){
+   if(station==='tick'){W.SimRemote.command({type:'tick',seconds:a});continue;}
+   const name=W.SimNetwork.catalog[station]?.name||station;
+   const state=()=>W.SimRemote.snapshot.states[station];
+   const check=a.type==='mode'?()=>state().mode===a.value:a.type==='route'?()=>!!state().routes[a.id]:a.type==='stop'?()=>state().signals[a.id]==='STOP':null;
+   if(!check)throw Error('지원하지 않는 수동 조작: '+a.type);
+   const label=a.type==='mode'?`${name}역 ${a.value} 전환`:a.type==='route'?`${name}역 ${a.id} 진로 설정`:`${name}역 ${a.id} 신호 취소`;
+   const condition=a.type==='mode'?{type:'mode',station,value:a.value}:a.type==='route'?{type:'route',station,route:a.id}:{type:'signalStop',station,signal:a.id};
+   await dkOps({tasks:[{id:'manual-'+station+'-'+(a.id||a.value),label,condition,check}],text:label});
+  }
+ }
  async function runScene(sc){
-  const beats=sc.beats;G.steps=beats.flatMap(b=>b.t==='rush'?b.needs.map(()=>({kind:'rush',beat:b})):['choice','board','ops','call'].includes(b.t)?[{kind:b.t,beat:b}]:[]);G.stepIndex=0;G.rw=fcMax();hud();
+  const beats=sc.beats;G.steps=beats.flatMap(b=>b.t==='rush'?b.needs.map(()=>({kind:'rush',beat:b})):['choice','board','ops','call','source','do'].includes(b.t)?[{kind:b.t,beat:b}]:[]);G.stepIndex=0;G.rw=fcMax();hud();
   for(const b of beats){
    if(!G)return;
    const k=G.steps.findIndex(s=>s.beat===b);if(k>=0){G.stepIndex=k;hud();}G.beat=b;
    if(b.t==='say')await dkLines(b.lines);
+   else if(b.t==='source')await sourceCalls(b);
+   else if(b.t==='displayFault'){G.displayFault=b.number?{number:b.number,...findTrain(b.number)}:null;update();}
+   else if(b.t==='waitTrain')await waitTrain(b);
+   else if(b.t==='requireTrain'){const f=findTrain(b.number);if(!f||f.station!==b.home[0]||f.slot!==b.home[1])throw Error('상황변경 대상의 정차 위치가 달라졌습니다: '+b.number);}
    else if(b.t==='call'){await dkCall(b);if(b.takes)W.SimRemote.command({type:'tick',seconds:b.takes});}   // takes: 이 무전을 하는 동안 흐른 시간(초). 접근쇄정 대기를 무전으로 메우는 데 쓴다.
    else if(b.t==='board')await dkBoard(b);
    else if(b.t==='rush')await dkRush(b);
    else if(b.t==='move'){for(const r of b.runs)runTrain(r.train,r.legs);await watch(b.view,b.watch||5000,b.text);}
    else if(b.t==='choice')await dkChoice(b);
    else if(b.t==='ops')await dkOps(b);
-   else if(b.t==='do'){   // 관제사 대신 조수가 해 주는 열번 정리: rename [[옛,새]], del [번호], ctl [[역, 조작]]
-    for(const [st,slot,number,dir] of b.ins||[])W.SimRemote.command({type:'numbers',action:{op:'insert',station:st,slot,number,direction:dir||'up'}});   // ins [[화면,궤도,번호,방향]]
-    for(const [o,nw] of b.rename||[]){const f=findTrain(o);if(f)W.SimRemote.command({type:'numbers',action:{op:'rename',station:f.station,slot:f.slot,uid:f.uid,number:nw}});}
-    for(const d of b.del||[]){const f=findTrain(d);if(f)W.SimRemote.command({type:'numbers',action:{op:'delete',station:f.station,slot:f.slot,uid:f.uid}});}
-    for(const [st,act] of b.ctl||[]){const r=W.SimRemote.command(st==='tick'?{type:'tick',seconds:act}:{type:'control',station:st,action:{...act,source:'LS'}});if(r&&r.ok===false)console.warn('[do] 거부:',st,JSON.stringify(act),r.message);}   // ['tick',초] 는 시계 감기 (접근쇄정 해정용)   // ctl [[역, {type:'mode'|'stop'|'route',…}]]
-    await new Promise(r=>setTimeout(r,b.wait??500));update();}
-   else if(b.t==='comm'){for(const id of b.ids)W.SimRemote.command({type:'fts',op:'manual',key:'comm:'+id,checked:true});clock(false);await new Promise(r=>setTimeout(r,b.wait??700));update();}
+   else if(b.t==='do')await manualActions(b);
+   else if(b.t==='comm'){for(const id of b.ids)W.SimRemote.command({type:'fts',op:'manual',key:'comm:'+id,checked:true});clock(false);await new Promise(r=>setTimeout(r,b.wait??700));update();if(b.ids.includes('n1')&&view().objectives.some(o=>o.id==='ack-incident')&&item().obj?.['ack-incident']==null)await dkOps({objs:['ack-incident'],screen:'mmi',text:'사고 열차번호 중복 알림을 체크하고 확인하세요.'});}
   }
   if(!G)return;G.stepIndex=G.steps.length-1;main().innerHTML='';
   clock(false);for(let k=0;k<24&&G&&item().status==='진행';k++)await new Promise(r=>setTimeout(r,250));
@@ -621,11 +696,17 @@ const CTCDrill=(()=>{
  // ── Watch the FTS: recognised operations, situation changes, the end.
  function update(){
   if(!G||!W?.SimRemote?.snapshot?.fts)return;const s=session(),it=item();if(!s||!it)return;
+  const now=Object.values(W.SimRemote.snapshot.states)[0].clock;for(const delay of G.delays||[])if(!delay.sent&&now>=delay.at){delay.sent=true;runTrain(delay.train);}
+  G.visited??=new Set();for(const [station,s] of Object.entries(W.SimRemote.snapshot.ls.stations))for(const [slot,rows] of Object.entries(s.windows))for(const r of rows)G.visited.add(r.number+'@'+station+'/'+slot);
+  let faultStyle=W.document.getElementById('drill-display-fault');
+  if(!faultStyle){faultStyle=W.document.createElement('style');faultStyle.id='drill-display-fault';W.document.head.append(faultStyle);}
+  const f=G.displayFault;
+  faultStyle.textContent=f&&W.SimRemote.snapshot.selected===f.station?`[data-train-slot="${f.slot}"] text,[data-train-occupied="${f.slot}"],[data-scenario-train="${f.number}"]{visibility:hidden!important}`:'';
   hud();hintPanel();mmi();
   if(W.SimFTSUI?.problemOpen?.())W.SimFTSUI.closeProblem();
-  // the scripted cast starts stacked in one train window, which the MMI reports as "열차번호 중복": not the player's doing
-  const ps=[...(M?.document||W.document).querySelectorAll('.mmi-alarm:not([hidden]) #alarmText p')];if(ps.length&&ps.every(x=>/열차번호 중복/.test(x.textContent)))W.SimMMI.clearAlarms();
-  else if(ps.some(x=>!/열차번호 중복/.test(x.textContent))&&G.view!=='mmi'&&$('.ctc-view i').hidden){$('.ctc-view i').hidden=false;if(!G.busy)toast('MMI 단말에 알람이 떴어요! (Tab)','worry');}
+  // 사고·구원연결의 중복 알람도 관제사가 체크 후 확인해야 한다.
+  const ps=[...(M?.document||W.document).querySelectorAll('.mmi-alarm:not([hidden]) #alarmText p')];
+  if(ps.length&&G.view!=='mmi'&&$('.ctc-view i').hidden){$('.ctc-view i').hidden=false;if(!G.busy)toast('MMI 단말에 알람이 떴어요! (Tab)','worry');}
   const p=view();
   for(const o of p.objectives){const done=it.obj?.[o.id]!=null;if(done&&!G.seen.has(o.id)){G.seen.add(o.id);if(!G.busy&&!G.ending){SFX.play('correct');toast('조작 확인! '+o.label);}}else if(!done&&o.final)G.seen.delete(o.id);}
   for(const b of G.p0.branches||[])if(it.branch?.[b.id]!=null&&!G.branches.has(b.id)){G.branches.add(b.id);G.queue.push(b);}
@@ -655,11 +736,23 @@ const CTCDrill=(()=>{
  }
  async function finish(status){
   G.ending=true;$('#ctcRadioPanel').hidden=true;G.busy=true;clock(true);
-  const it=item(),p=view(),mo=p.objectives.filter(o=>it.obj?.[o.id]==null&&it.missed?.[o.id]==null),mc=p.communications.filter(c=>it.comm?.[c.id]==null);
-  const ratio=G.dec?G.first/G.dec:1,rank=G.over?'C':ratio===1&&!G.hinted?'S':ratio>=.9?'A':ratio>=.75?'B':'C',talk=G.scene?bubble:say;
+  const it=item(),p=view(),sid=G.scene?.sceneId||'',docs=G.scene?.challenge?.docs||[];
+  const range=(a,b)=>Array.from({length:b-a+1},(_,i)=>'n'+(a+i));
+  let comms=p.communications.filter(c=>c.points!==0),objs=p.objectives,scopeReason='원본 전체 절차';
+  if(sid==='ch01-stop'){comms=comms.filter(c=>range(1,3).includes(c.id));objs=[];scopeReason='1장 초기 열차 통제 수업';}
+  else if(sid==='ch02-report'){comms=comms.filter(c=>range(1,8).includes(c.id));objs=[];scopeReason='2장 초기 통제·현장 보고 수업';}
+  else if(sid==='final-exam'){comms=comms.filter(c=>[...range(1,8),...range(13,15)].includes(c.id));objs=objs.filter(o=>!/(?:rename|move|ack|delete)-G/.test(o.id));scopeReason='최종장 모터카 철수·운행선 변경 시험';}
+  if(docs.includes('bogie')){comms=p.communications.filter(c=>[...range(1,8),'n19'].includes(c.id));objs=[];scopeReason='구원 취소·자력운행·차량교체';}
+  if(docs.includes('selfrun')){comms=p.communications.filter(c=>[...range(1,14),'n26'].includes(c.id));objs=[];scopeReason='화재 차량 자력운행·차량교체';}
+  const mo=objs.filter(o=>it.obj?.[o.id]==null),mc=comms.filter(c=>it.comm?.[c.id]==null);
+  const missed=[...mo.map(o=>'🖱 '+o.label),...mc.map(c=>'📻 '+label(c))];
+  const deductions=(p.deductions||[]).filter((d,i)=>it.deducted?.[i]).map(d=>d.label);
+  const ratio=G.dec?G.first/G.dec:1,complete=!missed.length;
+  const rank=!complete||G.over?'C':ratio===1&&!G.hinted&&!deductions.length?'S':ratio>=.9?'A':ratio>=.75?'B':'C',talk=G.scene?bubble:say;
   const R={id:G.id,title:G.scene?.title||p.name,rank,firstTry:G.first,decisions:G.dec,score:it.score??0,scene:!!G.scene,status,rewinds:G.rewinds,wrong:G.wrong,hint:G.hinted,
-   missed:G.scene?[]:[...mo.map(o=>'🖱 '+o.label),...mc.map(c=>'📻 '+label(c))],deductions:(p.deductions||[]).filter((d,i)=>it.deducted?.[i]).map(d=>d.label)};
+   missed,deductions,procedureComplete:complete,movementChecks:[...(G.movementChecks||[])],scope:{reason:scopeReason,communications:comms.map(c=>c.id),objectives:objs.map(o=>o.id)}};
   SFX.play('clear');
+  if(!complete)await talk('instructor','서도희 교수','필수 절차가 남아 있어 완료로 판정할 수 없습니다: '+missed.join(' / '));
   await talk('instructor','서도희 교수',rank==='S'?'……한 번도 안 틀렸네요. 거기까지.':rank==='A'?'거기까지. 거의 완벽해요.':rank==='B'?'거기까지. 흐름은 잡았어요. 되감은 곳을 복습해요.':'거기까지. 순서가 아직 몸에 안 붙었어요. 다시 해 봐요.');
   await talk('orpheia',G.scene?'':'오르페이아',rank==='S'?'랭크 S! 완벽해요, 주인님♪ 예측 연산을 한 번도 안 썼어요!':rank==='A'?'랭크 A예요! 거의 다 맞히셨어요♪':rank==='B'?'랭크 B! 되감은 곳만 다시 보면 금방이에요.':'랭크 C…… 괜찮아요. 처음엔 다 그래요. 같이 다시 해요!',rank<'C'?'smile':'worry');
   if(G.scene)await new Promise(r=>setTimeout(r,900));
@@ -699,6 +792,14 @@ const CTCDrill=(()=>{
   // decisions are not timed: give the problem a long limit so FTS never closes it on the clock
   const relaxed=structuredClone(lib),ids=new Set(relaxed.situations.filter(x=>sc.situations.includes(x.id)).flatMap(x=>x.problems));
   for(const x of relaxed.problems)if(ids.has(x.id))x.limit=Math.max(x.limit||0,7200);for(const x of relaxed.situations)if(sc.situations.includes(x.id)&&x.limit)x.limit=Math.max(x.limit,7200);
+  // VN에서는 출발 지시가 끝나기 전 진로만 열었다고 열차를 출발시키지 않는다.
+  // 내장 CTC의 자동 출발 준비 조건(any: 통보 OR 진로 목표)을 게임에서만 보정한다.
+  if(SCENES[sceneId])for(const p of relaxed.problems)if(ids.has(p.id))for(const r of p.reactions||[]){
+   const gate=c=>{if(!c)return c;if(c.type==='any'&&c.conditions?.some(x=>x.type==='communication')&&c.conditions.some(x=>x.type==='objective'))return {type:'all',conditions:c.conditions.filter(x=>x.type==='communication')};return {...c,...(c.conditions?{conditions:c.conditions.map(gate)}:{})};};
+   r.when=gate(r.when);
+   const departure={'r-g0450':'n17','r-g0602':'n15','r-g0604':'n25'}[r.id];
+   if(departure)r.when={type:'all',conditions:[r.when,{type:'communication',id:departure}]};
+  }
   W.SimRemote.command({type:'fts',op:'library',library:relaxed});
   const r=W.SimRemote.command({type:'fts',op:'start',scenario:sc.id,professor:'001',student:'tester'});
   if(!r?.ok)throw Error(r?.message||'교육을 시작하지 못했어요.');
@@ -732,5 +833,5 @@ const CTCDrill=(()=>{
  }
  function fail(msg){$('.ctc-loading').hidden=true;G=G||{log:[]};say('orpheia','오르페이아',msg+' 이야기로 돌아갈게요.','worry').then(()=>close({id:'',error:msg}));}
  // Test helpers.
- return {start,look,scene:(id,def)=>{SCENES[id]=def;},sceneDef:id=>SCENES[id],sceneIds:()=>Object.keys(SCENES),mode:cfg=>{CH=cfg?{...cfg}:null;},mmi:()=>M,debug:()=>G&&{dock:G.dock||'',rw:G.rw,view:G.view,p:view(),item:item(),order:G.order,steps:G.steps,stepIndex:G.stepIndex,busy:G.busy,ending:G.ending,talking:!!advanceFn,choosing:!$('#ctcRadioPanel').hidden,task:!$('.ctc-task').hidden,target:G.target},frame:()=>W,recipient,label,opener};
+ return {start,look,scene:(id,def)=>{SCENES[id]={...def,sceneId:def.sceneId||id};},sceneDef:id=>SCENES[id],sceneIds:()=>Object.keys(SCENES),mode:cfg=>{CH=cfg?{...cfg}:null;},mmi:()=>M,debug:()=>G&&{dock:G.dock||'',rw:G.rw,view:G.view,p:view(),item:item(),order:G.order,steps:G.steps,stepIndex:G.stepIndex,busy:G.busy,ending:G.ending,talking:!!advanceFn,choosing:!$('#ctcRadioPanel').hidden,task:!$('.ctc-task').hidden,target:G.target},frame:()=>W,recipient,label,opener};
 })();

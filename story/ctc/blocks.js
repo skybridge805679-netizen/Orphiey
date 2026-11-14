@@ -5,7 +5,7 @@ const DrillBlocks=(()=>{
  const H=(name,text,mood)=>['harin',name,text,mood],S=text=>['sangcheol','',text];
  // 후속열차 한 대: 지금 닿아 있는 역에 세운다. wrong은 [역 이름, 그 역을 골랐을 때의 결말] 목록.
  function follower({id,train,at,patience,home,dir,view,wrong,ask,seeLate,lateBad,reply}){
-  return {id,who:id,after:['all'],patience,autoEnd:true,train,home,at,dir,run:true,view,watch:7000,title:`${train} 기관사 (후속)`,
+  return {id,who:id,after:['all'],patience,autoEnd:true,train,home,at,dir,run:true,nag:`철도관제, ${train}열차! ${at} 곧 출발합니다! 지시 있습니까? 이상!`,view,watch:7000,title:`${train} 기관사 (후속)`,
    ask:ask||`${train}은 고장열차 뒤를 따라와요. LS에서 지금 어느 역에 닿아 있는지 봐요.`,
    late:{said:`(늦음) ${train}열차`,see:seeLate||`${train}이 아무 지시도 받지 못하고 계속 달려요……!`,
     bad:lateBad||`${train}은 지시를 받지 못하고 계속 달렸다. 신호가 알아서 세워 주긴 했다. 역과 역 사이, 승강장도 없는 곳에. 승객들은 창밖의 방음벽을 40분 동안 감상했다.`,
@@ -16,7 +16,7 @@ const DrillBlocks=(()=>{
  }
  // 선행열차: 세우지 않고 mins분(기본 3분)씩 늦춘다.
  function ahead({id='ahead',trains='K1206, K1204',patience=70,reply,mins=3}){
-  return {id,who:id,after:['all'],patience,autoEnd:true,title:`${trains.replace(', ',' · ')} (선행)`,
+  return {id,who:id,after:['all'],patience,autoEnd:true,nag:`철도관제, ${trains}열차! 앞쪽은 정상입니까? 그대로 운행합니까? 이상!`,title:`${trains.replace(', ',' · ')} (선행)`,
    ask:'고장열차보다 앞서 가는 열차예요. 뒤가 막혔는데, 그냥 두면 어떻게 될까요?',
    late:{said:'(늦음) 선행열차',bad:'앞서 가던 열차들은 제 시각에 떠났다. 그 뒤로는 아무 열차도 오지 않았다. 역마다 승강장에 사람이 쌓였고, 40분 뒤 도착한 첫 열차는 문이 닫히지 않았다.',why:'뒤가 막히면 앞 열차와의 간격이 벌어져요. 선행열차도 잊지 않고 조정해요.'},
    say:[{text:`각 역에서 ${mins}분씩 추가 정차시킨다`,line:`${trains}열차. 각 역 ${mins}분씩 추가 정차. 간격 조정합니다. 관제 이상!`,reply:reply||[H('선행열차',`${trains} 수신 이상!`)],bad:'',why:''}],
@@ -25,7 +25,7 @@ const DrillBlocks=(()=>{
  }
  // 전 열차 일제 통보.
  function allTrains({train,place,what='차량고장',patience=26,comm,reply}){
-  return {id:'all',who:'all',patience,comm,autoEnd:true,title:'전 열차',ask:'달리는 모든 열차가 듣고 있어요. 뭐라고 알릴까요?',
+  return {id:'all',who:'all',patience,comm,autoEnd:true,nag:'철도관제, 운행 중인 열차입니다! 앞에서 무슨 일 있습니까? 이상!',nagName:'운행 중 열차',title:'전 열차',ask:'달리는 모든 열차가 듣고 있어요. 뭐라고 알릴까요?',
    late:{said:'(늦음) 전 열차 통보',bad:'전 열차 통보는 나가지 않았다. 열차들은 평소처럼 달렸고, 사고를 알게 된 것은 앞이 막힌 뒤였다.',why:'사고를 알았으면 달리는 모든 열차에 가장 먼저 알려요.'},
    say:[{text:'사고를 알리고, 관제 지시에 따르게 한다',line:`철도관제에서 알립니다. ${train}열차가 ${place}에서 ${what} 발생. 전 열차는 관제 지시에 따라 주시고 안내방송 하시기 바랍니다. 관제 이상!`,reply:reply||[H('전 열차','전 열차, 수신 이상!')],bad:'',why:''}],
    no:[{text:'모든 열차를 지금 자리에 즉시 세운다',bad:'노선의 모든 열차가 그 자리에 섰다. 절반은 역과 역 사이였다. 사고는 열차 한 대에서 났는데, 터널에 갇힌 열차는 여섯 대가 되었다.',why:'일제 정차가 아니에요. 열차마다 세울 곳이 달라서, 통제는 이어서 한 대씩 해요.'},
@@ -33,7 +33,7 @@ const DrillBlocks=(()=>{
  }
  // 사고 역 지시: 초기대응팀 + 안내방송.
  function station({place,train,patience=60,comm,what='차량고장'}){
-  return {id:'station',who:'station',after:['all'],patience,comm,title:place,ask:'사고가 난 역이에요. 역에 맡길 일을 말해요. 다 했으면 「관제 이상!」.',
+  return {id:'station',who:'station',after:['all'],patience,comm,nag:`철도관제, ${place}입니다! 승강장에 승객이 몰리고 있습니다! 지시 바랍니다! 이상!`,title:place,ask:'사고가 난 역이에요. 역에 맡길 일을 말해요. 다 했으면 「관제 이상!」.',
    open:[S(`${place}, 관제 이상! ${train}열차 ${what} 발생했습니다.`),['jian',place,`${place}, 수신. 지시 바랍니다.`]],
    late:{said:`(늦음) ${place}`,bad:'승강장에는 멈춘 열차와 800명의 승객이 있었고, 역무실에는 다음 지시를 기다리는 역무원이 있었다. 둘 사이의 거리는 계단 두 층이었고, 그 거리는 끝내 좁혀지지 않았다.',why:'열차만이 아니에요. 사고가 난 역에도 지시를 내려야 해요.'},
    say:[{text:'초기대응팀을 출동시킨다',line:`${place}, 초기대응팀 출동시키세요.`,reply:[['jian',place,'초기대응팀 출동합니다.']],bad:'역무원은 안내방송을 했다. 그리고 역무실로 돌아갔다. 승강장에는 방송만 남았고, 기관사를 도울 사람은 없었다.',why:'현장에 사람이 있어야 해요. 역 초기대응팀이 승강장에서 승객과 기관사를 지원해요.'},

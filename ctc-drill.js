@@ -502,7 +502,14 @@ const CTCDrill=(()=>{
  // A rush: several parties wait at once. Each has a patience gauge that drains only while the roster is open (reading
  // and talking never cost time). The player decides whom to take first; a gauge that runs out has its own outcome.
  async function dkRush(b){
-  const sc=G.scene,done=new Set(),left=new Map(b.needs.map(n=>[n.id,n.patience]));
+  const sc=G.scene,done=new Set(),left=new Map(b.needs.map(n=>[n.id,n.patience])),nagged=new Set(),lated=new Set();
+  // 힌트를 끄면 게이지(남은 비율)와 명단 순서가 정답 순서를 알려 주지 않게 한다. 급한 정도는 LS의 열차 위치와 상대의 재촉 무전으로만 안다.
+  const blind=()=>!records.hint,NAG=.35;
+  const roster=()=>blind()?[...sc.roster].sort((x,y)=>(x.id==='ls')-(y.id==='ls')||hash(x.id+G.p0.id+(CH?.salt||''))-hash(y.id+G.p0.id+(CH?.salt||''))):sc.roster;
+  const nag=n=>{const r=sc.roster.find(r=>r.id===n.who)||{};nagged.add(n.id);G.nagged=(G.nagged||0)+1;
+   const text=n.nag||`철도관제, ${r.call||r.name}! 지시 기다리고 있습니다! 이상!`,nm=n.nagName||r.name||'',who=n.nagWho||r.who||'harin';
+   const log=$('.dk-log'),d=document.createElement('div');d.className='dk-b c-'+who+' nag';d.innerHTML=`${icon(who,nm,'urgent')}<div><b>${esc(nm)} 📢</b><p>${esc(text)}</p></div>`;
+   log.appendChild(d);log.scrollTop=log.scrollHeight;G.log.push({name:nm,text});SFX.play('radio');};
   const ids=new Set(b.needs.map(n=>n.id));   // after에 이 rush 밖의 id(앞 rush에서 이미 끝난 것)가 있으면 충족된 것으로 본다
   const active=()=>b.needs.filter(n=>!done.has(n.id)&&(n.afterCount||0)<=done.size&&(n.after||[]).every(a=>done.has(a)||!ids.has(a)));   // afterCount: 다른 호출이 n개 끝난 뒤에 끼어드는 호출
   while(done.size<b.needs.length){
@@ -510,20 +517,23 @@ const CTCDrill=(()=>{
    const got=await new Promise(res=>{
     let timer=0;
     const pct=n=>Math.max(0,Math.round(100*left.get(n.id)/n.patience));
-    const draw=()=>{const act=active();main().innerHTML=`<h4>📻 호출</h4><div class="dk-contacts">${sc.roster.map(r=>{const n=act.find(x=>x.who===r.id);return `<button type="button" class="dk-c${n?' wait':''}${n&&pct(n)<30?' hot':''}" data-id="${r.id}">${r.who?icon(r.who,r.name):'<span class="dk-face none">🖱</span>'}<span>${esc(r.name)}${r.sub?`<small>${esc(r.sub)}</small>`:''}</span>${n?`<i class="dk-g"><b style="width:${pct(n)}%"></b></i>`:''}</button>`;}).join('')}</div>`;
+    const draw=()=>{const act=active();main().innerHTML=`<h4>📻 호출</h4><div class="dk-contacts${blind()?' blind':''}">${roster().map(r=>{const n=act.find(x=>x.who===r.id);return `<button type="button" class="dk-c${n?' wait':''}${n&&!blind()&&pct(n)<30?' hot':''}${n&&nagged.has(n.id)?' nag':''}" data-id="${r.id}">${r.who?icon(r.who,r.name):'<span class="dk-face none">🖱</span>'}<span>${esc(r.name)}${r.sub?`<small>${esc(r.sub)}</small>`:''}</span>${n?`<i class="dk-g"><b style="width:${pct(n)}%"></b></i>`:''}</button>`;}).join('')}</div>`;
      main().querySelectorAll('[data-id]').forEach(x=>x.onclick=()=>{clearInterval(timer);res({r:sc.roster.find(r=>r.id===x.dataset.id)});});};
     G.redraw=draw;G.dock='rush';draw();
     timer=setInterval(()=>{
      if(!G||document.querySelector('dialog[open]'))return;
      for(const n of active()){left.set(n.id,left.get(n.id)-.25);
       if(left.get(n.id)<=0){clearInterval(timer);res({late:n});return;}
-      const btn=main().querySelector(`[data-id="${n.who}"]`),bar=btn?.querySelector('.dk-g b');if(bar){bar.style.width=pct(n)+'%';btn.classList.toggle('hot',pct(n)<30);}}
+      const btn=main().querySelector(`[data-id="${n.who}"]`),bar=btn?.querySelector('.dk-g b');
+      if(!nagged.has(n.id)&&left.get(n.id)<=n.patience*NAG){nag(n);btn?.classList.add('nag');}
+      if(bar){bar.style.width=pct(n)+'%';btn.classList.toggle('hot',!blind()&&pct(n)<30);}}
     },250);
    });
    G.redraw=null;G.dock='';freeze();
-   if(got.late){const n=got.late;G.dec++;if(n.run){runTrain(n.train,n.run);await watch(n.view,n.watch||5500,n.late.see);}await outcome(n.late.said||'(늦음) '+(sc.roster.find(r=>r.id===n.who)?.name||''),n.late.bad,n.late.why);if(n.run)putBack(n.train,n.home,n.dir);left.set(n.id,n.patience*.6);continue;}
+   if(got.late){const n=got.late;lated.add(n.id);G.dec++;if(n.run){runTrain(n.train,n.run);await watch(n.view,n.watch||5500,n.late.see);}await outcome(n.late.said||'(늦음) '+(sc.roster.find(r=>r.id===n.who)?.name||''),n.late.bad,n.late.why);if(n.run)putBack(n.train,n.home,n.dir);left.set(n.id,n.patience*.6);continue;}
    const need=active().find(n=>n.who===got.r.id);
    if(!need){main().innerHTML='<p class="dk-wait">📻 교신 중…</p>';await bubble('sangcheol','',`${got.r.call||got.r.name}, 관제 이상!`);await bubble(got.r.who,got.r.name,got.r.idle||'……네? 호출하셨습니까? 용건 없으시면 이상!');continue;}
+   if(nagged.has(need.id)&&!lated.has(need.id)){G.dec++;hud();}   // 재촉받은 뒤에야 부르면 첫 시도 하나를 잃는다(늦음 결말까지는 아님)
    await dkCall({...need,incoming:true});done.add(need.id);if(need.go){runTrain(need.train,need.go);if(need.view)showStation(need.view);}
    if(need.comm)for(const id of need.comm)W.SimRemote.command({type:'fts',op:'manual',key:'comm:'+id,checked:true});
   }
@@ -755,7 +765,7 @@ const CTCDrill=(()=>{
   const deductions=(p.deductions||[]).filter((d,i)=>it.deducted?.[i]).map(d=>d.label);
   const ratio=G.dec?G.first/G.dec:1,complete=!missed.length;
   const rank=!complete||G.over?'C':ratio===1&&!G.hinted&&!deductions.length?'S':ratio>=.9?'A':ratio>=.75?'B':'C',talk=G.scene?bubble:say;
-  const R={id:G.id,title:G.scene?.title||p.name,rank,firstTry:G.first,decisions:G.dec,score:it.score??0,scene:!!G.scene,status,rewinds:G.rewinds,wrong:G.wrong,hint:G.hinted,
+  const R={id:G.id,title:G.scene?.title||p.name,rank,firstTry:G.first,decisions:G.dec,nagged:G.nagged||0,score:it.score??0,scene:!!G.scene,status,rewinds:G.rewinds,wrong:G.wrong,hint:G.hinted,
    missed,deductions,procedureComplete:complete,movementChecks:[...(G.movementChecks||[])],scope:{reason:scopeReason,communications:comms.map(c=>c.id),objectives:objs.map(o=>o.id)}};
   SFX.play('clear');
   if(!complete)await talk('instructor','서도희 교수','필수 절차가 남아 있어 완료로 판정할 수 없습니다: '+missed.join(' / '));

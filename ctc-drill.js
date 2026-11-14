@@ -426,6 +426,10 @@ const CTCDrill=(()=>{
     const draw=()=>{main().innerHTML=`<h4>📻 호출</h4><div class="dk-contacts">${sc.roster.map(r=>`<button type="button" class="dk-c${records.hint&&r.id===b.who?' hinted':''}" data-id="${r.id}" ${struck.has(r.id)?'disabled':''}>${r.who?icon(r.who,r.name):'<span class="dk-face none">🖱</span>'}<span>${esc(r.name)}${r.sub?`<small>${esc(r.sub)}</small>`:''}</span></button>`).join('')}</div>`;
      main().querySelectorAll('[data-id]').forEach(x=>x.onclick=()=>res(sc.roster.find(r=>r.id===x.dataset.id)));};
     G.redraw=draw;G.dock='who';draw();
+    // 명단에서 「LS 조작」을 누르지 않고 LS·MMI를 바로 만져도 그 선택으로 본다 (실제 관제처럼 바로 취급). 틀린 차례였다면 그 결말이 나온다.
+    const lsr=sc.roster.find(r=>r.id==='ls');
+    if(lsr){const ops=()=>{let n=0;for(const x of Object.values(W.SimRemote.snapshot.states))for(const l of x.logs||[])if(l&&(l.source==='LS'||l.source==='MMI'))n++;return n;},base=ops();
+     const t=setInterval(()=>{if(!G||G.dock!=='who'){clearInterval(t);return;}if(ops()>base){clearInterval(t);res(lsr);}},250);}
    });
    G.redraw=null;G.dock='';
    if(got.id===b.who){if(first)G.first++;SFX.play('select');hud();return;}
@@ -526,7 +530,8 @@ const CTCDrill=(()=>{
  }
  // Train control: one order at a time. Only the broad order is judged (adjacent → following → ahead).
  async function dkBoard(b){
-  if(b.who)await dkWho(b);await dkLines(b.open);
+  if(b.who)await dkWho(b);
+  if(records.hint||b.openAlways)await dkLines(b.open);else if(b.open?.length)await bubble('orpheia','','LS에서 직접 판단해서 취급해 주세요. 무엇을 해야 하는지는 주인님 몫이에요. 지켜보고 있을게요.');   // 힌트가 꺼져 있으면 「무엇을 누를지」 알려 주는 대사를 건너뛴다
   clock(true);const val={},sent=new Set(),shown=[...b.rows].sort((x,y)=>hash(x.train+G.p0.id)-hash(y.train+G.p0.id));
   const due=()=>{for(const g of GROUPS){const r=b.rows.find(r=>r.group===g&&!sent.has(r.train));if(r)return r;}return null;},turn=r=>r.group===due()?.group;
   while(sent.size<b.rows.length){
@@ -573,12 +578,13 @@ const CTCDrill=(()=>{
  }
  // An operation on the LS. The clock runs while the player works; the engine has to recognise every part.
  async function dkOps(b){
-  if(b.who)await dkWho(b);await dkLines(b.open);
+  if(b.who)await dkWho(b);
+  if(records.hint||b.openAlways)await dkLines(b.open);else if(b.open?.length)await bubble('orpheia','','LS에서 직접 판단해서 취급해 주세요. 무엇을 해야 하는지는 주인님 몫이에요. 지켜보고 있을게요.');   // 힌트가 꺼져 있으면 「무엇을 누를지」 알려 주는 대사를 건너뛴다
   const objs=b.tasks||b.objs.map(id=>{const o=view().objectives.find(o=>o.id===id);if(!o)throw Error('없는 조작 목표: '+id);return o;});
   const ok=o=>o.check?o.check():item().obj?.[o.id]!=null;
   G.target=targets(objs);const st0=[...G.target.st][0];look(b.screen||'ls');if(st0)W.document.querySelector(`#stationTabs [data-view="${st0}"]`)?.click();
   dkStatus('LS·MMI에서 직접 취급하고 결과를 확인해요.');G.dock='ops';clock(false);G.busy=false;
-  const draw=()=>{main().innerHTML=`<h4>🖱 설비·열번·알람 조작</h4><div class="dk-task"><b>${esc(b.text)}</b><ul>${objs.map(o=>`<li class="${ok(o)?'done':''}">${ok(o)?'✔':'○'} ${esc(o.label)}</li>`).join('')}</ul>${records.hint?'<p class="dk-note">힌트 · 신호와 열번 수정·삭제는 LS에서(열번창을 우클릭하면 메뉴가 떠요. MMI에서도 돼요). 열번 중복 알람 체크·확인은 MMI 알람창에서 해요.</p>':''}</div>`;};
+  const draw=()=>{main().innerHTML=`<h4>🖱 설비·열번·알람 조작</h4><div class="dk-task"><b>${esc(records.hint?b.text:(b.goal||'필요한 조작을 주인님이 판단해서 직접 취급하세요.'))}</b><ul>${objs.filter(o=>records.hint||ok(o)).map(o=>`<li class="${ok(o)?'done':''}">${ok(o)?'✔':'○'} ${esc(o.label)}</li>`).join('')}${records.hint?'':`<li class="dk-left">남은 조작 ${objs.filter(o=>!ok(o)).length}개</li>`}</ul>${records.hint?'<p class="dk-note">힌트 · 신호와 열번 수정·삭제는 LS에서(열번창을 우클릭하면 메뉴가 떠요. MMI에서도 돼요). 열번 중복 알람 체크·확인은 MMI 알람창에서 해요.</p>':''}</div>`;};
   G.redraw=draw;let sig='';
   while(G&&!objs.every(ok)){const missed=objs.find(o=>item().missed?.[o.id]!=null);if(missed)throw Error('필수 조작을 놓쳤어요: '+missed.label);const s=objs.map(ok).join()+records.hint;if(s!==sig){sig=s;draw();if(sig.includes('true'))SFX.play('correct');}await new Promise(r=>setTimeout(r,250));}
   if(!G)return;G.redraw=null;G.dock='';G.busy=true;G.target=null;draw();SFX.play('correct');

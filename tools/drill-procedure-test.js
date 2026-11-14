@@ -8,7 +8,7 @@ const op=id=>beats.findIndex(b=>b.t==='ops'&&b.objs.includes(id));
 const departure=who=>beats.findIndex(b=>b.t==='call'&&b.who===who&&b.say.some(x=>x.last));
 const go=departure('k1212'),routes=op('route-geumcheon-3B-B639T');
 assert(routes<go,'진로 개통 뒤 기관사 출발 지시');
-for(const who of ['geumcheon','doksan','station','guro'])assert(beats.some((b,i)=>i<routes&&b.t==='call'&&b.who===who&&b.say.some(x=>x.line.includes('안내방송')&&x.line.includes('상1선'))),'관계역 통보 누락: '+who);
+{const g=beats.findIndex((b,i)=>i<routes&&b.t==='call'&&b.who==='stations');assert(g>=0,'관계역 일괄 통보 누락');const c=beats[g],said=c.say.map(x=>x.line).join(' '),opened=c.open.map(x=>x[2]).join(' ');for(const n of ['금천구청','독산','가산디지털단지','구로'])assert(opened.includes(n),'관계역 호출 누락: '+n);assert(said.includes('상1선')&&said.includes('무정차')&&said.includes('안내방송'),'관계역 통보 내용 누락');}
 assert(op('rename-G1210')<departure('k1210'),'구원 출발 전에 열번 변경');
 assert(op('ack-G1210')<op('delete-G1210'),'중복 알람 확인 뒤 합병 열번 삭제');
 assert(op('delete-G1210')<op('rename-G1208'),'합병 뒤 회송 열번 변경');

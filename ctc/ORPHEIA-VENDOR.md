@@ -1,6 +1,6 @@
 # CTC LAB 시뮬레이터 (오르페이아 VN 내장본)
 
-`skybridge805679-netizen/ctc-lab-ls-mmi`의 `simulator/` 폴더를 복사한 것입니다(원본 커밋 0a577b7, v0.39.62).
+`skybridge805679-netizen/ctc-lab-ls-mmi`의 `simulator/` 폴더를 복사한 것입니다(원본 커밋 a448310, v0.39.63).
 시험 파일(e2e, *.test.*)만 뺐습니다. 갱신할 때는 원본 `simulator/`를 다시 복사한 뒤 아래 수정만 다시 적용하세요.
 
 | 파일 | 수정 |

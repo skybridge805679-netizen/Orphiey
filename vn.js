@@ -275,6 +275,7 @@ function config(){const d=$('#vnConfig'),st=meta.settings;
  <label>대사 속도<select id="cfgText">${[[45,'여유롭게'],[28,'보통'],[16,'빠르게'],[0,'즉시 표시']].map(([v,n])=>`<option value="${v}" ${records.textSpeed===v?'selected':''}>${n}</option>`).join('')}</select></label>
  <label>오토 대기<select id="cfgAuto">${[[2600,'느리게'],[1600,'보통'],[800,'빠르게']].map(([v,n])=>`<option value="${v}" ${st.auto===v?'selected':''}>${n}</option>`).join('')}</select></label>
  <label>음악 볼륨<input type="range" id="cfgBgm" min="0" max="100" value="${Math.round(BGM.settings().volume*100)}"></label>
+ <p class="cfg-note" id="cfgBgmState">${(()=>{const b=BGM.status();return b.found?`음악 파일 ${b.found}/${b.total}곡 인식${b.current?` · 재생 중 ${b.current}`:b.unlocked?'':' · 화면을 한 번 클릭하면 시작돼요'}`:'음악 파일을 찾지 못했어요 · assets/bgm/ 에 있는지, 서버가 그 주소를 열어 주는지 확인해 주세요';})()}</p>
  <label>효과음 볼륨<input type="range" id="cfgSfx" min="0" max="100" value="${Math.round(SFX.settings().volume*100)}"></label>
  <label class="check"><input type="checkbox" id="cfgSfxMute" ${SFX.settings().muted?'checked':''}> 효과음 끄기</label>
  <label class="check"><input type="checkbox" id="cfgBlip" ${SFX.settings().blip!==false?'checked':''}> 대사 타이핑 소리 (뽁뽁뽁)</label>

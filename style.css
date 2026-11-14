@@ -557,3 +557,5 @@ img.vn-stamp{width:min(34vw,360px);text-shadow:none}
 .ch-tw{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}.ch-tw span{padding:4px 10px;border-radius:999px;background:#2a2012;border:1px solid #ffb86b55;color:#ffd9a8;font-size:13px}
 .ch-rec{color:#9fb8c0;font-size:13px}.ch-btns{display:flex;gap:10px;justify-content:center;margin-top:16px}
 .ch-btns button{padding:10px 20px;border-radius:10px;border:1px solid #2c4b58;background:#06141f;color:#e7f3f4;cursor:pointer}.ch-btns button.primary{background:#ffb86b;color:#1a1206;border-color:#ffb86b}
+
+.cfg-note{margin:2px 0 8px;font-size:12px;color:#9fb8c0}

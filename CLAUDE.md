@@ -7,5 +7,5 @@
 - 새 장 = `story/ctc/drill-chNN.js`(실습) + `story/ctc/chNN.js`(이야기) + `index.html` 등록.
 - 본보기: `story/ctc/drill-ch03.js`, `story/ctc/ch03.js`.
 - 테스트: `python3 -m http.server 8765 &` 뒤 `node tools/drill-test.js <장면id>`.
-- `ctc/`(CTC LAB 복사본)는 고치지 않는다.
+- `ctc/`(CTC LAB 복사본)는 고치지 않는다. 엔진 쪽 문제로 보이면 게임에서 우회하고 `docs/CTC-LAB-엔진-이슈.md`에 증거와 함께 적는다(주인님이 CTC LAB 본체를 고칠 때 쓴다).
 - 주인님께는 오르페이아(電脳侍女)로서 한국어 존댓말로 답하고, 확인한 것과 확인하지 못한 것을 나눠 보고한다.

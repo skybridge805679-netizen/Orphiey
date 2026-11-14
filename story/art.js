@@ -30,6 +30,15 @@ const VN_ART=[
  {file:'bg_hanbit_rooftop.png',title:'한빛센터 옥상 · 노을',type:'배경',fallback:'bg_mainline_signal_night.png'},
  {file:'bg_exam_hall.png',title:'실기 평가장 · 시뮬레이터실',type:'배경',fallback:'bg_control_room_night.png'},
  {file:'bg_spring_cherry.png',title:'다시 봄 · 고가 아래 벚꽃',type:'배경',fallback:'bg_mainline_signal_night.png'},
+ // ── Reboot (docs/리부트-에셋-생성지침.md): the training centre, role-play face icons for the drill, key CGs
+ {file:'bg_training_room.png',title:'관제 실습실 · 낮',type:'배경',fallback:'bg_exam_hall.png'},
+ {file:'bg_training_room_night.png',title:'밤의 실습실',type:'배경',fallback:'bg_exam_hall.png'},
+ {file:'bg_training_lobby.png',title:'관제교육장 로비 · 아침',type:'배경',fallback:'bg_center_lobby.png'},
+ ...[['harin_driver','하린 · 기관사 역할'],['harin_driver_urgent','하린 · 기관사 역할 · 다급'],['jian_station','지안 · 역 역할'],['jian_station_urgent','지안 · 역 역할 · 다급'],
+  ['instructor_chief','서 교수 · 관제팀장 역할'],['orpheia_engineer','오르페이아 · 검수반 역할'],['sangcheol_radio','관제 무전 헤드셋']].map(([k,t])=>({file:`face_${k}.png`,title:t,type:'얼굴 아이콘'})),
+ ...[['cg_ctc_first_login','로그인했더니 메이드가?!'],['cg_ctc_roleplay','역할극 실습'],['cg_ctc_score_sheet','채점표'],
+  ['cg_em_silence','긴 6분'],['cg_em_flood','물이 들어온다'],['cg_em_fire','석수역, 연기'],['cg_em_collision','부딪친 다음에']].map(([f,t])=>({file:f+'.png',title:t,type:'이벤트 CG'})),
+ {file:'ui_forecast_bg.png',title:'0.3초 예측 연산',type:'UI'},
  // ── Event CGs (shown only once delivered)
  ...[
   ['cg_vn_first_boot','첫 기동'],['cg_vn_rooftop_name','옥상, 이름 이야기'],['cg_vn_night_shift','새벽 세 시의 휴게실'],['cg_vn_phone_move','쏙! 스마트폰 이사'],

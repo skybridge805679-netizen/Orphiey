@@ -1,0 +1,6 @@
+const {chromium}=require(require('child_process').execSync('npm root -g').toString().trim()+'/playwright');
+// 쓰는 법: node tools/fts-dump.js P-em-04   (저장소 루트에서 python3 -m http.server 8765 를 먼저 띄운다)
+(async()=>{const b=await chromium.launch();const p=await b.newPage();await p.goto('http://localhost:8765/ctc/index.html?embed=1');await p.waitForFunction(()=>window.SimRemote&&SimRemote.snapshot&&SimRemote.snapshot.ftsLibrary);
+const r=await p.evaluate(ids=>{const L=SimRemote.snapshot.ftsLibrary;const all=JSON.stringify(L);const out={};const walk=o=>{if(!o||typeof o!=='object')return;if(o.id&&ids.includes(o.id)&&(o.objectives||o.communications))out[o.id]=o;for(const v of Object.values(o))walk(v);};walk(L);return out;},process.argv.slice(2));
+for(const [id,pr] of Object.entries(r)){console.log('#####',id,pr.title,'|',JSON.stringify(pr.setup||{}).slice(0,700));console.log('OBJ',(pr.objectives||[]).map(o=>o.id+':'+o.label).join(' | '));for(const c of pr.communications||[])console.log(' ',c.id,'|',(c.to||c.target||''),'|',(c.text||c.label||JSON.stringify(c)).slice(0,260));console.log('RX');for(const x of pr.reactions||[])console.log(' ',JSON.stringify(x).slice(0,900));console.log('OBJFULL');for(const o of pr.objectives)console.log(' ',JSON.stringify(o).slice(0,300));}
+await b.close();})();

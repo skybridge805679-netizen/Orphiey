@@ -700,6 +700,9 @@ const CTCDrill=(()=>{
   if(!G||!W?.SimRemote?.snapshot?.fts)return;const s=session(),it=item();if(!s||!it)return;
   const now=Object.values(W.SimRemote.snapshot.states)[0].clock;for(const delay of G.delays||[])if(!delay.sent&&now>=delay.at){delay.sent=true;runTrain(delay.train);}
   G.visited??=new Set();for(const [station,s] of Object.entries(W.SimRemote.snapshot.ls.stations))for(const [slot,rows] of Object.entries(s.windows))for(const r of rows)G.visited.add(r.number+'@'+station+'/'+slot);
+  // 열번을 K→G(회송·구원)로 바꾼 열차는 운행중지된 것이다. 시각표에서도 운행중지해야 AUTO 자동운전이 원래 K 열번을 시각표대로 다시 만들어 내지 않는다
+  // (엔진 auto-controller.cjs의 depart/place가 시각표 열차를 지웠다가 다시 넣는다 — docs/CTC-LAB-엔진-이슈.md B2).
+  G.ttCancelled??=new Set();for(const s of Object.values(W.SimRemote.snapshot.ls.stations))for(const rows of Object.values(s.windows))for(const r of rows){const m=/^G(\d{4})$/.exec(r.number);const id=m&&'K'+m[1];if(id&&!G.ttCancelled.has(id)){G.ttCancelled.add(id);try{W.SimRemote.command({type:'timetable',method:'cancel',args:[id]});}catch{}}}
   let faultStyle=W.document.getElementById('drill-display-fault');
   if(!faultStyle){faultStyle=W.document.createElement('style');faultStyle.id='drill-display-fault';W.document.head.append(faultStyle);}
   const f=G.displayFault;

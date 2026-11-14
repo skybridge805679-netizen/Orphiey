@@ -41,6 +41,7 @@ VN.chapter('ch07','제7장','번호 없는 열차',`
 
 @bg bg_training_room_night
 @day 19:30 · 아무도 없는 실습실
+@bgm bgm_heavy
 LS 표시반만 켜져 있다. 화면에는 가산디지털단지역 상1선.
 @show instructor neutral center
 [서도희] 앉아요. 오르페이아도 들어요.

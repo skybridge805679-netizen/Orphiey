@@ -39,6 +39,7 @@ VN.chapter('ch08','최종장','상1선',`
 @add trueEnd 1
 @bg bg_training_room_night
 @day 21:40 · 아무도 없는 실습실
+@bgm bgm_orpheia
 불 꺼진 실습실. LS 표시반만 켜져 있다. 상철과 서도희 교수가 그 앞에 서 있다.
 @phone on
 @show orpheia shy center
@@ -60,6 +61,7 @@ LS의 가산디지털단지역 상1선에 열번창 하나가 켜졌다. 이번�
 @bg bg_cherry_street
 @day 3월 27일 (금) 18:30 · 수료식이 끝난 퇴근길
 벚꽃이 피었다. 수료증이 든 봉투가 가방 안에서 바스락거린다.
+@bgm bgm_result
 @show harin smile left
 @show jian smile right
 [유하린|smile] 다음 주부터 진짜 관제실이다! 상철아, 나 다른 센터로 가도 무전으로는 매일 만나자.
@@ -97,6 +99,7 @@ LS의 가산디지털단지역 상1선에 열번창 하나가 켜졌다. 이번�
 @bg bg_cherry_street
 @day 3월 27일 (금) 18:30 · 수료식이 끝난 퇴근길
 벚꽃이 피었다.
+@bgm bgm_result
 @show orpheia smile center
 [오르페이아|smile] 수료 축하드려요, 주인님. 저는 계속 여기 있을게요. 언젠가 그 무전에 끝을 붙여 줄 때까지요.
 [신상철] 금방 붙일게.

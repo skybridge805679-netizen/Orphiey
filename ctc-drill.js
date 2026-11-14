@@ -303,7 +303,7 @@ const CTCDrill=(()=>{
    const fc=$('.ctc-forecast');fc.querySelector('.ctc-fc-body').innerHTML=got.bad?written(got.text,got.bad,got.why):forecast(said(got),said(options.find(o=>o.key===answer)),ops);
    fc.style.backgroundImage=has('ui_forecast_bg.png')?`url(${asset('ui_forecast_bg.png')})`:'';fc.hidden=false;if(typeof BGM!=='undefined')BGM.play('bgm_forecast');
    await new Promise(res=>fc.querySelector('button').onclick=res);
-   fc.hidden=true;SFX.play('rewind');if(typeof BGM!=='undefined')BGM.play('bgm_emergency');
+   fc.hidden=true;SFX.play('rewind');if(typeof BGM!=='undefined')BGM.play(bgmFor());
   }
  }
  const FALLBACK_WHO=[{key:'all',name:'전 열차 (일제 통보)'},{key:'chief',name:'관제팀장 · 관제운영실'},{key:'사고복구반',name:'사고복구반'},{key:'self',name:'지적확인 환호 (혼잣말)'}];
@@ -383,6 +383,7 @@ const CTCDrill=(()=>{
  const ACTS={stop:'다음 역에 정차',caution:'주의운전',hold:'3분 추가 정차',run:'그대로 운행'};
  const GROUPS=['adjacent','follow','ahead'],GNAME={adjacent:'인접선 열차',follow:'후속열차',ahead:'선행열차'};
  const FORECASTS=3;
+ let drillId='';const bgmFor=()=>CH?'bgm_challenge':(SCENES[drillId]?.bgm||'bgm_emergency');   // 도전 모드는 자기 곡, 장면이 bgm을 지정하면 그 곡(실기시험), 아니면 비상호출 곡
  let CH=null;   // 도전 모드 설정 {forecasts, salt} — story/ctc/challenge.js 가 CTCDrill.mode()로 켠다
  const fcMax=()=>CH?.forecasts||FORECASTS;
  const main=()=>$('.dk-main');
@@ -412,7 +413,7 @@ const CTCDrill=(()=>{
   const fc=$('.ctc-forecast');fc.querySelector('.ctc-fc-body').innerHTML=written(said,bad,why);
   fc.style.backgroundImage=has('ui_forecast_bg.png')?`url(${asset('ui_forecast_bg.png')})`:'';fc.hidden=false;if(typeof BGM!=='undefined')BGM.play('bgm_forecast');
   await new Promise(res=>fc.querySelector('button').onclick=res);
-  fc.hidden=true;SFX.play('rewind');if(typeof BGM!=='undefined')BGM.play('bgm_emergency');
+  fc.hidden=true;SFX.play('rewind');if(typeof BGM!=='undefined')BGM.play(bgmFor());
   if(G.rw<=0){G.over=true;G.rw=fcMax();hud();await bubble('orpheia','','예측 연산이 과열됐어요……! 잠깐만 식힐게요. 이번 실습은 랭크 C로 기록돼요.','worry');}
  }
  // Whom to call next. The cue names the situation, never the party.
@@ -674,12 +675,12 @@ const CTCDrill=(()=>{
  // ── Start: a fresh simulator, then the FTS problem.
  // `id` is a script id (yongsan-5, em-05-1 …), a problem id (P-…) or an FTS scenario id (SC-…).
  function start(id,done){
-  if(!el)build();onDone=done;el.hidden=false;el.classList.remove('peek','desk');$('#ctcDesk').hidden=true;document.body.classList.add('in-ctc');
+  drillId=id;if(!el)build();onDone=done;el.hidden=false;el.classList.remove('peek','desk');$('#ctcDesk').hidden=true;document.body.classList.add('in-ctc');
   if(CH&&!CH.keepHint&&CH.hint===undefined){CH.hint=records.hint;records.hint=false;}el.classList.toggle('challenge',!!CH);
   $('#ctcHint').checked=!!records.hint;$('.ctc-loading').hidden=false;el.classList.remove('show-mmi');el.querySelectorAll('.ctc-view button').forEach(b=>b.classList.toggle('on',b.dataset.view==='ls'));$('.ctc-view i').hidden=true;
   const old=$('#ctcMMI'),fresh=document.createElement('iframe');fresh.id='ctcMMI';fresh.title=old.title;old.replaceWith(fresh);
   for(const s of ['.ctc-dialogue','#ctcRadioPanel','#ctcHintPanel','.ctc-toast','.ctc-forecast','.ctc-hud','.ctc-task'])$(s).hidden=true;
-  if(typeof BGM!=='undefined')BGM.play('bgm_emergency');
+  if(typeof BGM!=='undefined')BGM.play(bgmFor());
   frame.onload=()=>{
    W=frame.contentWindow;if(!W||!/ctc\/index/.test(W.location.href)){W=null;return;}let tries=0;
    const wait=setInterval(()=>{

@@ -4,13 +4,14 @@
 // themes; a script can override with "@bgm name" until the next background change.
 const BGM=(()=>{
  const KEY='orpheia-bgm-v1';
- const TRACKS=['bgm_title','bgm_daily','bgm_night_shift','bgm_outing','bgm_orpheia','bgm_heavy','bgm_hanbit','bgm_festival','bgm_winter','bgm_emergency','bgm_forecast','bgm_exam','bgm_result','song_block','song_ending'];
+ const TRACKS=['bgm_title','bgm_daily','bgm_night_shift','bgm_outing','bgm_orpheia','bgm_heavy','bgm_hanbit','bgm_festival','bgm_winter','bgm_emergency','bgm_forecast','bgm_exam','bgm_result','bgm_challenge','song_block','song_ending'];
  const SCENE={
   bg_control_room_night:'bgm_daily',bg_center_lobby:'bgm_daily',bg_cafeteria:'bgm_daily',bg_dev_lab:'bgm_daily',
   bg_break_room:'bgm_night_shift',bg_hanbit_dorm:'bgm_night_shift',bg_study_room:'bgm_night_shift',
   bg_riverside_day:'bgm_outing',bg_cherry_street:'bgm_outing',bg_depot_day:'bgm_outing',bg_train_window:'bgm_outing',bg_bungeoppang_stall:'bgm_outing',bg_gukbap:'bgm_outing',bg_fire_training:'bgm_outing',bg_bridge_night:'bgm_outing',
   bg_rooftop_night:'bgm_orpheia',bg_hanbit_rooftop:'bgm_orpheia',
   bg_hanbit_center:'bgm_hanbit',bg_summer_festival:'bgm_festival',bg_snow_street:'bgm_winter',bg_year_end_party:'bgm_winter',
+  bg_training_room:'bgm_daily',bg_training_lobby:'bgm_daily',bg_training_room_night:'bgm_night_shift',
   bg_exam_hall:'bgm_exam',bg_spring_cherry:'song_ending',
  };
  let set={volume:.5,muted:false};

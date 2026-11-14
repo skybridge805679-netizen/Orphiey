@@ -60,6 +60,7 @@ VN.chapter('ch07b','제8장','뒤집히는 정답',`
 @bg bg_training_room_night
 @hide all
 @day 20:10 · 실습실 앞 복도
+@bgm bgm_heavy
 @show instructor neutral center
 [서도희] 신상철 씨. 잠깐.
 [서도희] 그 모터카 운전원분께 연락했어요. 십 년 만에.

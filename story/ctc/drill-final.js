@@ -10,7 +10,7 @@ const B=DrillBlocks,H=(n,t,m)=>['harin',n,t,m],S=t=>['sangcheol','',t],O=(t,m)=>
 const TEN_YEARS='K1212는 상1선으로 들어섰다. 독산역을 지나 커브를 돌자, 선로 위에 노란 작업 차량이 있었다. 신호가 세워 주었고 기관사가 비상제동을 걸었다. 3미터가 남았다. 모터카 운전원은 운전석에서 한참 동안 내리지 못했다. ……십 년 전 그날과 같은 숫자였다.';
 const MC=(n,t)=>['jian',n||'모터카 운전원',t];
 
-CTCDrill.scene('final-exam',{problem:'em-05',title:'실기시험 · 상1선 (가산디지털단지역)',
+CTCDrill.scene('final-exam',{bgm:'bgm_exam',problem:'em-05',title:'실기시험 · 상1선 (가산디지털단지역)',
  roster:[
   {id:'k1208',who:'harin',name:'K1208 기관사',sub:'고장열차',call:'K1208열차',idle:'K1208열차, 이상! 응급조치 중입니다!'},
   {id:'all',who:'harin',name:'전 열차',sub:'일제 통보',call:'전 열차',idle:'전 열차, 수신 이상!'},

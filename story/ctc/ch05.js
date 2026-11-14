@@ -67,6 +67,7 @@ VN.chapter('ch05','제5장','물은 레일을 넘는가',`
 
 @bg bg_training_room_night
 @day 22:15 · 자취방
+@bgm bgm_orpheia
 빗소리가 창을 두드린다. 휴대폰 화면이 혼자 밝아졌다.
 @phone on
 @show orpheia serious center

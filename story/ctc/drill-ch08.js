@@ -238,7 +238,7 @@ CTCDrill.scene('ch08-dongmyo',{problem:'em-02',title:'제8장 실습 · 뒤집�
   ],
   no:[{text:'동묘앞역에 세워 승객을 태우게 한다',bad:'탈선했던 열차의 문이 열렸다. 아무도 타지 않았다.',why:'탈선 복구 차량은 회송해요.'}]},
  {t:'comm',ids:['n25'],wait:1200},
- {t:'move',runs:[{train:'G0604'}],view:'dongmyo',watch:9000,text:'G0604가 드디어 동묘앞역을 떠나요.'},   // 엔진 반응(r-g0604)이 안 붙는 경우가 있어 직접 계속운행시킨다
+ {t:'move',runs:[],view:'dongmyo',watch:9000,text:'G0604가 드디어 동묘앞역을 떠나요.'},   // 엔진 반응 r-g0604가 움직인다 (v0.39.62에서 A6 수정)
  ...B.recovery({place:'동묘앞역',what:'열차충돌 탈선사고',comm:['n27'],cueAll:'상선이 다시 열렸어요. 시청·지하서울역의 열차들이 기다려요.'}),
  {t:'move',runs:[{train:'K0610'}],view:'jonggak',watch:8000,text:'세워 둔 열차들이 다시 달려요.'},
  {t:'say',lines:[

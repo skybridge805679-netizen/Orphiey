@@ -230,7 +230,7 @@ CTCDrill.scene('ch07-collision',{problem:'em-03',title:'제7장 실습 · 두 �
  {t:'do',ctl:[['tick',60],['geumcheon',{type:'mode',value:'CCM'}],['geumcheon',{type:'route',id:'2A-5T'}],['geumcheon',{type:'route',id:'3B-B963T'}],['geumcheon',{type:'mode',value:'AUTO'}],['guro',{type:'mode',value:'CCM'}],['guro',{type:'route',id:'2A-5T'}],['guro',{type:'route',id:'3A-B949T'}],['guro',{type:'mode',value:'AUTO'}]]},
  {t:'say',lines:[S('K0452열차, 관제승인 9호로 열차번호 G0452로 변경하고 구로차량기지까지 회송 운행합니다. 신호 확인 출발. 관제 이상!'),H('G0452 기관사','G0452열차, 신호 확인 출발. 이상.')]},
  {t:'comm',ids:['n27'],wait:1200},
- {t:'move',runs:[{train:'G0452'}],view:'geumcheon',watch:12000,text:'G0452가 석수역을 떠나 구로차량기지로 가요.'},   // 엔진 반응 r-n27이 발동하지 않는 경우가 있어 직접 계속운행 (docs/CTC-LAB-엔진-이슈.md A6)
+ {t:'move',runs:[],view:'geumcheon',watch:12000,text:'G0452가 석수역을 떠나 구로차량기지로 가요.'},   // 엔진 반응 r-n27이 움직인다 (v0.39.62에서 A6 수정)
 
  // ── 끝을 알린다
  ...B.recovery({place:'석수역',what:'열차충돌사고',comm:['n28'],cueAll:'석수역 상2선이 비어 가요. 상2선 앞의 K0448·K0446은 아직 5분씩 늦추는 중이에요.'}),

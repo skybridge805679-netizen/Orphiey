@@ -9,5 +9,8 @@ for(const [id,s] of Object.entries(scenes)){if(/^ch0[12]/.test(id))continue;   /
  const visit=c=>{if(!c.say)return;for(const x of c.say){const l=(x.line||'').trim();
   if(/[,，]$|하시고$|하고$/.test(l))bad.push(`${id} [${c.title||c.who}] 끊긴 대사: ${l}`);
   if(c.say.length>1&&!x.reply)bad.push(`${id} [${c.title||c.who}] 복창 없음: ${l}`);}};
+ // 회송·구원 열번 변경은 기관사의 준비 완료 보고(고객 하차·전령자 승차·회송 준비)를 받은 뒤에
+ s.beats.forEach((b,i)=>{if(b.t!=='ops'||!(b.objs||[]).some(o=>/^rename-G/.test(o)))return;let k=i-1;while(k>=0&&['comm','move','waitTrain'].includes(s.beats[k].t))k--;
+  const p=s.beats[k];if(!(p?.t==='say'&&p.lines.some(l=>l[0]==='harin'&&/준비|승차|하차/.test(l[2]||''))))bad.push(`${id} ${b.objs} 앞에 기관사의 준비 완료 보고가 없음`);});
  for(const b of s.beats){if(b.t==='call')visit(b);if(b.t==='rush')b.needs.forEach(visit);if(b.t==='source')bad.push(`${id} source 비트(원본 통째 읽기): ${b.ids}`);}}
-if(bad.length){console.error(bad.join('\n'));process.exitCode=1;}else console.log(`PASS: ${Object.keys(scenes).length-2}개 장면, 끊긴 대사·복창 없는 항목·source 비트 0개`);
+if(bad.length){console.error(bad.join('\n'));process.exitCode=1;}else console.log(`PASS: ${Object.keys(scenes).length-2}개 장면, 끊긴 대사·복창 없는 항목·source 비트·보고 전 열번 변경 0개`);

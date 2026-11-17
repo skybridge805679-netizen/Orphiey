@@ -19,7 +19,7 @@ const join=(...xs)=>xs.map(x=>String(x||'').trim().replace(/^,|,$/g,'').trim()).
 
 function build(job,seed){
  const [width,height]=Array.isArray(job.size)?job.size:P.sizes[job.size||'portrait'];
- if(width*height>1024*1024)throw Error(`${job.out}: ${width}x${height}는 Opus 무료 범위(1MP)를 넘습니다`);
+ if(!job.init&&width*height>1024*1024)throw Error(`${job.out}: ${width}x${height}는 Opus 무료 범위(1MP)를 넘습니다`);
  const chars=(job.chars||[]).map(c=>typeof c==='string'?{id:c}:c).map(c=>{const d=C[c.id];if(!d)throw Error('모르는 인물: '+c.id);return {...c,d};});
  // 인원 태그(1girl, 2girls…)는 기본 프롬프트에, 인물 외형은 캐릭터 칸에 (V5 다인물 규칙)
  const girls=chars.filter(c=>/girl/.test(c.d.count)).length,boys=chars.filter(c=>/boy/.test(c.d.count)).length;
@@ -29,7 +29,7 @@ function build(job,seed){
  const many=chars.length>1;
  const char_captions=chars.map(c=>({char_caption:join(c.d.look,c.outfit??c.d.outfit,c.extra),centers:[{x:c.x??0.5,y:c.y??0.5}]}));
  const neg_captions=chars.map(c=>({char_caption:join(c.d.uc,c.uc),centers:[{x:c.x??0.5,y:c.y??0.5}]}));
- return {input:base,model:P.model,action:'generate',parameters:{
+ const body={input:base,model:P.model,action:'generate',parameters:{
   params_version:4,width,height,scale:P.guidance,sampler:P.sampler,steps:P.steps,seed,n_samples:1,
   noise_schedule:'karras',cfg_rescale:0,prefer_brownian:true,legacy:false,legacy_v3_extend:false,legacy_uc:false,
   qualityToggle:false,autoSmea:false,add_original_image:true,
@@ -37,6 +37,11 @@ function build(job,seed){
   v4_prompt:{caption:{base_caption:base,char_captions},use_coords:many,use_order:true},
   v4_negative_prompt:{caption:{base_caption:uc,char_captions:neg_captions},legacy_uc:false},
  }};
+ // img2img(실측 확인, V5 Full): 기준 그림에서 표정·옷만 바꾸는 차분. 크기는 기준 그림 크기. strength 0.5 ≈ 표정만, 0.65~0.7 ≈ 포즈·옷까지
+ if(job.init){const img=fs.readFileSync(path.join(ROOT,job.init.image));
+  Object.assign(body.parameters,{width:img.readUInt32BE(16),height:img.readUInt32BE(20),image:img.toString('base64'),strength:job.init.strength??0.5,noise:job.init.noise??0,extra_noise_seed:seed,color_correct:false});
+  body.action='img2img';}
+ return body;
 }
 // ZIP에서 첫 이미지 꺼내기 (의존성 없이: 로컬 파일 헤더 → stored/deflate)
 function unzip(buf){
@@ -82,7 +87,7 @@ for(const f of jobFiles){
     try{img=unzip(raw);}catch(e){const dump=path.join(ROOT,'tools/nai/log','raw-'+path.basename(out,'.png')+'.bin');fs.mkdirSync(path.dirname(dump),{recursive:true});fs.writeFileSync(dump,raw);throw Error(e.message+' → 원본 응답 저장: '+path.relative(ROOT,dump));}
     fs.mkdirSync(path.dirname(abs),{recursive:true});fs.writeFileSync(abs,img);
     // 다시 만들 수 있게 프롬프트·시드를 옆에 남긴다
-    fs.writeFileSync(abs.replace(/\.png$/i,'.json'),JSON.stringify({seed,model:body.model,params_version:body.parameters.params_version,prompt:body.input,chars:body.parameters.v4_prompt.caption.char_captions,uc:body.parameters.negative_prompt,size:[body.parameters.width,body.parameters.height]},null,1));
+    fs.writeFileSync(abs.replace(/\.png$/i,'.json'),JSON.stringify({seed,model:body.model,params_version:body.parameters.params_version,init:job.init||null,prompt:body.input,chars:body.parameters.v4_prompt.caption.char_captions,uc:body.parameters.negative_prompt,size:[body.parameters.width,body.parameters.height]},null,1));
     made++;report.push(`✅ ${out} (seed ${seed}, params_version ${body.parameters.params_version})`);
    }catch(e){fail++;report.push(`❌ ${out}: ${e.message}`);console.error('  실패:',e.message);}
    await sleep(6000);   // 동시 생성 잠김(429) 방지 — 2.5초로는 5장 중 2장이 막혔다

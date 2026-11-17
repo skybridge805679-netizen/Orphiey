@@ -60,6 +60,18 @@ NovelAI는 이미지 API 공식 문서를 공개하지 않는다. 아래는 공�
 - Opus 무료 생성: 1장, 1024×1024 픽셀 수 이하, 28스텝 이하 → 주인님 세팅(28스텝)과 아래 크기는 모두 무료 범위.
 - 요청 간격: 너무 붙이면 `429 Concurrent generation is locked`. 한 번에 한 장, 2초 이상 간격.
 
+## 4-1. 실측 결과 (2026-11-17, `tools/nai/probe.mjs` → `tools/nai/log/probe.txt`)
+
+| 기능 | V5 Full | 비고 |
+|---|---|---|
+| 일반 생성 | ✅ | `params_version: 4`, JSON 본문 |
+| **Image2Image** | ✅ | `action: "img2img"`, `parameters.image`(base64 PNG, JSON 인라인 가능)·`strength`·`noise`·`extra_noise_seed`. strength 0.5면 표정만 바뀌고 옷·포즈·투명 배경 유지 → **표정 차분은 이 방식** |
+| 인페인트 | ✅(제한) | 모델 `nai-diffusion-5-full-inpainting`, `action: "infill"`, `mask` 흰색 = 다시 그림. 투명 스탠딩에서는 마스크 부분의 투명도가 깨진다 → 불투명 그림(CG·배경) 부분 수정에만 |
+| Precise Reference | ❌ | 서버: "model nai-diffusion-5-full doesn't support director reference images" (V4.5 전용) |
+| Vibe Transfer | ❌ | `/ai/encode-vibe` 서버: "This model does not support vibe transfer through this endpoint" (V4.5는 인코딩 됨) |
+
+→ 인물 일관성: 기준 그림(주인님이 고른 시드)을 정하고, 표정은 img2img 0.5, 포즈가 바뀌는 차분은 0.65. 새 장면(CG)은 인물 태그 시트 + 시드 후보 뽑기.
+
 ## 5. 우리 게임용 크기·형식 (제안)
 
 | 용도 | 크기 | 추가 태그 |

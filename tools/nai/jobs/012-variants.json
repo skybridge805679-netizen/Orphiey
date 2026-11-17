@@ -1,0 +1,345 @@
+{
+ "_comment": "표정 차분은 기준 그림에서 img2img (V5 실측: strength 0.5 ≈ 표정만, 0.65 ≈ 포즈까지). 기준: 오르페이아 seed 1001, 얼굴 face_neutral, 서도희·유하린·류지안 neutral",
+ "jobs": [
+  {
+   "out": "assets/nai/chr/orpheia_sd_praise_v2.png",
+   "seed": 1001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "extra": "smile, open mouth, happy, hands together"
+    }
+   ],
+   "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background",
+   "init": {
+    "image": "assets/nai/chr/orpheia_sd_maid_v2.png",
+    "strength": 0.5,
+    "noise": 0
+   }
+  },
+  {
+   "out": "assets/nai/chr/orpheia_sd_worried_v2.png",
+   "seed": 1001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "extra": "worried, frown, sad, hands together"
+    }
+   ],
+   "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background",
+   "init": {
+    "image": "assets/nai/chr/orpheia_sd_maid_v2.png",
+    "strength": 0.5,
+    "noise": 0
+   }
+  },
+  {
+   "out": "assets/nai/chr/orpheia_sd_surprised.png",
+   "seed": 1001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "extra": "surprised, open mouth, wide-eyed"
+    }
+   ],
+   "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background",
+   "init": {
+    "image": "assets/nai/chr/orpheia_sd_maid_v2.png",
+    "strength": 0.5,
+    "noise": 0
+   }
+  },
+  {
+   "out": "assets/nai/chr/orpheia_sd_pout.png",
+   "seed": 1001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "extra": "pout, puffed cheeks, looking away, annoyed"
+    }
+   ],
+   "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background",
+   "init": {
+    "image": "assets/nai/chr/orpheia_sd_maid_v2.png",
+    "strength": 0.55,
+    "noise": 0
+   }
+  },
+  {
+   "out": "assets/nai/chr/orpheia_sd_shy.png",
+   "seed": 1001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "extra": "blush, shy, embarrassed, looking down, smile"
+    }
+   ],
+   "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background",
+   "init": {
+    "image": "assets/nai/chr/orpheia_sd_maid_v2.png",
+    "strength": 0.5,
+    "noise": 0
+   }
+  },
+  {
+   "out": "assets/nai/chr/orpheia_sd_briefing.png",
+   "seed": 1001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "extra": "smile, index finger raised, explaining, one eye closed"
+    }
+   ],
+   "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background",
+   "init": {
+    "image": "assets/nai/chr/orpheia_sd_maid_v2.png",
+    "strength": 0.65,
+    "noise": 0
+   }
+  },
+  {
+   "out": "assets/nai/face/face_smile.png",
+   "seed": 1001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "extra": "smile, open mouth, happy"
+    }
+   ],
+   "scene": "portrait, upper body, close-up, looking at viewer, transparent background",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background",
+   "init": {
+    "image": "assets/nai/face/face_neutral.png",
+    "strength": 0.5,
+    "noise": 0
+   }
+  },
+  {
+   "out": "assets/nai/face/face_worry.png",
+   "seed": 1001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "extra": "worried, frown, sad"
+    }
+   ],
+   "scene": "portrait, upper body, close-up, looking at viewer, transparent background",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background",
+   "init": {
+    "image": "assets/nai/face/face_neutral.png",
+    "strength": 0.5,
+    "noise": 0
+   }
+  },
+  {
+   "out": "assets/nai/face/face_serious.png",
+   "seed": 1001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "extra": "serious, closed mouth, determined"
+    }
+   ],
+   "scene": "portrait, upper body, close-up, looking at viewer, transparent background",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background",
+   "init": {
+    "image": "assets/nai/face/face_neutral.png",
+    "strength": 0.5,
+    "noise": 0
+   }
+  },
+  {
+   "out": "assets/nai/face/face_relief.png",
+   "seed": 1001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "extra": "relieved, closed eyes, gentle smile"
+    }
+   ],
+   "scene": "portrait, upper body, close-up, looking at viewer, transparent background",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background",
+   "init": {
+    "image": "assets/nai/face/face_neutral.png",
+    "strength": 0.5,
+    "noise": 0
+   }
+  },
+  {
+   "out": "assets/nai/face/face_resolve.png",
+   "seed": 1001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "extra": "determined, serious, slight frown, clenched teeth"
+    }
+   ],
+   "scene": "portrait, upper body, close-up, looking at viewer, transparent background",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background",
+   "init": {
+    "image": "assets/nai/face/face_neutral.png",
+    "strength": 0.55,
+    "noise": 0
+   }
+  },
+  {
+   "out": "assets/nai/chr/chr_instructor_stern.png",
+   "seed": 3001,
+   "chars": [
+    {
+     "id": "seo",
+     "extra": "stern, frown, arms crossed"
+    }
+   ],
+   "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background",
+   "init": {
+    "image": "assets/nai/chr/chr_instructor_neutral.png",
+    "strength": 0.65,
+    "noise": 0
+   }
+  },
+  {
+   "out": "assets/nai/chr/chr_instructor_smile.png",
+   "seed": 3001,
+   "chars": [
+    {
+     "id": "seo",
+     "extra": "light smile, closed mouth, gentle"
+    }
+   ],
+   "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background",
+   "init": {
+    "image": "assets/nai/chr/chr_instructor_neutral.png",
+    "strength": 0.5,
+    "noise": 0
+   }
+  },
+  {
+   "out": "assets/nai/chr/chr_instructor_coffee.png",
+   "seed": 3001,
+   "chars": [
+    {
+     "id": "seo",
+     "extra": "closed eyes, holding paper cup, drinking coffee"
+    }
+   ],
+   "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background",
+   "init": {
+    "image": "assets/nai/chr/chr_instructor_neutral.png",
+    "strength": 0.65,
+    "noise": 0
+   }
+  },
+  {
+   "out": "assets/nai/chr/chr_harin_smile.png",
+   "seed": 4101,
+   "chars": [
+    {
+     "id": "harin",
+     "extra": "smile, open mouth, closed eyes, happy"
+    }
+   ],
+   "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background",
+   "init": {
+    "image": "assets/nai/chr/chr_harin_neutral.png",
+    "strength": 0.5,
+    "noise": 0
+   }
+  },
+  {
+   "out": "assets/nai/chr/chr_harin_surprised.png",
+   "seed": 4101,
+   "chars": [
+    {
+     "id": "harin",
+     "extra": "surprised, wide-eyed, open mouth"
+    }
+   ],
+   "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background",
+   "init": {
+    "image": "assets/nai/chr/chr_harin_neutral.png",
+    "strength": 0.55,
+    "noise": 0
+   }
+  },
+  {
+   "out": "assets/nai/chr/chr_harin_pout.png",
+   "seed": 4101,
+   "chars": [
+    {
+     "id": "harin",
+     "extra": "pout, puffed cheeks, annoyed"
+    }
+   ],
+   "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background",
+   "init": {
+    "image": "assets/nai/chr/chr_harin_neutral.png",
+    "strength": 0.55,
+    "noise": 0
+   }
+  },
+  {
+   "out": "assets/nai/chr/chr_harin_excited.png",
+   "seed": 4101,
+   "chars": [
+    {
+     "id": "harin",
+     "extra": "sparkling eyes, open mouth, excited, clenched hands"
+    }
+   ],
+   "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background",
+   "init": {
+    "image": "assets/nai/chr/chr_harin_neutral.png",
+    "strength": 0.6,
+    "noise": 0
+   }
+  },
+  {
+   "out": "assets/nai/chr/chr_jian_smile.png",
+   "seed": 5102,
+   "chars": [
+    {
+     "id": "jian",
+     "extra": "light smile, holding silver laptop computer"
+    }
+   ],
+   "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background",
+   "init": {
+    "image": "assets/nai/chr/chr_jian_neutral.png",
+    "strength": 0.5,
+    "noise": 0
+   }
+  },
+  {
+   "out": "assets/nai/chr/chr_jian_serious.png",
+   "seed": 5102,
+   "chars": [
+    {
+     "id": "jian",
+     "extra": "serious, pushing up eyewear"
+    }
+   ],
+   "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background",
+   "init": {
+    "image": "assets/nai/chr/chr_jian_neutral.png",
+    "strength": 0.55,
+    "noise": 0
+   }
+  }
+ ]
+}

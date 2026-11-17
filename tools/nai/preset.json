@@ -1,0 +1,21 @@
+{
+  "_comment": "주인님 기본 세팅 (2026-11-17 지정). NovelAI Diffusion V5 Full · Anime · Effort High. 문서: docs/NAI-이미지-설정.md",
+  "model": "nai-diffusion-5-full",
+  "model_effort_medium": "nai-diffusion-5-full-medium",
+  "mode": "anime",
+  "effort": "high",
+  "prompt_prefix": "1.5::artist:tsunako::, 0.7::artist:mishima kurone, artist:toosaka asagi, artist:takeshima eku::, year 2026, 0.1::neptune (sereis)::, 0.1::date a live::, {best quality, very aesthetic, best details, highres, amazing quality, high complexity}, -6::artist collaboration::, ",
+  "quality_tags": "standard",
+  "quality_suffix": ", very aesthetic, masterpiece, no text",
+  "uc": "worst quality, bad quality, displeasing, very displeasing, lowres, bad anatomy, bad perspective, bad proportions, bad aspect ratio, bad face, long face, bad teeth, bad neck, long neck, bad arm, bad hands, bad ass, bad leg, bad feet, bad reflection, bad shadow, bad link, bad source, wrong hand, wrong feet, missing limb, missing eye, missing tooth, missing ear, missing finger, extra faces, extra eyes, extra eyebrows, extra mouth, extra tongue, extra teeth, extra ears, extra breasts, extra arms, extra hands, extra legs, extra digits, fewer digits, cropped head, cropped torso, cropped shoulders, cropped arms, cropped legs, mutation, deformed, disfigured, unfinished, chromatic aberration, text, error, jpeg artifacts, watermark, scan, scan artifacts, ",
+  "uc_preset": "none",
+  "steps": 28,
+  "guidance": 5,
+  "sampler": "k_euler_ancestral",
+  "sizes": {
+    "_comment": "Opus 무료 생성은 1024x1024 픽셀 수 이하·28스텝 이하. 아래는 모두 1MP 이하(64 배수).",
+    "portrait": [832, 1216],
+    "landscape": [1216, 832],
+    "square": [1024, 1024]
+  }
+}

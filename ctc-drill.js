@@ -13,7 +13,8 @@ const CTCDrill=(()=>{
  const pick=(a,seed)=>a[Math.abs(seed)%a.length];
  const hash=s=>[...String(s)].reduce((h,c)=>(h*31+c.charCodeAt(0))|0,7);
  const ACTOR={harin:'하린',jian:'지안',instructor:'서 교수',orpheia:'오르페이아'};
- const FACE={harin:'chr_harin_neutral.png',jian:'chr_jian_neutral.png',instructor:'chr_instructor_neutral.png',
+ const FACE={harin:'face_harin_neutral.png',jian:'face_jian_neutral.png',instructor:'face_instructor_neutral.png',   // 전용 얼굴 아이콘(NAI). 스탠딩을 자르지 않는다
+ 
   orpheia:'ui/face_neutral.png',orpheia_smile:'ui/face_smile.png',orpheia_worry:'ui/face_worry.png',orpheia_serious:'ui/face_serious.png'};
  let el=null,frame=null,W=null,M=null,G=null,onDone=null,tick=0,typer=null,advanceFn=null,toastTimer=0;
  const $=s=>el.querySelector(s);
@@ -243,7 +244,7 @@ const CTCDrill=(()=>{
   const icon=roleFace(who,name,mood);
   if(icon){const wrap=box.querySelector('.ctc-face')||box,img=box.querySelector('img');if(wrap!==box){wrap.className='ctc-face';wrap.style.display='';}img.src=asset(icon);return;}
   const f=who==='orpheia'?FACE['orpheia'+(mood&&mood!=='urgent'?'_'+mood:'')]||FACE.orpheia:FACE[who],wrap=box.querySelector('.ctc-face')||box,img=box.querySelector('img');
-  if(wrap!==box){wrap.className='ctc-face'+(f&&who!=='orpheia'?' crop crop-'+who:'');wrap.style.display=f?'':'none';}
+  if(wrap!==box){wrap.className='ctc-face'+(f&&who!=='orpheia'&&/^chr_/.test(f)?' crop crop-'+who:'');wrap.style.display=f?'':'none';}
   if(f)img.src=asset(f);
  }
  // One line of dialogue; resolves when the player advances.
@@ -390,7 +391,7 @@ const CTCDrill=(()=>{
  const main=()=>$('.dk-main');
  function icon(who,name,mood){
   const role=roleFace(who,name,mood),f=role||(who==='orpheia'?FACE['orpheia'+(mood&&FACE['orpheia_'+mood]?'_'+mood:'')]:FACE[who]);
-  return f?`<span class="dk-face${!role&&who!=='orpheia'?' crop crop-'+who:''}"><img src="${asset(f)}" alt=""></span>`:'<span class="dk-face none">📻</span>';
+  return f?`<span class="dk-face${!role&&who!=='orpheia'&&/^chr_/.test(f)?' crop crop-'+who:''}"><img src="${asset(f)}" alt=""></span>`:'<span class="dk-face none">📻</span>';
  }
  function dkStatus(text,mood=''){$('.dk-status').innerHTML=icon('orpheia','',mood)+`<p>${esc(text)}</p>`;}
  // One radio line as a chat bubble. It types itself and moves on; a click or Space finishes the typing.

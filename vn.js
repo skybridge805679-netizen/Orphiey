@@ -14,9 +14,9 @@ function markScene(id){if(!sceneSet.has(id)){sceneSet.add(id);meta.scenes=[...sc
 const CAST={
  orpheia:{name:'오르페이아',cls:'c-orpheia',stand:{neutral:'orpheia_sd_maid_v2.png',smile:'orpheia_sd_praise_v2.png',worry:'orpheia_sd_worried_v2.png',explain:'orpheia_sd_briefing.png',surprised:['orpheia_sd_surprised.png','orpheia_sd_maid_v2.png'],pout:['orpheia_sd_pout.png','orpheia_sd_worried_v2.png'],shy:['orpheia_sd_shy.png','orpheia_sd_praise_v2.png'],excited:'orpheia_sd_praise_v2.png',casual:['orpheia_sd_casual.png','orpheia_sd_maid_v2.png'],yukata:['orpheia_sd_yukata.png','orpheia_sd_maid_v2.png'],santa:['orpheia_sd_santa.png','orpheia_sd_praise_v2.png'],coat:['orpheia_sd_coat.png','orpheia_sd_maid_v2.png'],suit:['orpheia_sd_suit.png','orpheia_sd_briefing.png'],driver:'orpheia_sd_driver_v2.png',stationmaster:'orpheia_sd_stationmaster_v2.png',engineer:'orpheia_sd_engineer_v2.png',evacuation:'orpheia_sd_evacuation_v2.png'},
   face:{casual:'smile',yukata:'smile',santa:'smile',coat:'neutral',suit:'serious',excited:'smile',driver:'serious',stationmaster:'serious',engineer:'serious',evacuation:'serious',neutral:'neutral',smile:'smile',worry:'worry',explain:'serious',surprised:'serious',pout:'worry',shy:'relief',serious:'serious',resolve:'resolve',relief:'relief'}},
- instructor:{name:'서도희 교관',cls:'c-instructor',stand:{neutral:['chr_instructor_neutral.png',''],stern:['chr_instructor_stern.png',''],smile:['chr_instructor_smile.png',''],coffee:['chr_instructor_coffee.png',''],casual:['chr_instructor_casual.png','chr_instructor_neutral.png']}},
- harin:{name:'유하린',cls:'c-harin',stand:{neutral:['chr_harin_neutral.png',''],smile:['chr_harin_smile.png',''],surprised:['chr_harin_surprised.png',''],pout:['chr_harin_pout.png',''],excited:['chr_harin_excited.png',''],casual:['chr_harin_casual.png','chr_harin_neutral.png'],yukata:['chr_harin_yukata.png','chr_harin_neutral.png']}},
- jian:{name:'류지안',cls:'c-jian',stand:{neutral:['chr_jian_neutral.png',''],smile:['chr_jian_smile.png',''],serious:['chr_jian_serious.png','']}},
+ instructor:{portrait:'face_instructor_neutral.png',name:'서도희 교관',cls:'c-instructor',stand:{neutral:['chr_instructor_neutral.png',''],stern:['chr_instructor_stern.png',''],smile:['chr_instructor_smile.png',''],coffee:['chr_instructor_coffee.png',''],casual:['chr_instructor_casual.png','chr_instructor_neutral.png']}},
+ harin:{portrait:'face_harin_neutral.png',name:'유하린',cls:'c-harin',stand:{neutral:['chr_harin_neutral.png',''],smile:['chr_harin_smile.png',''],surprised:['chr_harin_surprised.png',''],pout:['chr_harin_pout.png',''],excited:['chr_harin_excited.png',''],casual:['chr_harin_casual.png','chr_harin_neutral.png'],yukata:['chr_harin_yukata.png','chr_harin_neutral.png']}},
+ jian:{portrait:'face_jian_neutral.png',name:'류지안',cls:'c-jian',stand:{neutral:['chr_jian_neutral.png',''],smile:['chr_jian_smile.png',''],serious:['chr_jian_serious.png','']}},
  sangcheol:{name:'신상철',cls:'c-player',stand:{}},
 };
 const ALIAS={'오르페이아':'orpheia','서도희':'instructor','서 교관':'instructor','교관':'instructor','서도희 교관':'instructor','하린':'harin','유하린':'harin','상철':'sangcheol','신상철':'sangcheol','류지안':'jian','지안':'jian'};
@@ -161,6 +161,7 @@ function paint(){
  const face=$('#vnFace'),faceKey=l?.who==='orpheia'?(CAST.orpheia.face[l.expr]||'neutral'):'';
  let faceSrc='',crop='';
  if(faceKey&&ART_READY.has(`orpheia_face_${faceKey}.png`))faceSrc=`ui/face_${faceKey}.png`;
+ else if(l?.who&&CAST[l.who]?.portrait)faceSrc=CAST[l.who].portrait;   // 전용 얼굴 아이콘(NAI)
  else if(l?.who&&CAST[l.who]){const f=standFile(l.who,l.expr||S.chars[l.who]?.expr||'neutral');if(f){faceSrc=f;crop=' crop crop-'+l.who;}}
  face.hidden=!faceSrc;face.className='vn-face'+crop;$('#vnName').classList.toggle('has-face',!!faceSrc);
  if(faceSrc){const img=face.querySelector('img');if(img.dataset.f!==faceSrc){img.dataset.f=faceSrc;img.src=asset(faceSrc);}}

@@ -1,0 +1,34 @@
+# NovelAI 고급 기능 탐침(img2img·Precise Reference·Vibe·인페인트). tools/nai/probe.mjs를 고쳐 푸시하면 실행.
+name: NAI 기능 탐침
+on:
+  push:
+    paths: ['tools/nai/probe.mjs']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: nai-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: 탐침
+        env:
+          NAI_TOKEN: ${{ secrets.NAI_TOKEN }}
+        run: node tools/nai/probe.mjs
+      - name: 결과 커밋
+        if: always()
+        run: |
+          git config user.name "orpheia-nai-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/nai/probe tools/nai/log 2>/dev/null || true
+          if git diff --cached --quiet; then echo "결과 없음"; exit 0; fi
+          git commit -m "NAI 탐침 결과 (${GITHUB_SHA::7})"
+          for i in 1 2 3 4; do git pull --rebase origin "${GITHUB_REF_NAME}" && git push origin "HEAD:${GITHUB_REF_NAME}" && exit 0; sleep $((i*5)); done
+          exit 1

@@ -1,22 +1,4 @@
-2026-11-17T18:21:17.128Z
-NAI 생성 20장 성공, 0장 실패
-✅ assets/nai/chr/orpheia_sd_praise_v2.png (seed 1001, params_version 4)
-✅ assets/nai/chr/orpheia_sd_worried_v2.png (seed 1001, params_version 4)
-✅ assets/nai/chr/orpheia_sd_surprised.png (seed 1001, params_version 4)
-✅ assets/nai/chr/orpheia_sd_pout.png (seed 1001, params_version 4)
-✅ assets/nai/chr/orpheia_sd_shy.png (seed 1001, params_version 4)
+2026-11-17T22:37:31.005Z
+NAI 생성 2장 성공, 0장 실패
 ✅ assets/nai/chr/orpheia_sd_briefing.png (seed 1001, params_version 4)
-✅ assets/nai/face/face_smile.png (seed 1001, params_version 4)
-✅ assets/nai/face/face_worry.png (seed 1001, params_version 4)
-✅ assets/nai/face/face_serious.png (seed 1001, params_version 4)
-✅ assets/nai/face/face_relief.png (seed 1001, params_version 4)
-✅ assets/nai/face/face_resolve.png (seed 1001, params_version 4)
 ✅ assets/nai/chr/chr_instructor_stern.png (seed 3001, params_version 4)
-✅ assets/nai/chr/chr_instructor_smile.png (seed 3001, params_version 4)
-✅ assets/nai/chr/chr_instructor_coffee.png (seed 3001, params_version 4)
-✅ assets/nai/chr/chr_harin_smile.png (seed 4101, params_version 4)
-✅ assets/nai/chr/chr_harin_surprised.png (seed 4101, params_version 4)
-✅ assets/nai/chr/chr_harin_pout.png (seed 4101, params_version 4)
-✅ assets/nai/chr/chr_harin_excited.png (seed 4101, params_version 4)
-✅ assets/nai/chr/chr_jian_smile.png (seed 5102, params_version 4)
-✅ assets/nai/chr/chr_jian_serious.png (seed 5102, params_version 4)

@@ -41,12 +41,18 @@ function build(job,seed){
 // ZIP에서 첫 이미지 꺼내기 (의존성 없이: 로컬 파일 헤더 → stored/deflate)
 function unzip(buf){
  if(buf[0]===0x89&&buf[1]===0x50)return buf;   // 이미 PNG
- let o=0;while(o+30<=buf.length&&buf.readUInt32LE(o)===0x04034b50){
-  const method=buf.readUInt16LE(o+8),csize=buf.readUInt32LE(o+18),nlen=buf.readUInt16LE(o+26),xlen=buf.readUInt16LE(o+28);
-  const name=buf.slice(o+30,o+30+nlen).toString(),start=o+30+nlen+xlen,data=buf.slice(start,start+csize);
-  if(/\.(png|webp)$/i.test(name))return method===0?data:zlib.inflateRawSync(data);
-  o=start+csize;}
- throw Error('응답에서 이미지를 찾지 못했습니다 (앞 16바이트: '+buf.slice(0,16).toString('hex')+')');
+ const head=()=>`길이 ${buf.length}, 앞 16바이트 ${buf.slice(0,16).toString('hex')}`;
+ // 크기는 중앙 디렉터리에서 읽는다(로컬 헤더는 데이터 서술자 플래그면 크기가 0이다)
+ let e=-1;for(let i=buf.length-22;i>=Math.max(0,buf.length-65557);i--)if(buf.readUInt32LE(i)===0x06054b50){e=i;break;}
+ if(e<0)throw Error('ZIP이 아닙니다 ('+head()+')');
+ let c=buf.readUInt32LE(e+16);const count=buf.readUInt16LE(e+10);
+ for(let k=0;k<count&&buf.readUInt32LE(c)===0x02014b50;k++){
+  const method=buf.readUInt16LE(c+10),csize=buf.readUInt32LE(c+20),nlen=buf.readUInt16LE(c+28),xlen=buf.readUInt16LE(c+30),clen=buf.readUInt16LE(c+32),local=buf.readUInt32LE(c+42);
+  const name=buf.slice(c+46,c+46+nlen).toString();
+  if(/\.(png|webp)$/i.test(name)){const start=local+30+buf.readUInt16LE(local+26)+buf.readUInt16LE(local+28),data=buf.slice(start,start+csize);
+   return method===0?data:zlib.inflateRawSync(data);}
+  c+=46+nlen+xlen+clen;}
+ throw Error('ZIP 안에 이미지가 없습니다 ('+head()+')');
 }
 async function call(body){
  for(let attempt=0;attempt<4;attempt++){
@@ -72,7 +78,9 @@ for(const f of jobFiles){
    if(DRY){console.log(JSON.stringify({out,...body},null,1));continue;}
    try{
     console.log('생성:',out,`seed=${seed}`,`${body.parameters.width}x${body.parameters.height}`);
-    const img=unzip(await call(body));fs.mkdirSync(path.dirname(abs),{recursive:true});fs.writeFileSync(abs,img);
+    const raw=await call(body);let img;
+    try{img=unzip(raw);}catch(e){const dump=path.join(ROOT,'tools/nai/log','raw-'+path.basename(out,'.png')+'.bin');fs.mkdirSync(path.dirname(dump),{recursive:true});fs.writeFileSync(dump,raw);throw Error(e.message+' → 원본 응답 저장: '+path.relative(ROOT,dump));}
+    fs.mkdirSync(path.dirname(abs),{recursive:true});fs.writeFileSync(abs,img);
     // 다시 만들 수 있게 프롬프트·시드를 옆에 남긴다
     fs.writeFileSync(abs.replace(/\.png$/i,'.json'),JSON.stringify({seed,model:body.model,params_version:body.parameters.params_version,prompt:body.input,chars:body.parameters.v4_prompt.caption.char_captions,uc:body.parameters.negative_prompt,size:[body.parameters.width,body.parameters.height]},null,1));
     made++;report.push(`✅ ${out} (seed ${seed}, params_version ${body.parameters.params_version})`);

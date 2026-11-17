@@ -1,0 +1,73 @@
+{
+ "_comment": "후보 뽑기: 문제 있던 스탠딩 4장 x 시드 3. 고른 것을 assets/nai/chr/로 옮긴다",
+ "jobs": [
+  {
+   "out": "assets/nai/pick/chr_harin_neutral.png",
+   "size": "portrait",
+   "seeds": [
+    4101,
+    4102,
+    4103
+   ],
+   "chars": [
+    {
+     "id": "harin",
+     "extra": "smile, closed mouth, hands behind back"
+    }
+   ],
+   "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background, bag, case, guitar case"
+  },
+  {
+   "out": "assets/nai/pick/chr_harin_surprised.png",
+   "size": "portrait",
+   "seeds": [
+    4201,
+    4202,
+    4203
+   ],
+   "chars": [
+    {
+     "id": "harin",
+     "extra": "surprised, wide-eyed, open mouth, hands up, empty hands"
+    }
+   ],
+   "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background, bag, case, guitar case"
+  },
+  {
+   "out": "assets/nai/pick/chr_jian_neutral.png",
+   "size": "portrait",
+   "seeds": [
+    5101,
+    5102,
+    5103
+   ],
+   "chars": [
+    {
+     "id": "jian",
+     "extra": "expressionless, holding silver laptop computer, laptop under arm"
+    }
+   ],
+   "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background, bag, case, guitar case"
+  },
+  {
+   "out": "assets/nai/pick/chr_jian_smile.png",
+   "size": "portrait",
+   "seeds": [
+    5101,
+    5102,
+    5103
+   ],
+   "chars": [
+    {
+     "id": "jian",
+     "extra": "light smile, holding silver laptop computer, laptop under arm"
+    }
+   ],
+   "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background, bag, case, guitar case"
+  }
+ ]
+}

@@ -92,14 +92,14 @@
    "chars": [
     {
      "id": "orpheia",
-     "extra": "smile, index finger raised, explaining, one eye closed"
+     "extra": "smile, index finger raised, pointing up, explaining, one eye closed, one hand on hip"
     }
    ],
    "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
    "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background",
    "init": {
     "image": "assets/nai/chr/orpheia_sd_maid_v2.png",
-    "strength": 0.65,
+    "strength": 0.75,
     "noise": 0
    }
   },
@@ -194,14 +194,14 @@
    "chars": [
     {
      "id": "seo",
-     "extra": "stern, frown, arms crossed"
+     "extra": "stern, frown, crossed arms"
     }
    ],
    "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
    "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background",
    "init": {
     "image": "assets/nai/chr/chr_instructor_neutral.png",
-    "strength": 0.65,
+    "strength": 0.75,
     "noise": 0
    }
   },

@@ -1,0 +1,44 @@
+{
+ "_comment": "인물 얼굴 아이콘(대화 기록·명찰용). 스탠딩을 잘라 쓰지 않는다",
+ "jobs": [
+  {
+   "out": "assets/nai/face/face_instructor_neutral.png",
+   "size": "square",
+   "seed": 3001,
+   "chars": [
+    {
+     "id": "seo",
+     "extra": "expressionless, closed mouth"
+    }
+   ],
+   "scene": "portrait, upper body, close-up, looking at viewer, transparent background",
+   "uc": "multiple views"
+  },
+  {
+   "out": "assets/nai/face/face_harin_neutral.png",
+   "size": "square",
+   "seed": 4101,
+   "chars": [
+    {
+     "id": "harin",
+     "extra": "smile, closed mouth"
+    }
+   ],
+   "scene": "portrait, upper body, close-up, looking at viewer, transparent background",
+   "uc": "multiple views, lab coat"
+  },
+  {
+   "out": "assets/nai/face/face_jian_neutral.png",
+   "size": "square",
+   "seed": 5102,
+   "chars": [
+    {
+     "id": "jian",
+     "extra": "expressionless"
+    }
+   ],
+   "scene": "portrait, upper body, close-up, looking at viewer, transparent background",
+   "uc": "multiple views, lab coat"
+  }
+ ]
+}

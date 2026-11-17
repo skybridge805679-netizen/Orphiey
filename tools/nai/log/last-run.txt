@@ -1,0 +1,7 @@
+2026-11-17T15:26:49.514Z
+NAI 생성 3장 성공, 2장 실패
+✅ assets/nai/test/orpheia_sprite_s1001.png (seed 1001, params_version 4)
+✅ assets/nai/test/orpheia_sprite_s1002.png (seed 1002, params_version 4)
+❌ assets/nai/test/orpheia_sprite_s1003.png: 재시도 한도 초과
+✅ assets/nai/test/orpheia_chibi_s2001.png (seed 2001, params_version 4)
+❌ assets/nai/test/orpheia_chibi_s2002.png: 재시도 한도 초과

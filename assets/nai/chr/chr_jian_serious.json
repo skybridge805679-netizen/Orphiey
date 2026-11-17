@@ -1,0 +1,27 @@
+{
+ "seed": 5102,
+ "model": "nai-diffusion-5-full",
+ "params_version": 4,
+ "init": {
+  "image": "assets/nai/chr/chr_jian_neutral.png",
+  "strength": 0.55,
+  "noise": 0
+ },
+ "prompt": "1.5::artist:tsunako::, 0.7::artist:mishima kurone, artist:toosaka asagi, artist:takeshima eku::, year 2026, 0.1::neptune (sereis)::, 0.1::date a live::, {best quality, very aesthetic, best details, highres, amazing quality, high complexity}, -6::artist collaboration::, 1girl, solo, visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::, very aesthetic, masterpiece, no text",
+ "chars": [
+  {
+   "char_caption": "girl, black hair, long hair, low ponytail, round eyewear, black-framed eyewear, grey eyes, eye bags, -3::lab coat, white coat, coat::, white shirt, collared shirt, grey sweater vest, black pants, lanyard, id card, serious, pushing up eyewear",
+   "centers": [
+    {
+     "x": 0.5,
+     "y": 0.5
+    }
+   ]
+  }
+ ],
+ "uc": "worst quality, bad quality, displeasing, very displeasing, lowres, bad anatomy, bad perspective, bad proportions, bad aspect ratio, bad face, long face, bad teeth, bad neck, long neck, bad arm, bad hands, bad ass, bad leg, bad feet, bad reflection, bad shadow, bad link, bad source, wrong hand, wrong feet, missing limb, missing eye, missing tooth, missing ear, missing finger, extra faces, extra eyes, extra eyebrows, extra mouth, extra tongue, extra teeth, extra ears, extra breasts, extra arms, extra hands, extra legs, extra digits, fewer digits, cropped head, cropped torso, cropped shoulders, cropped arms, cropped legs, mutation, deformed, disfigured, unfinished, chromatic aberration, text, error, jpeg artifacts, watermark, scan, scan artifacts, patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background",
+ "size": [
+  832,
+  1216
+ ]
+}

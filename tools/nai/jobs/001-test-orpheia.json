@@ -1,0 +1,9 @@
+{
+ "_comment": "첫 시험: 새 화풍 오르페이아 스탠딩과 치비, 서로 다른 시드 3장씩",
+ "jobs": [
+  {"out":"assets/nai/test/orpheia_sprite.png","size":"portrait","chars":[{"id":"orpheia","extra":"smile, hands together"}],
+   "scene":"visual novel sprite, full body, standing, looking at viewer, transparent background","seeds":[1001,1002,1003]},
+  {"out":"assets/nai/test/orpheia_chibi.png","size":"square","chibi":true,"chars":[{"id":"orpheia","extra":"open mouth, :d, waving"}],
+   "scene":"full body, transparent background","seeds":[2001,2002]}
+ ]
+}

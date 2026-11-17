@@ -1,4 +1,5 @@
-2026-11-17T22:37:31.005Z
-NAI 생성 2장 성공, 0장 실패
-✅ assets/nai/chr/orpheia_sd_briefing.png (seed 1001, params_version 4)
-✅ assets/nai/chr/chr_instructor_stern.png (seed 3001, params_version 4)
+2026-11-17T22:40:53.851Z
+NAI 생성 3장 성공, 0장 실패
+✅ assets/nai/face/face_instructor_neutral.png (seed 3001, params_version 4)
+✅ assets/nai/face/face_harin_neutral.png (seed 4101, params_version 4)
+✅ assets/nai/face/face_jian_neutral.png (seed 5102, params_version 4)

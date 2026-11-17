@@ -100,6 +100,12 @@ NovelAI는 이미지 API 공식 문서를 공개하지 않는다. 아래는 공�
 - 워크플로: `.github/workflows/nai-generate.yml` — `tools/nai/jobs/*.json`을 고쳐 푸시하면 그 브랜치에서 실행, **아직 없는 그림만** 만들어 같은 브랜치에 커밋(`assets/nai/…`, 기록 `tools/nai/log/last-run.txt`). 시크릿은 `NAI_TOKEN`.
 - 작업 순서: 시험 작업(시드 여러 개) → 주인님이 고른 시드 고정 → 차분 일괄 → 게임 에셋 이름으로 교체.
 
+## 8. 게임 연결
+
+- `node tools/nai/install.mjs` — `assets/nai/*`를 게임 파일 이름으로 복사(바뀐 것만). 새 그림을 받으면 다시 돌린다.
+- 대화 명찰·실습 기록의 인물 얼굴은 스탠딩을 자르지 않고 전용 얼굴 아이콘(`face_{instructor,harin,jian}_neutral.png`, 오르페이아는 `ui/face_*.png`)을 쓴다(`vn.js` CAST의 `portrait`, `ctc-drill.js` FACE).
+- 아직 옛 그림인 것: 부록 문제집(app.js)의 `orpheia_holo_*`·`chr_driver_*` 등, 비상 결말 그림(`end_*`), UI(`title_logo`, `ui_*`).
+
 ## 출처
 
 - 공식: [V5 소개](https://novelai.net/v5), [V5 출시 글(일본어)](https://blognew.novelai.net/novelai-diffusion-v5-release-jp-343211a45664/), [V5 출시 글(영어)](https://journal.novelai.net/image-generation-novelai-diffusion-v5-is-here-c2df7c6b8d2d/), [강화·약화](https://docs.novelai.net/en/image/strengthening-weakening), [태그](https://docs.novelai.net/en/image/tags), [품질 태그](https://docs.novelai.net/en/image/qualitytags), [UC 프리셋](https://docs.novelai.net/en/image/undesiredcontent), [Effort](https://docs.novelai.net/en/image/effort), [여러 인물](https://docs.novelai.net/en/image/multiplecharacters), [FAQ(사용량)](https://docs.novelai.net/en/faq)

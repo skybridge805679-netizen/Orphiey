@@ -1,0 +1,205 @@
+{
+ "_comment": "배치 2: 배경 (게임 파일 이름 그대로, 인물 없음)",
+ "jobs": [
+  {
+   "out": "assets/nai/bg/bg_training_room.png",
+   "size": "wide",
+   "seed": 7001,
+   "chars": [],
+   "scene": "visual novel bg, scenery, no humans, high complexity, depthness, railway traffic control training room, daytime, large wall display with railway track diagram, white track lines, red and green signal lights, three control desks in a row, dual monitors, headsets, telephones, binders, instructor desk and whiteboard at back, fluorescent lighting, window blinds with sunlight, paper cups, sticky notes",
+   "uc": "people, person"
+  },
+  {
+   "out": "assets/nai/bg/bg_training_room_night.png",
+   "size": "wide",
+   "seed": 7001,
+   "chars": [],
+   "scene": "visual novel bg, scenery, no humans, high complexity, depthness, railway traffic control training room at night, lights off, only the large wall track display glowing faintly teal, monitors off, one chair slightly turned, dark room lit by teal glow, a single track line curving like a silver ribbon on the display",
+   "uc": "people, person"
+  },
+  {
+   "out": "assets/nai/bg/bg_training_lobby.png",
+   "size": "wide",
+   "seed": 7001,
+   "chars": [],
+   "scene": "visual novel bg, scenery, no humans, high complexity, depthness, small training center lobby, early morning, glass doors with morning sunlight, reception desk, framed railway route map on wall, bulletin board with notices, modest institutional interior",
+   "uc": "people, person"
+  },
+  {
+   "out": "assets/nai/bg/bg_cafeteria.png",
+   "size": "wide",
+   "seed": 7001,
+   "chars": [],
+   "scene": "visual novel bg, scenery, no humans, high complexity, depthness, staff cafeteria at lunch, long tables and chairs, serving counter, window seats, food trays, warm fluorescent light, teal accents",
+   "uc": "people, person"
+  },
+  {
+   "out": "assets/nai/bg/bg_cherry_street.png",
+   "size": "wide",
+   "seed": 7001,
+   "chars": [],
+   "scene": "visual novel bg, scenery, no humans, high complexity, depthness, night street lined with cherry blossom trees, street lamps, falling petals, distant subway station entrance lights",
+   "uc": "people, person"
+  },
+  {
+   "out": "assets/nai/bg/bg_train_window.png",
+   "size": "wide",
+   "seed": 7001,
+   "chars": [],
+   "scene": "visual novel bg, scenery, no humans, high complexity, depthness, view from a train window seat, rice fields and river passing outside, morning sunlight, window frame and seat back in foreground",
+   "uc": "people, person"
+  },
+  {
+   "out": "assets/nai/bg/bg_exam_hall.png",
+   "size": "wide",
+   "seed": 7001,
+   "chars": [],
+   "scene": "visual novel bg, scenery, no humans, high complexity, depthness, underground practical exam room, single control desk facing a large simulator display, glass wall with dark evaluator booth behind, cold quiet blue-white lighting",
+   "uc": "people, person"
+  },
+  {
+   "out": "assets/nai/bg/bg_control_room_night.png",
+   "size": "wide",
+   "seed": 7001,
+   "chars": [],
+   "scene": "visual novel bg, scenery, no humans, high complexity, depthness, railway traffic control room at night, huge wall display with glowing teal route lines, rows of control desks with monitors, city night view and elevated railway with train lights outside the windows",
+   "uc": "people, person"
+  },
+  {
+   "out": "assets/nai/bg/bg_center_lobby.png",
+   "size": "wide",
+   "seed": 7001,
+   "chars": [],
+   "scene": "visual novel bg, scenery, no humans, high complexity, depthness, railway control center ground floor lobby, early morning, glass entrance doors, security gates, information desk, small route map panel on wall",
+   "uc": "people, person"
+  },
+  {
+   "out": "assets/nai/bg/bg_break_room.png",
+   "size": "wide",
+   "seed": 7001,
+   "chars": [],
+   "scene": "visual novel bg, scenery, no humans, high complexity, depthness, night break room next to control room, worn sofa with blanket, small table, vending machine glow, city night view through window",
+   "uc": "people, person"
+  },
+  {
+   "out": "assets/nai/bg/bg_rooftop_night.png",
+   "size": "wide",
+   "seed": 7001,
+   "chars": [],
+   "scene": "visual novel bg, scenery, no humans, high complexity, depthness, building rooftop at night, low railing, ventilation units, distant elevated railway with a passing train's light streak, city night view, few stars",
+   "uc": "people, person"
+  },
+  {
+   "out": "assets/nai/bg/bg_riverside_day.png",
+   "size": "wide",
+   "seed": 7001,
+   "chars": [],
+   "scene": "visual novel bg, scenery, no humans, high complexity, depthness, sunny spring riverside bicycle path, distant railway truss bridge over the river, lawn, a few cherry trees",
+   "uc": "people, person"
+  },
+  {
+   "out": "assets/nai/bg/bg_fire_training.png",
+   "size": "wide",
+   "seed": 7001,
+   "chars": [],
+   "scene": "visual novel bg, scenery, no humans, high complexity, depthness, fire department training ground, a retired commuter train car, fire engines and hoses, white training smoke leaking from car windows, daytime",
+   "uc": "people, person"
+  },
+  {
+   "out": "assets/nai/bg/bg_bungeoppang_stall.png",
+   "size": "wide",
+   "seed": 7001,
+   "chars": [],
+   "scene": "visual novel bg, scenery, no humans, high complexity, depthness, small street food stall beside a subway exit, steaming fish-shaped pastry molds, paper bags, warm incandescent bulbs, station exit stairs in background, evening",
+   "uc": "people, person"
+  },
+  {
+   "out": "assets/nai/bg/bg_depot_day.png",
+   "size": "wide",
+   "seed": 7001,
+   "chars": [],
+   "scene": "visual novel bg, scenery, no humans, high complexity, depthness, railway depot at dawn, fan-shaped tracks, parked commuter trains, inspection shed, first departing train turning on headlights",
+   "uc": "people, person"
+  },
+  {
+   "out": "assets/nai/bg/bg_dev_lab.png",
+   "size": "wide",
+   "seed": 7001,
+   "chars": [],
+   "scene": "visual novel bg, scenery, no humans, high complexity, depthness, temporary development room in a meeting room, three laptops, a server rack, hologram panel stand, cable organizer",
+   "uc": "people, person"
+  },
+  {
+   "out": "assets/nai/bg/bg_summer_festival.png",
+   "size": "wide",
+   "seed": 7001,
+   "chars": [],
+   "scene": "visual novel bg, scenery, no humans, high complexity, depthness, summer night riverside festival, rows of stall lanterns, railway bridge across the river, night sky",
+   "uc": "people, person"
+  },
+  {
+   "out": "assets/nai/bg/bg_year_end_party.png",
+   "size": "wide",
+   "seed": 7001,
+   "chars": [],
+   "scene": "visual novel bg, scenery, no humans, high complexity, depthness, korean barbecue restaurant interior at year end, grill with meat, steamy windows, sparkling decorations, blurred silhouettes in background",
+   "uc": "people, person"
+  },
+  {
+   "out": "assets/nai/bg/bg_snow_street.png",
+   "size": "wide",
+   "seed": 7001,
+   "chars": [],
+   "scene": "visual novel bg, scenery, no humans, high complexity, depthness, evening street with first snow falling, street lamp, thin snow on car roofs, distant elevated subway line",
+   "uc": "people, person"
+  },
+  {
+   "out": "assets/nai/bg/bg_hanbit_center.png",
+   "size": "wide",
+   "seed": 7001,
+   "chars": [],
+   "scene": "visual novel bg, scenery, no humans, high complexity, depthness, huge regional railway control center, giant wall display filling a whole wall with abstract teal and orange lines, tiered rows of control desks, high ceiling with indirect lighting",
+   "uc": "people, person"
+  },
+  {
+   "out": "assets/nai/bg/bg_hanbit_dorm.png",
+   "size": "wide",
+   "seed": 7001,
+   "chars": [],
+   "scene": "visual novel bg, scenery, no humans, high complexity, depthness, old small studio dormitory room at night, small desk with lamp, memos on wall, futon, elevated high-speed railway lights outside window",
+   "uc": "people, person"
+  },
+  {
+   "out": "assets/nai/bg/bg_gukbap.png",
+   "size": "wide",
+   "seed": 7001,
+   "chars": [],
+   "scene": "visual novel bg, scenery, no humans, high complexity, depthness, old korean soup restaurant interior, steaming earthenware bowls, wooden tables, railway level crossing gate and warning light visible through window",
+   "uc": "people, person"
+  },
+  {
+   "out": "assets/nai/bg/bg_study_room.png",
+   "size": "wide",
+   "seed": 7001,
+   "chars": [],
+   "scene": "visual novel bg, scenery, no humans, high complexity, depthness, small meeting room converted into study room at night, whiteboard full of diagrams, cup noodle containers, highlighters, laptops",
+   "uc": "people, person"
+  },
+  {
+   "out": "assets/nai/bg/bg_hanbit_rooftop.png",
+   "size": "wide",
+   "seed": 7001,
+   "chars": [],
+   "scene": "visual novel bg, scenery, no humans, high complexity, depthness, rooftop at sunset, distant concrete high-speed railway viaduct with a bullet train silhouette, orange to navy sky, railing at bottom",
+   "uc": "people, person"
+  },
+  {
+   "out": "assets/nai/bg/bg_spring_cherry.png",
+   "size": "wide",
+   "seed": 7001,
+   "chars": [],
+   "scene": "visual novel bg, scenery, no humans, high complexity, depthness, cherry blossom path under an elevated railway in the morning, train passing above, petals drifting, bright soft spring light",
+   "uc": "people, person"
+  }
+ ]
+}

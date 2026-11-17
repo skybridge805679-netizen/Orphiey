@@ -1,0 +1,546 @@
+{
+ "_comment": "배치 1: 인물 스탠딩·얼굴 (오르페이아 seed 1001 고정, 인물마다 시드 하나로 차분 통일)",
+ "jobs": [
+  {
+   "out": "assets/nai/chr/orpheia_sd_maid_v2.png",
+   "size": "portrait",
+   "seed": 1001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "extra": "light smile, closed mouth, hands together"
+    }
+   ],
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+  },
+  {
+   "out": "assets/nai/chr/orpheia_sd_praise_v2.png",
+   "size": "portrait",
+   "seed": 1001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "extra": "smile, open mouth, happy, hands together"
+    }
+   ],
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+  },
+  {
+   "out": "assets/nai/chr/orpheia_sd_worried_v2.png",
+   "size": "portrait",
+   "seed": 1001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "extra": "worried, frown, hand on own chest"
+    }
+   ],
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+  },
+  {
+   "out": "assets/nai/chr/orpheia_sd_briefing.png",
+   "size": "portrait",
+   "seed": 1001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "extra": "smile, index finger raised, explaining, one hand on hip"
+    }
+   ],
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+  },
+  {
+   "out": "assets/nai/chr/orpheia_sd_surprised.png",
+   "size": "portrait",
+   "seed": 1001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "extra": "surprised, open mouth, wide-eyed, hands up"
+    }
+   ],
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+  },
+  {
+   "out": "assets/nai/chr/orpheia_sd_pout.png",
+   "size": "portrait",
+   "seed": 1001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "extra": "pout, puffed cheeks, looking away, arms crossed"
+    }
+   ],
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+  },
+  {
+   "out": "assets/nai/chr/orpheia_sd_shy.png",
+   "size": "portrait",
+   "seed": 1001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "extra": "blush, shy, embarrassed, looking down, hands together"
+    }
+   ],
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+  },
+  {
+   "out": "assets/nai/chr/orpheia_sd_casual.png",
+   "size": "portrait",
+   "seed": 1001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "extra": "smile, hands together",
+     "outfit": "white blouse, light blue cardigan, long skirt, brown boots, shoulder bag"
+    }
+   ],
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+  },
+  {
+   "out": "assets/nai/chr/orpheia_sd_yukata.png",
+   "size": "portrait",
+   "seed": 1001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "extra": "smile, holding fan",
+     "outfit": "yukata, floral print, obi, hair flower, sandals"
+    }
+   ],
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+  },
+  {
+   "out": "assets/nai/chr/orpheia_sd_santa.png",
+   "size": "portrait",
+   "seed": 1001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "extra": "smile, open mouth, waving",
+     "outfit": "santa costume, santa hat, fur trim, red dress, white apron, red capelet"
+    }
+   ],
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+  },
+  {
+   "out": "assets/nai/chr/orpheia_sd_coat.png",
+   "size": "portrait",
+   "seed": 1001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "extra": "light smile, hands together",
+     "outfit": "winter coat, beige coat, white scarf, beret, gloves, boots"
+    }
+   ],
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+  },
+  {
+   "out": "assets/nai/chr/orpheia_sd_suit.png",
+   "size": "portrait",
+   "seed": 1001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "extra": "serious, closed mouth, hands together",
+     "outfit": "black business suit, black jacket, white shirt, black pencil skirt, black pantyhose, formal"
+    }
+   ],
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+  },
+  {
+   "out": "assets/nai/chr/orpheia_sd_driver_v2.png",
+   "size": "portrait",
+   "seed": 1001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "extra": "serious, salute",
+     "outfit": "train conductor uniform, navy jacket, peaked cap, white gloves"
+    }
+   ],
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+  },
+  {
+   "out": "assets/nai/chr/orpheia_sd_stationmaster_v2.png",
+   "size": "portrait",
+   "seed": 1001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "extra": "serious, holding radio",
+     "outfit": "station master uniform, navy uniform, peaked cap, armband, white gloves"
+    }
+   ],
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+  },
+  {
+   "out": "assets/nai/chr/orpheia_sd_engineer_v2.png",
+   "size": "portrait",
+   "seed": 1001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "extra": "serious, holding wrench",
+     "outfit": "yellow hardhat, high-visibility vest, work uniform, work gloves"
+    }
+   ],
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+  },
+  {
+   "out": "assets/nai/chr/orpheia_sd_evacuation_v2.png",
+   "size": "portrait",
+   "seed": 1001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "extra": "serious, pointing forward",
+     "outfit": "orange safety vest, armband, holding flashlight, maid headdress"
+    }
+   ],
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+  },
+  {
+   "out": "assets/nai/face/face_neutral.png",
+   "size": "square",
+   "seed": 1001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "extra": "light smile, closed mouth"
+    }
+   ],
+   "scene": "portrait, upper body, close-up, looking at viewer, transparent background"
+  },
+  {
+   "out": "assets/nai/face/face_smile.png",
+   "size": "square",
+   "seed": 1001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "extra": "smile, open mouth, happy"
+    }
+   ],
+   "scene": "portrait, upper body, close-up, looking at viewer, transparent background"
+  },
+  {
+   "out": "assets/nai/face/face_worry.png",
+   "size": "square",
+   "seed": 1001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "extra": "worried, frown"
+    }
+   ],
+   "scene": "portrait, upper body, close-up, looking at viewer, transparent background"
+  },
+  {
+   "out": "assets/nai/face/face_serious.png",
+   "size": "square",
+   "seed": 1001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "extra": "serious, closed mouth"
+    }
+   ],
+   "scene": "portrait, upper body, close-up, looking at viewer, transparent background"
+  },
+  {
+   "out": "assets/nai/face/face_relief.png",
+   "size": "square",
+   "seed": 1001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "extra": "relieved, closed eyes, smile"
+    }
+   ],
+   "scene": "portrait, upper body, close-up, looking at viewer, transparent background"
+  },
+  {
+   "out": "assets/nai/face/face_resolve.png",
+   "size": "square",
+   "seed": 1001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "extra": "determined, serious, clenched teeth"
+    }
+   ],
+   "scene": "portrait, upper body, close-up, looking at viewer, transparent background"
+  },
+  {
+   "out": "assets/nai/chr/chr_instructor_neutral.png",
+   "size": "portrait",
+   "seed": 3001,
+   "chars": [
+    {
+     "id": "seo",
+     "extra": "expressionless, closed mouth, arms at sides"
+    }
+   ],
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+  },
+  {
+   "out": "assets/nai/chr/chr_instructor_stern.png",
+   "size": "portrait",
+   "seed": 3001,
+   "chars": [
+    {
+     "id": "seo",
+     "extra": "stern, frown, arms crossed"
+    }
+   ],
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+  },
+  {
+   "out": "assets/nai/chr/chr_instructor_smile.png",
+   "size": "portrait",
+   "seed": 3001,
+   "chars": [
+    {
+     "id": "seo",
+     "extra": "light smile, closed mouth"
+    }
+   ],
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+  },
+  {
+   "out": "assets/nai/chr/chr_instructor_coffee.png",
+   "size": "portrait",
+   "seed": 3001,
+   "chars": [
+    {
+     "id": "seo",
+     "extra": "closed eyes, holding paper cup, drinking"
+    }
+   ],
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+  },
+  {
+   "out": "assets/nai/chr/chr_instructor_casual.png",
+   "size": "portrait",
+   "seed": 3001,
+   "chars": [
+    {
+     "id": "seo",
+     "extra": "light smile",
+     "outfit": "beige turtleneck sweater, long camel coat, black pants"
+    }
+   ],
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+  },
+  {
+   "out": "assets/nai/chr/chr_harin_neutral.png",
+   "size": "portrait",
+   "seed": 4001,
+   "chars": [
+    {
+     "id": "harin",
+     "extra": "smile, closed mouth"
+    }
+   ],
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+  },
+  {
+   "out": "assets/nai/chr/chr_harin_smile.png",
+   "size": "portrait",
+   "seed": 4001,
+   "chars": [
+    {
+     "id": "harin",
+     "extra": "smile, open mouth, closed eyes, happy"
+    }
+   ],
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+  },
+  {
+   "out": "assets/nai/chr/chr_harin_surprised.png",
+   "size": "portrait",
+   "seed": 4001,
+   "chars": [
+    {
+     "id": "harin",
+     "extra": "surprised, wide-eyed, open mouth, hands up"
+    }
+   ],
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+  },
+  {
+   "out": "assets/nai/chr/chr_harin_pout.png",
+   "size": "portrait",
+   "seed": 4001,
+   "chars": [
+    {
+     "id": "harin",
+     "extra": "pout, puffed cheeks, hands on hips"
+    }
+   ],
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+  },
+  {
+   "out": "assets/nai/chr/chr_harin_excited.png",
+   "size": "portrait",
+   "seed": 4001,
+   "chars": [
+    {
+     "id": "harin",
+     "extra": "sparkling eyes, open mouth, clenched hands, leaning forward, excited"
+    }
+   ],
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+  },
+  {
+   "out": "assets/nai/chr/chr_harin_casual.png",
+   "size": "portrait",
+   "seed": 4001,
+   "chars": [
+    {
+     "id": "harin",
+     "extra": "smile, peace sign",
+     "outfit": "yellow hoodie, denim shorts, sneakers, backpack"
+    }
+   ],
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+  },
+  {
+   "out": "assets/nai/chr/chr_harin_yukata.png",
+   "size": "portrait",
+   "seed": 4001,
+   "chars": [
+    {
+     "id": "harin",
+     "extra": "smile, holding fan",
+     "outfit": "yukata, orange yukata, floral print, obi, hair flower, sandals"
+    }
+   ],
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+  },
+  {
+   "out": "assets/nai/chr/chr_jian_neutral.png",
+   "size": "portrait",
+   "seed": 5001,
+   "chars": [
+    {
+     "id": "jian",
+     "extra": "expressionless, holding laptop"
+    }
+   ],
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+  },
+  {
+   "out": "assets/nai/chr/chr_jian_smile.png",
+   "size": "portrait",
+   "seed": 5001,
+   "chars": [
+    {
+     "id": "jian",
+     "extra": "light smile, holding laptop"
+    }
+   ],
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+  },
+  {
+   "out": "assets/nai/chr/chr_jian_serious.png",
+   "size": "portrait",
+   "seed": 5001,
+   "chars": [
+    {
+     "id": "jian",
+     "extra": "serious, pushing up eyewear"
+    }
+   ],
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+  },
+  {
+   "out": "assets/nai/face/face_harin_driver.png",
+   "size": "square",
+   "seed": 4001,
+   "chars": [
+    {
+     "id": "harin",
+     "extra": "serious, slight smile, open mouth, talking",
+     "outfit": "navy peaked cap, train driver uniform, headset, microphone"
+    }
+   ],
+   "scene": "portrait, upper body, close-up, looking at viewer, transparent background"
+  },
+  {
+   "out": "assets/nai/face/face_harin_driver_urgent.png",
+   "size": "square",
+   "seed": 4001,
+   "chars": [
+    {
+     "id": "harin",
+     "extra": "panicking, sweat, open mouth, shouting",
+     "outfit": "navy peaked cap, train driver uniform, headset, microphone"
+    }
+   ],
+   "scene": "portrait, upper body, close-up, looking at viewer, transparent background"
+  },
+  {
+   "out": "assets/nai/face/face_jian_station.png",
+   "size": "square",
+   "seed": 5001,
+   "chars": [
+    {
+     "id": "jian",
+     "extra": "expressionless, holding walkie-talkie",
+     "outfit": "navy station staff cap, station staff uniform, armband"
+    }
+   ],
+   "scene": "portrait, upper body, close-up, looking at viewer, transparent background"
+  },
+  {
+   "out": "assets/nai/face/face_jian_station_urgent.png",
+   "size": "square",
+   "seed": 5001,
+   "chars": [
+    {
+     "id": "jian",
+     "extra": "worried, sweat, holding walkie-talkie, talking",
+     "outfit": "navy station staff cap, station staff uniform, armband"
+    }
+   ],
+   "scene": "portrait, upper body, close-up, looking at viewer, transparent background"
+  },
+  {
+   "out": "assets/nai/face/face_instructor_chief.png",
+   "size": "square",
+   "seed": 3001,
+   "chars": [
+    {
+     "id": "seo",
+     "extra": "stern, holding telephone receiver, talking",
+     "outfit": "grey cardigan, navy shirt"
+    }
+   ],
+   "scene": "portrait, upper body, close-up, looking at viewer, transparent background"
+  },
+  {
+   "out": "assets/nai/face/face_orpheia_engineer.png",
+   "size": "square",
+   "seed": 1001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "extra": "serious, trying to look serious, cute, pout",
+     "outfit": "yellow hardhat, aqua ribbon on hardhat, high-visibility vest"
+    }
+   ],
+   "scene": "portrait, upper body, close-up, looking at viewer, transparent background"
+  },
+  {
+   "out": "assets/nai/face/face_sangcheol_radio.png",
+   "size": "square",
+   "seed": 6001,
+   "chars": [],
+   "scene": "no humans, still life, headset, microphone, small red light, aqua emblem, transparent background, simple object"
+  }
+ ]
+}

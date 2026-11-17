@@ -1,27 +1,38 @@
 {
-  "_comment": "인물마다 고정해서 쓰는 외형 태그 (새 화풍 · 등신대). 치비가 필요하면 작업에 \"chibi\": true. 다듬을 때는 이 파일만 고친다. 근거: docs/최종-에셋-생성지침.md 외형 설정",
+  "_comment": "인물 외형(look)과 기본 옷(outfit). 작업에서 \"outfit\"을 주면 옷만 바꾼다. 치비는 작업에 \"chibi\": true. 근거: docs/최종-에셋-생성지침.md",
   "orpheia": {
     "name": "오르페이아",
     "count": "1girl",
-    "tags": "girl, silver hair, very long hair, straight hair, sidelocks, green eyes, maid, maid headdress, aqua ribbon, hair ribbon, black dress, white apron, frilled apron, puffy short sleeves, wrist cuffs, green brooch, white thighhighs",
+    "look": "girl, silver hair, very long hair, straight hair, sidelocks, green eyes, aqua ribbon, hair ribbon",
+    "outfit": "maid, maid headdress, black dress, white apron, frilled apron, puffy short sleeves, wrist cuffs, green brooch, aqua ascot, white pantyhose",
     "uc": "garter straps, garter belt"
   },
   "seo": {
     "name": "서도희 교수",
     "count": "1girl",
-    "tags": "girl, mature female, black hair, streaked hair, white streak, short ponytail, glasses, thin-framed eyewear, gold-framed eyewear, sharp eyes, tired eyes, grey cardigan, navy shirt, collared shirt, black pants, lanyard, id card",
+    "look": "girl, mature female, black hair, streaked hair, white streak, short ponytail, glasses, thin-framed eyewear, gold-framed eyewear, sharp eyes, tired eyes",
+    "outfit": "grey cardigan, navy shirt, collared shirt, black pants, lanyard, id card",
     "uc": ""
   },
   "harin": {
     "name": "유하린",
     "count": "1girl",
-    "tags": "girl, brown hair, short hair, short side ponytail, hair ornament, yellow hairclip, amber eyes, white shirt, collared shirt, navy sweater vest, pleated skirt, lanyard, id card",
+    "look": "girl, brown hair, short hair, short side ponytail, hair ornament, yellow hairclip, amber eyes",
+    "outfit": "white shirt, collared shirt, navy sweater vest, pleated skirt, lanyard, id card",
     "uc": ""
   },
   "jian": {
     "name": "류지안",
     "count": "1girl",
-    "tags": "girl, black hair, long hair, low ponytail, round eyewear, black-framed eyewear, eye bags, white shirt, collared shirt, grey sweater vest, black pants, lanyard, id card",
+    "look": "girl, black hair, long hair, low ponytail, round eyewear, black-framed eyewear, grey eyes, eye bags",
+    "outfit": "white shirt, collared shirt, grey sweater vest, black pants, lanyard, id card",
     "uc": ""
+  },
+  "player": {
+    "name": "신상철(손만)",
+    "count": "1boy",
+    "look": "boy, pov hands, faceless",
+    "outfit": "navy sleeves",
+    "uc": "face"
   }
 }

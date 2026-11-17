@@ -1,0 +1,552 @@
+{
+ "_comment": "배치 3: 이벤트 CG·타이틀 (게임 파일 이름 그대로). 주인공은 손·소매만(pov)",
+ "jobs": [
+  {
+   "out": "assets/nai/cg/title_key_visual.png",
+   "size": "wide",
+   "seed": 8001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "x": 0.72,
+     "y": 0.5,
+     "extra": "smile, reaching towards viewer, outstretched hand, glowing particles"
+    },
+    {
+     "id": "harin",
+     "x": 0.55,
+     "y": 0.4,
+     "extra": "headset, train driver cap, holding microphone"
+    },
+    {
+     "id": "jian",
+     "x": 0.88,
+     "y": 0.35,
+     "extra": "station staff cap, holding walkie-talkie"
+    },
+    {
+     "id": "seo",
+     "x": 0.62,
+     "y": 0.3,
+     "extra": "holding telephone receiver"
+    }
+   ],
+   "scene": "visual novel cg, night railway control training room, large glowing wall track display, the girl in the maid outfit on the right reaches her hand toward the viewer with a gentle smile, small figures behind her, pov hand on chair, left side of the image dark and empty for a title menu"
+  },
+  {
+   "out": "assets/nai/cg/title_key_visual_clear.png",
+   "size": "wide",
+   "seed": 8001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "x": 0.7,
+     "y": 0.55,
+     "extra": "big smile, waving",
+     "outfit": "black business suit, white shirt, pencil skirt"
+    },
+    {
+     "id": "seo",
+     "x": 0.55,
+     "y": 0.4,
+     "extra": "light smile",
+     "outfit": "beige turtleneck sweater, camel coat"
+    },
+    {
+     "id": "harin",
+     "x": 0.85,
+     "y": 0.45,
+     "extra": "smile, peace sign",
+     "outfit": "yellow hoodie, denim shorts"
+    },
+    {
+     "id": "jian",
+     "x": 0.95,
+     "y": 0.4,
+     "extra": "light smile, hugging laptop"
+    }
+   ],
+   "scene": "visual novel cg, spring morning, cherry blossom path under an elevated railway, petals falling, everyone smiling, left side of the image empty for a title menu"
+  },
+  {
+   "out": "assets/nai/cg/cg_ctc_first_login.png",
+   "size": "wide",
+   "seed": 8001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "x": 0.5,
+     "y": 0.45,
+     "extra": "sparkling eyes, hands clasped, happy, emerging from screen"
+    },
+    {
+     "id": "harin",
+     "x": 0.15,
+     "y": 0.3,
+     "extra": "surprised, open mouth"
+    },
+    {
+     "id": "jian",
+     "x": 0.85,
+     "y": 0.3,
+     "extra": "expressionless, writing on clipboard"
+    },
+    {
+     "id": "seo",
+     "x": 0.7,
+     "y": 0.25,
+     "extra": "facepalm, holding paper cup"
+    }
+   ],
+   "scene": "visual novel cg, pov from a control desk, a cute maid girl half popping out of a computer monitor, hands clasped, sparkling eyes, pov hands on keyboard, navy sleeves, comedic sparkling mood, in the background a surprised girl, a girl writing notes, a woman holding coffee touching her forehead"
+  },
+  {
+   "out": "assets/nai/cg/cg_ctc_roleplay.png",
+   "size": "wide",
+   "seed": 8001,
+   "chars": [
+    {
+     "id": "harin",
+     "x": 0.2,
+     "y": 0.6,
+     "extra": "train driver cap, headset, holding walkie-talkie, hand on own throat, acting"
+    },
+    {
+     "id": "jian",
+     "x": 0.8,
+     "y": 0.6,
+     "extra": "station staff cap, armband, holding walkie-talkie, expressionless"
+    },
+    {
+     "id": "seo",
+     "x": 0.5,
+     "y": 0.3,
+     "extra": "holding telephone receiver, writing on clipboard"
+    }
+   ],
+   "scene": "visual novel cg, high angle view of a railway control training room, large wall track display with one red blinking section, role-play training, comedic but serious mood, small chibi maid waving from a monitor corner"
+  },
+  {
+   "out": "assets/nai/cg/cg_em_silence.png",
+   "size": "wide",
+   "seed": 8001,
+   "chars": [
+    {
+     "id": "harin",
+     "x": 0.4,
+     "y": 0.6,
+     "extra": "sad, looking down, hands on lap, headset on desk"
+    },
+    {
+     "id": "seo",
+     "x": 0.65,
+     "y": 0.45,
+     "extra": "gentle, placing paper cup on desk"
+    }
+   ],
+   "scene": "visual novel cg, quiet training room in warm afternoon light after a drill, a woman gently places a paper cup of coffee beside her, wall display shows calm white tracks, sad but gentle mood"
+  },
+  {
+   "out": "assets/nai/cg/cg_em_flood.png",
+   "size": "wide",
+   "seed": 8001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "x": 0.55,
+     "y": 0.5,
+     "extra": "smile, holding pointer stick, pointing, floating, explaining"
+    }
+   ],
+   "scene": "visual novel cg, in front of a large wall track display, a girl floating and pointing at a track with a pointer stick, hologram arrows going both ways on one track, one section rippling blue like water, small hologram window of a flooded underground platform, moment of realization"
+  },
+  {
+   "out": "assets/nai/cg/cg_em_fire.png",
+   "size": "wide",
+   "seed": 8001,
+   "chars": [
+    {
+     "id": "harin",
+     "x": 0.3,
+     "y": 0.55,
+     "extra": "panicking, shouting, holding headset microphone, train driver cap"
+    },
+    {
+     "id": "jian",
+     "x": 0.75,
+     "y": 0.5,
+     "extra": "standing, holding walkie-talkie, worried, station staff cap"
+    },
+    {
+     "id": "orpheia",
+     "x": 0.9,
+     "y": 0.2,
+     "extra": "determined, hugging fire extinguisher, chibi",
+     "outfit": "yellow hardhat, high-visibility vest"
+    }
+   ],
+   "scene": "visual novel cg, training room with red emergency lighting, wall track display with one station section flashing red, hologram of a train with grey smoke, a girl shouting into a headset microphone, a girl standing up with a walkie-talkie, pov hand over a red stop button, tense but slightly comedic"
+  },
+  {
+   "out": "assets/nai/cg/cg_em_collision.png",
+   "size": "wide",
+   "seed": 8001,
+   "chars": [
+    {
+     "id": "seo",
+     "x": 0.35,
+     "y": 0.5,
+     "extra": "from behind, arms crossed, looking up"
+    },
+    {
+     "id": "orpheia",
+     "x": 0.7,
+     "y": 0.4,
+     "extra": "serious, index finger raised, glowing"
+    }
+   ],
+   "scene": "visual novel cg, wall track display with two red occupied sections touching, a new green route being drawn around them, a woman with crossed arms looking up at the display from behind, pov hand gripping a headset, cold teal light and red contrast, tense"
+  },
+  {
+   "out": "assets/nai/cg/cg_end_normal.png",
+   "size": "wide",
+   "seed": 8001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "x": 0.5,
+     "y": 0.5,
+     "extra": "smile, pointing, hologram"
+    }
+   ],
+   "scene": "visual novel cg, ordinary morning in a control room, morning sunlight through windows, all trains green on the wall display, a maid girl on a hologram panel pointing at the display and smiling, pov hand putting down a coffee cup"
+  },
+  {
+   "out": "assets/nai/cg/cg_end_true.png",
+   "size": "wide",
+   "seed": 8001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "x": 0.5,
+     "y": 0.5,
+     "extra": "bright smile, reaching towards viewer, emerging from smartphone"
+    }
+   ],
+   "scene": "visual novel cg, next spring, cherry blossom path under an elevated railway, a maid girl leaning half out of a smartphone screen reaching her hand toward the viewer with a bright smile, petals falling, pov hand holding smartphone"
+  },
+  {
+   "out": "assets/nai/cg/cg_vn_eve.png",
+   "size": "wide",
+   "seed": 8001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "x": 0.65,
+     "y": 0.6,
+     "extra": "gentle smile, on screen",
+     "outfit": "black business suit, white shirt"
+    }
+   ],
+   "scene": "visual novel cg, rooftop at night before an exam, pov hand holding a smartphone, on the screen a girl in a business suit quietly smiling at the viewer, train lights on a distant viaduct"
+  },
+  {
+   "out": "assets/nai/cg/cg_vn_exam_start.png",
+   "size": "wide",
+   "seed": 8001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "x": 0.72,
+     "y": 0.35,
+     "extra": "expressionless, hologram, standing straight",
+     "outfit": "station master uniform, peaked cap, white gloves"
+    }
+   ],
+   "scene": "visual novel cg, dark practical exam room, on one side of the large simulator display a hologram girl in station master uniform stands facing forward, expressionless and businesslike, foreground a person wearing a headset seen from behind"
+  },
+  {
+   "out": "assets/nai/cg/cg_vn_fireworks.png",
+   "size": "wide",
+   "seed": 8001,
+   "chars": [
+    {
+     "id": "harin",
+     "x": 0.25,
+     "y": 0.6,
+     "extra": "profile, looking up, smile",
+     "outfit": "orange yukata, floral print"
+    },
+    {
+     "id": "orpheia",
+     "x": 0.75,
+     "y": 0.7,
+     "extra": "looking up, smile, on screen",
+     "outfit": "yukata, floral print"
+    }
+   ],
+   "scene": "visual novel cg, summer festival night, a train crossing a railway bridge over the river, big fireworks in the sky, foreground profile of a girl in yukata, pov hand holding a smartphone with a tiny girl in yukata on screen looking up at the fireworks"
+  },
+  {
+   "out": "assets/nai/cg/cg_vn_first_boot.png",
+   "size": "wide",
+   "seed": 8001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "x": 0.58,
+     "y": 0.45,
+     "extra": "opening eyes, curtsy, skirt hold, glowing particles, hologram"
+    }
+   ],
+   "scene": "visual novel cg, control desk hologram panel, silver particles gathering into a maid girl just taking shape, opening her eyes and looking at the viewer, lightly lifting her skirt in a curtsy, headset and keyboard edge in foreground"
+  },
+  {
+   "out": "assets/nai/cg/cg_vn_hanbit_arrival.png",
+   "size": "wide",
+   "seed": 8001,
+   "chars": [
+    {
+     "id": "seo",
+     "x": 0.35,
+     "y": 0.7,
+     "extra": "from behind"
+    },
+    {
+     "id": "harin",
+     "x": 0.6,
+     "y": 0.7,
+     "extra": "from behind"
+    },
+    {
+     "id": "orpheia",
+     "x": 0.48,
+     "y": 0.8,
+     "extra": "from behind, on smartphone screen, tiny"
+    }
+   ],
+   "scene": "visual novel cg, three people seen from behind standing before a gigantic wall display of a regional control center, a tiny maid girl on a smartphone screen also looking up at the display"
+  },
+  {
+   "out": "assets/nai/cg/cg_vn_notebook.png",
+   "size": "wide",
+   "seed": 8001,
+   "chars": [],
+   "scene": "visual novel cg, an old worn notebook open on a break room table, unreadable handwriting texture, dates and numbers in rows, paper cup coffee beside it, a woman's hand pressing the edge of the notebook, warm desk lamp light, close-up"
+  },
+  {
+   "out": "assets/nai/cg/cg_vn_phone_move.png",
+   "size": "wide",
+   "seed": 8001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "x": 0.35,
+     "y": 0.35,
+     "extra": "excited, diving, dissolving into particles"
+    }
+   ],
+   "scene": "visual novel cg, dawn control room, pov hand holding out a smartphone, a maid girl diving from a hologram panel toward the phone, her body dissolving into silver and teal particles being sucked into the screen, excited face, diagonal composition"
+  },
+  {
+   "out": "assets/nai/cg/cg_vn_reboot.png",
+   "size": "wide",
+   "seed": 8001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "x": 0.5,
+     "y": 0.45,
+     "extra": "half-closed eyes, empty eyes, hologram, glowing particles"
+    }
+   ],
+   "scene": "visual novel cg, dark workroom, silver particles gathering again on a hologram stand, a girl slowly opening her eyes, blank expression, laptop screen glow in foreground"
+  },
+  {
+   "out": "assets/nai/cg/cg_vn_rooftop_promise.png",
+   "size": "wide",
+   "seed": 8001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "x": 0.5,
+     "y": 0.55,
+     "extra": "surprised, hand over own mouth, teary eyes, on screen"
+    }
+   ],
+   "scene": "visual novel cg, sunset rooftop of a control center, pov hands holding a smartphone with both hands, on screen a girl surprised with a hand over her mouth and teary eyes, last train on a distant high-speed viaduct"
+  },
+  {
+   "out": "assets/nai/cg/cg_vn_anniversary.png",
+   "size": "wide",
+   "seed": 8001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "x": 0.6,
+     "y": 0.55,
+     "extra": "shy smile, blush, on screen, chibi"
+    }
+   ],
+   "scene": "visual novel cg, dawn dormitory table, a small slice of cake with one candle, a smartphone beside it with a maid girl on screen holding a cake icon and smiling shyly, a girl's hand holding a lighter"
+  },
+  {
+   "out": "assets/nai/cg/cg_vn_bike_riverside.png",
+   "size": "wide",
+   "seed": 8001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "x": 0.75,
+     "y": 0.7,
+     "extra": "spread arms, happy, on screen",
+     "outfit": "white blouse, light blue cardigan"
+    },
+    {
+     "id": "harin",
+     "x": 0.35,
+     "y": 0.45,
+     "extra": "from behind, riding bicycle"
+    }
+   ],
+   "scene": "visual novel cg, smartphone mounted on a bicycle handlebar on a riverside path, on screen a girl in casual clothes spreading her arms to feel the wind, a girl riding a bicycle seen from behind, distant railway bridge"
+  },
+  {
+   "out": "assets/nai/cg/cg_vn_block_song.png",
+   "size": "wide",
+   "seed": 8001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "x": 0.5,
+     "y": 0.3,
+     "extra": "singing, conducting, happy, music notes"
+    },
+    {
+     "id": "harin",
+     "x": 0.2,
+     "y": 0.55,
+     "extra": "singing, smile"
+    },
+    {
+     "id": "seo",
+     "x": 0.82,
+     "y": 0.55,
+     "extra": "arms crossed, light smile"
+    }
+   ],
+   "scene": "visual novel cg, study room, a girl floating above a smartphone waving her hands like a conductor and singing, teal music notes bouncing around, behind her a girl singing along in front of a whiteboard and a woman with crossed arms"
+  },
+  {
+   "out": "assets/nai/cg/cg_vn_bungeoppang.png",
+   "size": "wide",
+   "seed": 8001,
+   "chars": [
+    {
+     "id": "harin",
+     "x": 0.2,
+     "y": 0.55,
+     "extra": "thumbs up, smile"
+    }
+   ],
+   "scene": "visual novel cg, in front of a fish-shaped pastry stall, a kind middle-aged shop owner handing over a steaming paper bag, pov hand receiving the bag, a girl beside giving a thumbs up"
+  },
+  {
+   "out": "assets/nai/cg/cg_vn_cherry_commute.png",
+   "size": "wide",
+   "seed": 8001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "x": 0.5,
+     "y": 0.55,
+     "extra": "reaching, smile, on screen",
+     "outfit": "white blouse, light blue cardigan"
+    }
+   ],
+   "scene": "visual novel cg, under cherry blossom trees at night, pov hand raising a smartphone, on screen a girl in casual clothes reaching out to catch a petal"
+  },
+  {
+   "out": "assets/nai/cg/cg_vn_epilogue.png",
+   "size": "wide",
+   "seed": 8001,
+   "chars": [
+    {
+     "id": "seo",
+     "x": 0.65,
+     "y": 0.5,
+     "extra": "light smile"
+    },
+    {
+     "id": "harin",
+     "x": 0.8,
+     "y": 0.5,
+     "extra": "smile, peace sign"
+    },
+    {
+     "id": "orpheia",
+     "x": 0.5,
+     "y": 0.75,
+     "extra": "waving, smile, on screen, chibi"
+    }
+   ],
+   "scene": "visual novel cg, control center lobby, two nervous new employees holding appointment letters, senior staff in front of them, a maid girl greeting from a smartphone, a red alarm light just turning on near a ceiling speaker"
+  },
+  {
+   "out": "assets/nai/cg/cg_vn_first_snow.png",
+   "size": "wide",
+   "seed": 8001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "x": 0.5,
+     "y": 0.5,
+     "extra": "tongue out, catching snowflakes, on screen",
+     "outfit": "santa costume, santa hat, fur trim, white apron"
+    }
+   ],
+   "scene": "visual novel cg, first snow at dusk under a street lamp, smartphone screen showing a girl in a santa maid outfit sticking out her tongue to catch snowflakes, real snowflakes settling on the screen"
+  },
+  {
+   "out": "assets/nai/cg/cg_vn_night_shift.png",
+   "size": "wide",
+   "seed": 8001,
+   "chars": [
+    {
+     "id": "harin",
+     "x": 0.3,
+     "y": 0.6,
+     "extra": "sleeping, wrapped in blanket"
+    },
+    {
+     "id": "orpheia",
+     "x": 0.78,
+     "y": 0.75,
+     "extra": "finger to lips, shushing, on screen, chibi"
+    }
+   ],
+   "scene": "visual novel cg, dawn break room, a girl asleep on the sofa wrapped in a blanket, two empty bowls on the table, a tiny maid girl on a terminal screen holding a finger to her lips, bluish window"
+  },
+  {
+   "out": "assets/nai/cg/cg_vn_opinion_letter.png",
+   "size": "wide",
+   "seed": 8001,
+   "chars": [],
+   "scene": "visual novel cg, night study room, a laptop screen showing a document form with unreadable text, a woman's hands typing on the keyboard, two cold paper cups of coffee"
+  },
+  {
+   "out": "assets/nai/cg/cg_vn_rooftop_name.png",
+   "size": "wide",
+   "seed": 8001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "x": 0.65,
+     "y": 0.55,
+     "extra": "looking up, hologram, small"
+    }
+   ],
+   "scene": "visual novel cg, work tablet propped on a rooftop railing, a small hologram maid girl floating above the screen looking up at the city night view, pov hand and sleeve at the left edge"
+  }
+ ]
+}

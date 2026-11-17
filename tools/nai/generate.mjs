@@ -27,7 +27,7 @@ function build(job,seed){
  const base=P.prompt_prefix.trim().replace(/,\s*$/,'')+', '+join(...count,job.chibi?'chibi, visual novel chibi':'',job.scene)+(job.quality===false?'':P.quality_suffix);
  const uc=join(P.uc,job.uc);
  const many=chars.length>1;
- const char_captions=chars.map(c=>({char_caption:join(c.d.tags,c.extra),centers:[{x:c.x??0.5,y:c.y??0.5}]}));
+ const char_captions=chars.map(c=>({char_caption:join(c.d.look,c.outfit??c.d.outfit,c.extra),centers:[{x:c.x??0.5,y:c.y??0.5}]}));
  const neg_captions=chars.map(c=>({char_caption:join(c.d.uc,c.uc),centers:[{x:c.x??0.5,y:c.y??0.5}]}));
  return {input:base,model:P.model,action:'generate',parameters:{
   params_version:4,width,height,scale:P.guidance,sampler:P.sampler,steps:P.steps,seed,n_samples:1,

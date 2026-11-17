@@ -14,8 +14,21 @@
   "sampler": "k_euler_ancestral",
   "sizes": {
     "_comment": "Opus 무료 생성은 1024x1024 픽셀 수 이하·28스텝 이하. 아래는 모두 1MP 이하(64 배수).",
-    "portrait": [832, 1216],
-    "landscape": [1216, 832],
-    "square": [1024, 1024]
+    "portrait": [
+      832,
+      1216
+    ],
+    "landscape": [
+      1216,
+      832
+    ],
+    "square": [
+      1024,
+      1024
+    ],
+    "wide": [
+      1344,
+      768
+    ]
   }
 }

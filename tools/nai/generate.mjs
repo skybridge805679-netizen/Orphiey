@@ -55,11 +55,11 @@ function unzip(buf){
  throw Error('ZIP 안에 이미지가 없습니다 ('+head()+')');
 }
 async function call(body){
- for(let attempt=0;attempt<4;attempt++){
+ for(let attempt=0;attempt<8;attempt++){
   const r=await fetch('https://image.novelai.net/ai/generate-image',{method:'POST',headers:{'Authorization':'Bearer '+TOKEN,'Content-Type':'application/json','Accept':'application/zip, image/png, */*'},body:JSON.stringify(body)});
   if(r.ok)return Buffer.from(await r.arrayBuffer());
   const text=(await r.text()).slice(0,500);
-  if(r.status===429){const w=+(r.headers.get('retry-after')||0)*1000||10000*(attempt+1);console.log(`  429 대기 ${w/1000}s: ${text}`);await sleep(w);continue;}
+  if(r.status===429){const w=+(r.headers.get('retry-after')||0)*1000||15000*(attempt+1);console.log(`  429 대기 ${w/1000}s: ${text}`);await sleep(w);continue;}
   // params_version은 클라이언트마다 4/3으로 갈린다 — 서버가 거부하면 3으로 한 번 더
   if(body.parameters.params_version===4&&(r.status===400||r.status===500)){console.log(`  ${r.status} (params_version 4): ${text} → 3으로 재시도`);body.parameters.params_version=3;continue;}
   throw Error(`HTTP ${r.status}: ${text}`);
@@ -85,7 +85,7 @@ for(const f of jobFiles){
     fs.writeFileSync(abs.replace(/\.png$/i,'.json'),JSON.stringify({seed,model:body.model,params_version:body.parameters.params_version,prompt:body.input,chars:body.parameters.v4_prompt.caption.char_captions,uc:body.parameters.negative_prompt,size:[body.parameters.width,body.parameters.height]},null,1));
     made++;report.push(`✅ ${out} (seed ${seed}, params_version ${body.parameters.params_version})`);
    }catch(e){fail++;report.push(`❌ ${out}: ${e.message}`);console.error('  실패:',e.message);}
-   await sleep(2500);   // 동시 생성 잠김(429) 방지
+   await sleep(6000);   // 동시 생성 잠김(429) 방지 — 2.5초로는 5장 중 2장이 막혔다
   }
  }
 }

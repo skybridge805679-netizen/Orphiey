@@ -1,0 +1,40 @@
+{
+ "seed": 8001,
+ "model": "nai-diffusion-5-full",
+ "params_version": 4,
+ "prompt": "1.5::artist:tsunako::, 0.7::artist:mishima kurone, artist:toosaka asagi, artist:takeshima eku::, year 2026, 0.1::neptune (sereis)::, 0.1::date a live::, {best quality, very aesthetic, best details, highres, amazing quality, high complexity}, -6::artist collaboration::, 3girls, visual novel cg, study room, a girl floating above a smartphone waving her hands like a conductor and singing, teal music notes bouncing around, behind her a girl singing along in front of a whiteboard and a woman with crossed arms, very aesthetic, masterpiece, no text",
+ "chars": [
+  {
+   "char_caption": "girl, silver hair, very long hair, straight hair, sidelocks, green eyes, aqua ribbon, hair ribbon, maid, maid headdress, black dress, white apron, frilled apron, puffy short sleeves, wrist cuffs, green brooch, aqua ascot, white pantyhose, singing, conducting, happy, music notes",
+   "centers": [
+    {
+     "x": 0.5,
+     "y": 0.3
+    }
+   ]
+  },
+  {
+   "char_caption": "girl, brown hair, short hair, short side ponytail, hair ornament, yellow hairclip, amber eyes, white shirt, collared shirt, navy sweater vest, pleated skirt, lanyard, id card, singing, smile",
+   "centers": [
+    {
+     "x": 0.2,
+     "y": 0.55
+    }
+   ]
+  },
+  {
+   "char_caption": "girl, mature female, black hair, streaked hair, white streak, short ponytail, glasses, thin-framed eyewear, gold-framed eyewear, sharp eyes, tired eyes, grey cardigan, navy shirt, collared shirt, black pants, lanyard, id card, arms crossed, light smile",
+   "centers": [
+    {
+     "x": 0.82,
+     "y": 0.55
+    }
+   ]
+  }
+ ],
+ "uc": "worst quality, bad quality, displeasing, very displeasing, lowres, bad anatomy, bad perspective, bad proportions, bad aspect ratio, bad face, long face, bad teeth, bad neck, long neck, bad arm, bad hands, bad ass, bad leg, bad feet, bad reflection, bad shadow, bad link, bad source, wrong hand, wrong feet, missing limb, missing eye, missing tooth, missing ear, missing finger, extra faces, extra eyes, extra eyebrows, extra mouth, extra tongue, extra teeth, extra ears, extra breasts, extra arms, extra hands, extra legs, extra digits, fewer digits, cropped head, cropped torso, cropped shoulders, cropped arms, cropped legs, mutation, deformed, disfigured, unfinished, chromatic aberration, text, error, jpeg artifacts, watermark, scan, scan artifacts",
+ "size": [
+  1344,
+  768
+ ]
+}

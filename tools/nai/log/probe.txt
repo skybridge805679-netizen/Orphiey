@@ -1,0 +1,10 @@
+2026-11-17T18:16:33.820Z
+✅ i2i_json_inline: 이미지 865955B → assets/nai/probe/i2i_json_inline.png
+✅ i2i_multipart: 이미지 865915B → assets/nai/probe/i2i_multipart.png
+❌ pref_character_json: HTTP 400 {"statusCode":400,"message":"Validation error: model nai-diffusion-5-full doesn't support director reference images"} 
+❌ pref_character_multipart: HTTP 400 {"statusCode":400,"message":"Validation error: model nai-diffusion-5-full doesn't support director reference images"} 
+❌ pref_char_style_json: HTTP 400 {"statusCode":400,"message":"Validation error: model nai-diffusion-5-full doesn't support director reference images"} 
+❌ vibe_encode_nai-diffusion-5-full: HTTP 400 {"statusCode":400,"message":"This model does not support vibe transfer through this endpoint"} 
+✅ vibe_encode_nai-diffusion-4-5-full: 200, application/binary 48928B 앞부분 HeNSiXPPJwXLoPT/FYjQvLjtIYDlUnyBVP11OSFLDX0tMoVlMGDDdfTOnQKJgC+tefxSEHG8Nm9FZZnn
+✅ infill_json: 이미지 882680B → assets/nai/probe/infill_json.png
+✅ infill_multipart: 이미지 882794B → assets/nai/probe/infill_multipart.png

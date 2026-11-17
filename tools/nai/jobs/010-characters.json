@@ -12,7 +12,7 @@
     }
    ],
    "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
-   "uc": "patterned background, geometric background, multiple views"
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat"
   },
   {
    "out": "assets/nai/chr/orpheia_sd_praise_v2.png",
@@ -25,7 +25,7 @@
     }
    ],
    "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
-   "uc": "patterned background, geometric background, multiple views"
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat"
   },
   {
    "out": "assets/nai/chr/orpheia_sd_worried_v2.png",
@@ -38,7 +38,7 @@
     }
    ],
    "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
-   "uc": "patterned background, geometric background, multiple views"
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat"
   },
   {
    "out": "assets/nai/chr/orpheia_sd_briefing.png",
@@ -51,7 +51,7 @@
     }
    ],
    "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
-   "uc": "patterned background, geometric background, multiple views"
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat"
   },
   {
    "out": "assets/nai/chr/orpheia_sd_surprised.png",
@@ -64,7 +64,7 @@
     }
    ],
    "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
-   "uc": "patterned background, geometric background, multiple views"
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat"
   },
   {
    "out": "assets/nai/chr/orpheia_sd_pout.png",
@@ -77,7 +77,7 @@
     }
    ],
    "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
-   "uc": "patterned background, geometric background, multiple views"
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat"
   },
   {
    "out": "assets/nai/chr/orpheia_sd_shy.png",
@@ -90,7 +90,7 @@
     }
    ],
    "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
-   "uc": "patterned background, geometric background, multiple views"
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat"
   },
   {
    "out": "assets/nai/chr/orpheia_sd_casual.png",
@@ -104,7 +104,7 @@
     }
    ],
    "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
-   "uc": "patterned background, geometric background, multiple views"
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat"
   },
   {
    "out": "assets/nai/chr/orpheia_sd_yukata.png",
@@ -118,7 +118,7 @@
     }
    ],
    "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
-   "uc": "patterned background, geometric background, multiple views"
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat"
   },
   {
    "out": "assets/nai/chr/orpheia_sd_santa.png",
@@ -132,7 +132,7 @@
     }
    ],
    "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
-   "uc": "patterned background, geometric background, multiple views"
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat"
   },
   {
    "out": "assets/nai/chr/orpheia_sd_coat.png",
@@ -146,7 +146,7 @@
     }
    ],
    "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
-   "uc": "patterned background, geometric background, multiple views"
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat"
   },
   {
    "out": "assets/nai/chr/orpheia_sd_suit.png",
@@ -160,7 +160,7 @@
     }
    ],
    "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
-   "uc": "patterned background, geometric background, multiple views"
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat"
   },
   {
    "out": "assets/nai/chr/orpheia_sd_driver_v2.png",
@@ -174,7 +174,7 @@
     }
    ],
    "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
-   "uc": "patterned background, geometric background, multiple views"
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat"
   },
   {
    "out": "assets/nai/chr/orpheia_sd_stationmaster_v2.png",
@@ -188,7 +188,7 @@
     }
    ],
    "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
-   "uc": "patterned background, geometric background, multiple views"
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat"
   },
   {
    "out": "assets/nai/chr/orpheia_sd_engineer_v2.png",
@@ -202,7 +202,7 @@
     }
    ],
    "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
-   "uc": "patterned background, geometric background, multiple views"
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat"
   },
   {
    "out": "assets/nai/chr/orpheia_sd_evacuation_v2.png",
@@ -216,7 +216,7 @@
     }
    ],
    "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
-   "uc": "patterned background, geometric background, multiple views"
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat"
   },
   {
    "out": "assets/nai/face/face_neutral.png",
@@ -301,7 +301,7 @@
     }
    ],
    "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
-   "uc": "patterned background, geometric background, multiple views"
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat"
   },
   {
    "out": "assets/nai/chr/chr_instructor_stern.png",
@@ -314,7 +314,7 @@
     }
    ],
    "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
-   "uc": "patterned background, geometric background, multiple views"
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat"
   },
   {
    "out": "assets/nai/chr/chr_instructor_smile.png",
@@ -327,7 +327,7 @@
     }
    ],
    "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
-   "uc": "patterned background, geometric background, multiple views"
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat"
   },
   {
    "out": "assets/nai/chr/chr_instructor_coffee.png",
@@ -340,7 +340,7 @@
     }
    ],
    "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
-   "uc": "patterned background, geometric background, multiple views"
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat"
   },
   {
    "out": "assets/nai/chr/chr_instructor_casual.png",
@@ -354,7 +354,7 @@
     }
    ],
    "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
-   "uc": "patterned background, geometric background, multiple views"
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat"
   },
   {
    "out": "assets/nai/chr/chr_harin_neutral.png",
@@ -367,7 +367,7 @@
     }
    ],
    "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
-   "uc": "patterned background, geometric background, multiple views"
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat"
   },
   {
    "out": "assets/nai/chr/chr_harin_smile.png",
@@ -380,7 +380,7 @@
     }
    ],
    "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
-   "uc": "patterned background, geometric background, multiple views"
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat"
   },
   {
    "out": "assets/nai/chr/chr_harin_surprised.png",
@@ -393,7 +393,7 @@
     }
    ],
    "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
-   "uc": "patterned background, geometric background, multiple views"
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat"
   },
   {
    "out": "assets/nai/chr/chr_harin_pout.png",
@@ -406,7 +406,7 @@
     }
    ],
    "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
-   "uc": "patterned background, geometric background, multiple views"
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat"
   },
   {
    "out": "assets/nai/chr/chr_harin_excited.png",
@@ -419,7 +419,7 @@
     }
    ],
    "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
-   "uc": "patterned background, geometric background, multiple views"
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat"
   },
   {
    "out": "assets/nai/chr/chr_harin_casual.png",
@@ -433,7 +433,7 @@
     }
    ],
    "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
-   "uc": "patterned background, geometric background, multiple views"
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat"
   },
   {
    "out": "assets/nai/chr/chr_harin_yukata.png",
@@ -447,7 +447,7 @@
     }
    ],
    "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
-   "uc": "patterned background, geometric background, multiple views"
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat"
   },
   {
    "out": "assets/nai/chr/chr_jian_neutral.png",
@@ -460,7 +460,7 @@
     }
    ],
    "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
-   "uc": "patterned background, geometric background, multiple views"
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat"
   },
   {
    "out": "assets/nai/chr/chr_jian_smile.png",
@@ -473,7 +473,7 @@
     }
    ],
    "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
-   "uc": "patterned background, geometric background, multiple views"
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat"
   },
   {
    "out": "assets/nai/chr/chr_jian_serious.png",
@@ -486,7 +486,7 @@
     }
    ],
    "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
-   "uc": "patterned background, geometric background, multiple views"
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat"
   },
   {
    "out": "assets/nai/face/face_harin_driver.png",

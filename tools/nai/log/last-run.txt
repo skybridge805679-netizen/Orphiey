@@ -1,8 +1,14 @@
-2026-11-17T17:23:12.915Z
-NAI 생성 6장 성공, 0장 실패
-✅ assets/nai/chr/chr_harin_neutral.png (seed 4001, params_version 4)
-✅ assets/nai/chr/chr_harin_smile.png (seed 4001, params_version 4)
-✅ assets/nai/chr/chr_harin_surprised.png (seed 4001, params_version 4)
-✅ assets/nai/chr/chr_jian_neutral.png (seed 5001, params_version 4)
-✅ assets/nai/chr/chr_jian_smile.png (seed 5001, params_version 4)
-✅ assets/nai/chr/chr_jian_serious.png (seed 5001, params_version 4)
+2026-11-17T17:26:28.340Z
+NAI 생성 12장 성공, 0장 실패
+✅ assets/nai/pick/chr_harin_neutral_s4101.png (seed 4101, params_version 4)
+✅ assets/nai/pick/chr_harin_neutral_s4102.png (seed 4102, params_version 4)
+✅ assets/nai/pick/chr_harin_neutral_s4103.png (seed 4103, params_version 4)
+✅ assets/nai/pick/chr_harin_surprised_s4201.png (seed 4201, params_version 4)
+✅ assets/nai/pick/chr_harin_surprised_s4202.png (seed 4202, params_version 4)
+✅ assets/nai/pick/chr_harin_surprised_s4203.png (seed 4203, params_version 4)
+✅ assets/nai/pick/chr_jian_neutral_s5101.png (seed 5101, params_version 4)
+✅ assets/nai/pick/chr_jian_neutral_s5102.png (seed 5102, params_version 4)
+✅ assets/nai/pick/chr_jian_neutral_s5103.png (seed 5103, params_version 4)
+✅ assets/nai/pick/chr_jian_smile_s5101.png (seed 5101, params_version 4)
+✅ assets/nai/pick/chr_jian_smile_s5102.png (seed 5102, params_version 4)
+✅ assets/nai/pick/chr_jian_smile_s5103.png (seed 5103, params_version 4)

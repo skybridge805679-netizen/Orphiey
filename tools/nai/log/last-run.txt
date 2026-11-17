@@ -1,12 +1,10 @@
-2026-11-17T17:18:29.019Z
-NAI 생성 10장 성공, 0장 실패
-✅ assets/nai/chr/chr_instructor_coffee.png (seed 3001, params_version 4)
+2026-11-17T17:21:04.706Z
+NAI 생성 8장 성공, 0장 실패
 ✅ assets/nai/chr/chr_harin_neutral.png (seed 4001, params_version 4)
 ✅ assets/nai/chr/chr_harin_smile.png (seed 4001, params_version 4)
 ✅ assets/nai/chr/chr_harin_surprised.png (seed 4001, params_version 4)
+✅ assets/nai/chr/chr_harin_pout.png (seed 4001, params_version 4)
 ✅ assets/nai/chr/chr_harin_excited.png (seed 4001, params_version 4)
 ✅ assets/nai/chr/chr_jian_neutral.png (seed 5001, params_version 4)
 ✅ assets/nai/chr/chr_jian_smile.png (seed 5001, params_version 4)
 ✅ assets/nai/chr/chr_jian_serious.png (seed 5001, params_version 4)
-✅ assets/nai/cg/title_key_visual.png (seed 8001, params_version 4)
-✅ assets/nai/cg/title_key_visual_clear.png (seed 8001, params_version 4)

@@ -31,14 +31,14 @@ function syncRemote(){const value=root.SimRemote.snapshot.fts;if(!value)return;i
 const SECTIONS=['지하청량리-수원','지하청량리-영등포','지하청량리-지하서울','노량진-금천구청','용산-수원','영등포-수원'];
 
 // ---------------------------------------------------------------- shell
-const MENU=[['setup','교육설정'],['system','시스템관리'],['users','사용자관리'],['scenario','시나리오관리',[['problems','문제 관리'],['situations','상황 관리'],['scenarios','시나리오 관리']]],['monitor','모니터링관리'],['history','교육이력관리']];
+const MENU=[['setup','교육설정'],['system','시스템관리'],['users','사용자관리'],['scenario','시나리오관리',[['problems','문제 관리'],['situations','상황 관리'],['scenarios','시나리오 관리']]],['monitor','모니터링관리'],['history','교육이력관리'],['oral','구술 연습'],['remote','원격 조작']];
 function shell(){
  return `<div class="fts"><div class="fts-head"><img class="fts-banner" src="assets/orpheia/banner.png" alt="" aria-hidden="true" width="2172" height="724"><div class="fts-brand"><img src="assets/orpheia/emblem.png" alt="" width="38" height="38"><div><small>ORPHEIA · TRAINING CONTROL</small><b>FTS 제어통제 시스템</b></div></div><span class="fts-lamps"><i class="fts-engine" title="${root.OrpheiaEngine.native===false?'관제 엔진 (브라우저 시험 연결)':'독립 관제 엔진 연결'}">ENGINE</i>${['CTC','EMC','SIC','DB'].map(x=>`<i class="simulated" title="${x} 모의 · 외부 장치 통신 미연결">${x} · 모의</i>`).join('')}</span></div>
 <div class="fts-main"><nav class="fts-nav">${MENU.map(([id,label,sub])=>`<button type="button" data-fts-page="${sub?sub[0][0]:id}" data-fts-group="${id}">▸ ${label}</button>${sub?`<div class="fts-sub">${sub.map(([s,l])=>`<button type="button" data-fts-page="${s}">— ${l}</button>`).join('')}</div>`:''}`).join('')}</nav>
 <section class="fts-workspace"><div class="fts-workspace-head"><div><small>INSTRUCTOR WORKSPACE</small><h2 id="ftsPageTitle">교육설정</h2></div><span id="ftsSessionStatus">교육 전 준비</span></div><div class="fts-body" id="ftsBody"></div></section></div></div>`;
 }
 function go(p){
- page=p;monitorSignature='';problemSignature='';if($('ftsPageTitle'))$('ftsPageTitle').textContent={setup:'교육설정',system:'시스템관리',users:'사용자관리',problems:'문제 관리',situations:'상황 관리',scenarios:'시나리오 관리',monitor:'모니터링관리',history:'교육이력관리'}[p];for(const b of doc.querySelectorAll('[data-fts-page]'))b.classList.toggle('on',b.dataset.ftsPage===p);
+ page=p;monitorSignature='';problemSignature='';if($('ftsPageTitle'))$('ftsPageTitle').textContent={setup:'교육설정',system:'시스템관리',users:'사용자관리',problems:'문제 관리',situations:'상황 관리',scenarios:'시나리오 관리',monitor:'모니터링관리',history:'교육이력관리',oral:'구술 연습',remote:'원격 조작'}[p];for(const b of doc.querySelectorAll('[data-fts-page]'))b.classList.toggle('on',b.dataset.ftsPage===p);
  $('ftsBody').innerHTML=PAGES[p].html();PAGES[p].bind?.();
 }
 
@@ -331,7 +331,7 @@ function importLibrary(data,merge){
 }
 
 // ---------------------------------------------------------------- 교육설정 · 시나리오 선택
-let setup={professor:'',student:'',scenario:null,showActions:true,autoRun:true};
+let setup={professor:'',student:'',scenario:null,showActions:true,autoRun:true,voice:false};
 PAGES.setup={
  html(){
   const sc=lib.scenarios.find(c=>c.id===setup.scenario),prof=users.filter(u=>u.role==='교수'),stud=users.filter(u=>u.role==='교육생');
@@ -341,14 +341,15 @@ PAGES.setup={
 <div class="fts-sub-bar">교육 시나리오 정보</div><button type="button" class="sched-btn fts-pick" id="suPick">시나리오 선택</button>
 <div class="fts-grid2"><label>시나리오 명칭<input readonly value="${esc(sc?.name||'')}" id="suName"></label><label>작성자<input readonly value="${esc(sc?.author||'')}"></label><label>작성일자<input readonly value="${esc(sc?.createdAt||'')}"></label></div>
 ${table('suSits',['시나리오상황','구간','스케줄ID'],rows)}
-<label><input type="checkbox" id="suActions" ${setup.showActions?'checked':''}> 교육생 문제 발생 화면에 조치사항 표시</label><label><input type="checkbox" id="suAuto" ${setup.autoRun?'checked':''}>교육 중 시간표에 따른 열차 자동운행</label>
+<label><input type="checkbox" id="suActions" ${setup.showActions?'checked':''}> 교육생 문제 발생 화면에 조치사항 표시</label><label title="교수 없이 교육생이 말과 LS 조작만으로 진행합니다. 마이크로 들은 무전 한 마디마다 그 말에 나온 열차가 반응하고, 기관사·역·관제팀장의 대답을 음성으로 읽습니다."><input type="checkbox" id="suVoice" ${setup.voice?'checked':''}> 음성 1인 모드 (교수 없이 음성인식으로 진행)</label><div id="suVoicePrep"></div><label><input type="checkbox" id="suAuto" ${setup.autoRun?'checked':''}>교육 중 시간표에 따른 열차 자동운행</label>
 <div class="fts-row-btns"><button type="button" class="sched-btn primary" id="suStart">교육 시작</button><button type="button" class="sched-btn" id="suClear">Clear</button></div></div>
 <div class="fts-right"><div class="fts-bar">교육 설정</div><div class="fts-sub-bar">시나리오 조회</div><div class="fts-grid2"><label>스케줄ID<input id="suSch"></label><button type="button" class="sched-btn" id="suSchFind">조회</button></div><div id="suSchList"></div></div></div>`;
  },
  bind(){
-  const remember=()=>{setup.professor=$('suProf').value;setup.student=$('suStud').value;setup.showActions=$('suActions').checked;setup.autoRun=$('suAuto').checked;};
+  const remember=()=>{setup.professor=$('suProf').value;setup.student=$('suStud').value;setup.showActions=$('suActions').checked;setup.autoRun=$('suAuto').checked;setup.voice=$('suVoice').checked;};
   $('suPick').onclick=()=>{remember();openPicker();};
-  $('suClear').onclick=()=>{setup={professor:'',student:'',scenario:null,showActions:true};go('setup');};
+  $('suVoice').onchange=()=>{remember();if(setup.voice)root.SimVoiceSolo?.prepare(ftsDoc);else root.SimVoiceSolo?.stopPrep();};if(setup.voice)root.SimVoiceSolo?.prepare(ftsDoc);      // 음성 준비: 모델 내려받기 · 마이크 시험
+  $('suClear').onclick=()=>{setup={professor:'',student:'',scenario:null,showActions:true,autoRun:true,voice:false};go('setup');};
   $('suSchFind').onclick=()=>{const v=$('suSch').value.trim();const list=lib.situations.filter(s=>!v||s.scheduleId===v);$('suSchList').innerHTML=table('suSchRows',['상황','스케줄ID','제한시간'],list.map(s=>({id:s.id,cells:[esc(s.name),esc(s.scheduleId||''),s.limit||'']})));};
   $('suStart').onclick=()=>{remember();startSession();};
  }
@@ -395,11 +396,12 @@ function tick(){
   if(state.notice?.id!==lastNotice){lastNotice=state.notice?.id||0;if(state.notice?.kind==='activate'){speak(state.notice.text);showProblem();}
    // 감독관 지시·상황 변경은 음성으로 알리고 문제 창을 앞에 띄운다
    else if(['notice','branch'].includes(state.notice?.kind)){speak(state.notice.text);showProblem();}}
+  root.SimVoiceSolo?.sync(state,text=>remote({op:'voice',text}),ftsDoc);      // 음성 1인 모드: 듣기·상대 대사 읽기
   if(page==='monitor'&&ftsOpen()){renderMonitor();renderLog();}if(problemOpen())renderProblem();}
 function finishSession(){remote({op:'stop'});tick();}
 
 // ---------------------------------------------------------------- 모니터링관리
-PAGES.monitor={html:()=>'<div id="ftsMonitor"></div><div class="fts-cap">제어통제 로그 (교수용 · MMI 로그와 별개)</div><div id="ftsLog" class="fts-table fts-log"></div>',bind:()=>{renderMonitor();logSignature='';renderLog();}};
+PAGES.monitor={html:()=>'<div id="ftsVoice"></div><div id="ftsMonitor"></div><div class="fts-cap">제어통제 로그 (교수용 · MMI 로그와 별개)</div><div id="ftsLog" class="fts-table fts-log"></div>',bind:()=>{renderMonitor();logSignature='';renderLog();root.SimVoiceSolo?.render();}};
 let logSignature='';
 function renderLog(){const box=$('ftsLog');if(!box)return;const list=logs().slice(0,100),sig=list.length+':'+(list[0]?.time||'');if(sig===logSignature)return;logSignature=sig;
  box.innerHTML=`<table><thead><tr><th>시각</th><th>구분</th><th>내용</th></tr></thead><tbody>${list.map(l=>`<tr class="${l.level==='E'?'bad':''}"><td>${esc(T().clock(l.at))}</td><td>${l.level==='E'?'오류':'정보'}</td><td>${esc(l.text)}</td></tr>`).join('')||'<tr class="empty"><td colspan="3">기록이 없습니다.</td></tr>'}</tbody></table>`;}
@@ -472,9 +474,60 @@ ${session.showActions?section('actions','03','조치사항',waiting?'':p?.action
 }
 // 교수가 주입한 상황 변경: 교육생에게는 감독관이 알려 주는 상황(분기 문서 첫 줄)만 보인다 — 모범 대응은 보이지 않는다
 function changes(p,item){return (p?.branches||[]).filter(b=>item.branch?.[b.id]!=null).map(b=>String(b.text||b.label).split('\n')[0].replace(/^[\s▪•·-]+/,'').trim()||b.label);}
-function speak(text){try{if(!text||!root.speechSynthesis)return;const u=new SpeechSynthesisUtterance(text);u.lang='ko-KR';root.speechSynthesis.cancel();root.speechSynthesis.speak(u);}catch{}}
+function speak(text){try{if(!text||root.SimExtraLS)return;if(root.SimRemote.snapshot.fts?.session?.voice&&root.SimVoiceSolo){root.SimVoiceSolo.announce(text);return;}if(!root.speechSynthesis)return;const u=new SpeechSynthesisUtterance(text);u.lang='ko-KR';root.speechSynthesis.cancel();root.speechSynthesis.speak(u);}catch{}}
 
 // ---------------------------------------------------------------- 교육이력관리
+// 원격 조작: 같은 네트워크의 스마트폰(리모컨)·PC 브라우저(앱 화면)로 접속 — 데스크톱 앱 안의 원격 조작 서버를 켜고 끈다
+// ---------------------------------------------------------------- 구술 연습 (운행선관리 구술 릴레이 · ui/oral-relay.js)
+PAGES.oral={
+ html(){
+  const O=root.SimOralRelayUI,R=root.SimOralRelay;if(!O||!R)return '<p class="fts-empty">구술 연습을 불러오지 못했습니다.</p>';
+  const s=O.settings(),v=O.overview(),chs=R.chapters();
+  const opt=(val,label)=>`<option value="${esc(val)}" ${s.scope===val?'selected':''}>${esc(label)}</option>`;
+  return `<div class="fts-split"><div class="fts-left"><div class="fts-bar">구술 릴레이 설정</div>
+<p class="fts-help">문제가 하나씩 뜨면 소리 내어 답하세요. 말한 핵심 항목이 하나씩 체크되고, 다 말하면 바로 다음 문제로 넘어갑니다. 「패스」라고 말하면 넘어갑니다.<br>마이크·음성인식은 음성 1인 모드와 같습니다 (PC 마이크 또는 휴대폰 리모컨의 「🎙 휴대폰 마이크」).</p>
+<div class="fts-row-btns wrap" role="radiogroup" aria-label="연습 방식">${[['speak','🎙 말하기','소리 내어 답하면 항목이 체크'],['card','🃏 카드','정답을 보고 스스로 평가'],['type','⌨ 타이핑','입력하면 항목이 체크']].map(([m,l,d])=>`<label class="fts-mode ${s.mode===m?'on':''}"><input type="radio" name="orMode" value="${m}" ${s.mode===m?'checked':''}> <b>${l}</b> <small>${d}</small></label>`).join('')}</div>
+<p class="fts-help">세 방식은 같은 간격 반복 기록을 씁니다 — 말하기에서 틀린 문제는 카드·타이핑에서 곧 다시 나오고, 카드에서 「모르겠음」 한 문제는 말하기에서 먼저 나옵니다.</p>
+<div class="fts-grid2"><label>출제 범위<select id="orScope">${opt('all','전범위 ('+R.pool('all').length+'문항)')}${opt('exam','기출 ('+R.pool('exam').length+'문항)')}${chs.map(c=>opt('ch:'+c,c+' ('+R.pool('ch:'+c).length+'문항)')).join('')}</select></label>
+<label>제한 시간(초)<input id="orLimit" type="number" min="10" max="600" step="10" value="${esc(s.limit)}"></label>
+<label>다음 문제까지(초)<input id="orGap" type="number" min="1" max="60" value="${esc(s.gap)}"></label></div>
+<label><input type="checkbox" id="orSrs" ${s.srs?'checked':''}> 간격 반복 출제 (틀린 문제는 곧 다시, 맞힌 문제는 뜸하게 — 끄면 무작위)</label>
+<label><input type="checkbox" id="orRead" ${s.read?'checked':''}> 문제를 소리 내어 읽어 주기</label>
+<div class="fts-row-btns"><button type="button" class="sched-btn primary" id="orStart">구술 연습 시작</button></div></div>
+<div class="fts-right"><div class="fts-bar">학습 현황 (이 컴퓨터)</div>
+<div class="fts-grid2 fts-clock-cards"><label>본 문항<input readonly value="${v.seen} / ${v.total}"></label><label>다시 볼 때가 된 문항<input readonly value="${v.due}"></label><label>푼 기록 (말하기·카드·타이핑)<input readonly value="${v.byMode.speak} · ${v.byMode.card} · ${v.byMode.type}"></label><label>익힌 문항 (7일 이상 간격)<input readonly value="${v.mastered}"></label></div>
+<div class="fts-cap">약한 문항</div><ul class="fts-checks">${v.weak.map(w=>`<li class="bad">${w.score}점${w.lapses?' · 틀린 횟수 '+w.lapses:''} · ${esc(w.q)}</li>`).join('')||'<li>아직 기록이 없습니다.</li>'}</ul>
+<div class="fts-row-btns"><button type="button" class="sched-btn" id="orReset">학습 기록 지우기</button></div></div></div>`;
+ },
+ bind(){
+  const O=root.SimOralRelayUI;if(!O)return;
+  const opts=()=>({mode:ftsDoc().querySelector('input[name=orMode]:checked')?.value||'speak',scope:$('orScope').value,limit:Math.max(10,Math.min(600,Number($('orLimit').value)||120)),gap:Math.max(1,Math.min(60,Number($('orGap').value)||5)),srs:$('orSrs').checked,read:$('orRead').checked});
+  for(const r of ftsDoc().querySelectorAll('input[name=orMode]'))r.onchange=()=>ftsDoc().querySelectorAll('.fts-mode').forEach(l=>l.classList.toggle('on',l.contains(ftsDoc().querySelector('input[name=orMode]:checked'))));
+  $('orStart').onclick=()=>O.start(opts());
+  $('orReset').onclick=()=>confirmBox('구술 연습 기록(간격 반복 일정·점수)을 모두 지울까요?',()=>{O.reset();go('oral');});
+ }
+};
+PAGES.remote={
+ html:()=>'<div id="ftsRemote" class="fts-remote"></div>',
+ bind(){
+  const box=$('ftsRemote'),api=root.OrpheiaEngine?.remote;
+  if(!api){box.innerHTML=`<p class="fts-empty">${root.OrpheiaRemoteClient?'원격으로 접속한 화면에서는 원격 조작 서버를 켜고 끌 수 없습니다. 교수 PC의 앱에서 관리하세요.':'원격 조작은 데스크톱 앱(교수 PC)에서 켤 수 있습니다.'}</p>`;return;}
+  const draw=i=>{if(!box.isConnected)return;
+   box.innerHTML=`<div class="fts-split"><div class="fts-left"><div class="fts-bar">원격 조작 서버</div>
+<p class="fts-hint">같은 네트워크(같은 와이파이·사내망)의 기기에서 브라우저로 접속합니다. <b>스마트폰·태블릿</b>은 리모컨 화면만 열리고 교육 진행(통보·구술 확인, 상황 변경, 문제 종료·재로딩·교육 종료)만 할 수 있습니다. <b>PC 브라우저</b>는 이 앱과 같은 화면(LS·MMI·FTS·그래프·문제 화면)을 엽니다.</p>
+<div class="fts-row-btns"><button type="button" class="sched-btn ${i.on?'danger':'primary'}" id="rmToggle">${i.on?'원격 조작 끄기':'원격 조작 켜기'}</button></div>
+${i.on?`<div class="fts-remote-pin"><small>접속 PIN</small><b>${esc(i.pin)}</b></div><div class="fts-cap">접속 주소</div><ul class="fts-remote-urls">${(i.secureUrls||[]).map(u=>`<li><code>${esc(u)}</code> <small>휴대폰 마이크용 보안 주소 · QR · 처음 한 번 「안전하지 않음」 경고에서 [고급 → 계속]</small></li>`).join('')}${i.urls.map(u=>`<li><code>${esc(u)}</code></li>`).join('')||'<li>네트워크 주소를 찾지 못했습니다. 와이파이·랜 연결을 확인하세요.</li>'}</ul>`:'<p class="fts-empty">꺼져 있습니다. 켜면 접속 주소·QR 코드·PIN이 표시됩니다. 앱을 끄면 함께 꺼집니다.</p>'}
+</div><div class="fts-right"><div class="fts-bar">QR 코드 · 접속 기기</div>
+${i.on&&i.qr?`<div class="fts-remote-qr">${i.qr}<small>스마트폰 카메라로 찍은 뒤 PIN을 입력하세요</small></div>`:''}
+${table('rmClients',['구분','주소','기기','마지막 응답',''],(i.clients||[]).map(c=>({id:c.id,cells:[c.role==='remote'?'리모컨(모바일)':'PC 브라우저',esc(c.address),esc(c.agent.replace(/\).*$/,')')),new Date(c.last).toLocaleTimeString('ko-KR'),`<button type="button" class="sched-btn danger" data-kick="${esc(c.id)}">끊기</button>`]})),{empty:'접속한 기기가 없습니다.'})}
+<p class="fts-hint">PIN을 5번 틀리면 1분간 접속을 막습니다. 원격 PC에서도 세션 파일 저장·열기와 프로그램 전체 초기화는 할 수 없습니다.</p></div></div>`;
+   $('rmToggle').onclick=async()=>{try{draw(await api(i.on?'stop':'start'));}catch(e){alert('원격 조작 서버를 켜지 못했습니다: '+e.message);}};
+   for(const b of box.querySelectorAll('[data-kick]'))b.onclick=async()=>draw(await api('kick',b.dataset.kick));
+  };
+  api('status').then(draw);
+  clearInterval(PAGES.remote.timer);PAGES.remote.timer=setInterval(()=>{if(!box.isConnected){clearInterval(PAGES.remote.timer);return;}api('status').then(i=>{const sig=JSON.stringify([i.on,i.pin,i.urls,(i.clients||[]).map(c=>[c.id,Math.floor(c.last/5000)])]);if(sig!==PAGES.remote.sig){PAGES.remote.sig=sig;draw(i);}});},2000);
+ }
+};
 PAGES.history={
  html:()=>`<div class="fts-cap">교육 이력</div>${table('hTable',['일시','교수','교육생','시나리오','점수','사유'],history.map(h=>({id:h.id,cells:[esc(Number.isFinite(Date.parse(h.at))?new Date(h.at).toLocaleString('sv-SE',{timeZone:'Asia/Seoul'}):h.at),esc(h.professor),esc(h.student),esc(h.scenario),`${h.got}/${h.full} (${h.percent}%)`,esc(h.reason)]})))}<div id="hDetail"></div>
 <div class="fts-row-btns"><button type="button" class="sched-btn" id="hExport">교육 이력 내보내기</button><button type="button" class="sched-btn danger" id="hClear">이력 모두 지우기</button></div>`,

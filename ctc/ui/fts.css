@@ -75,3 +75,23 @@ body.problem-detached .problem-panel{height:100vh;overflow:auto;scrollbar-gutter
 .fts-branches pre{white-space:pre-wrap;font:12px/1.5 inherit;margin:6px 0 0;max-height:220px;overflow:auto}
 .fts-remaining{margin:4px 0 8px;padding:6px 8px;border-radius:6px;background:#fff7e3;border:1px solid #ecd59a;color:#6a4b0c;font-weight:600}
 .fts-remaining small{font-weight:400;color:#7d6a3e}
+/* 원격 조작 */
+.fts-remote-pin{display:flex;align-items:baseline;gap:12px;margin:14px 0}.fts-remote-pin b{font:700 40px/1 ui-monospace,Menlo,monospace;letter-spacing:10px}.fts-remote-pin small{color:var(--muted,#6b8287)}
+.fts-remote-urls{margin:4px 0 0;padding-left:18px}.fts-remote-urls code{font-size:15px;user-select:all}
+.fts-remote-qr{display:flex;flex-direction:column;align-items:center;gap:6px;margin:6px 0 14px}.fts-remote-qr svg{width:200px;height:200px;border-radius:8px}.fts-remote-qr small{color:var(--muted,#6b8287)}
+/* 음성 1인 모드 패널 */
+.fts-voice{margin:0 0 8px;padding:8px 10px;border:1px solid #6aa6a6;border-radius:6px;background:#eef8f8}
+.fts-voice.speaking{background:#fff7e6;border-color:#d9a441}
+.fts-voice-status{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.fts-voice-status b{font-size:14px}.fts-voice-status small{color:#476;white-space:nowrap}
+.fts-voice-log{list-style:none;margin:6px 0 0;padding:0;max-height:220px;overflow:auto}
+.fts-voice-log li{display:flex;gap:8px;padding:4px 0;border-top:1px dashed #bcd}
+.fts-voice-log li>span{width:16px;font-weight:bold}.fts-voice-log li.ok>span{color:#187a3a}.fts-voice-log li.miss>span{color:#b33}
+.fts-voice-log q{display:block}.fts-voice-log small{color:#456}.fts-voice-log li.empty{color:#678}
+.fts-voice-type{margin-top:6px}.fts-voice-type form{display:flex;gap:6px;margin-top:4px}.fts-voice-type input{flex:1}
+.fts-voice-prep{margin:6px 0 8px;padding:8px 10px;border:1px solid #6aa6a6;border-radius:6px;background:#eef8f8}
+.fts-voice-prep ul{margin:6px 0;padding-left:18px}.fts-voice-prep li{margin:3px 0}.fts-voice-prep q{margin-right:8px}
+.fts-meter{display:inline-block;width:120px;height:8px;border:1px solid #6aa6a6;border-radius:4px;vertical-align:middle;overflow:hidden;background:#fff}
+.fts-meter i{display:block;height:100%;background:#2b9a5a;transition:width .1s}
+.fts-mode{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border:1px solid #9cc;border-radius:8px;background:#fff;cursor:pointer}
+.fts-mode.on{border-color:#1d4d4d;background:#e3f2f0}.fts-mode small{color:#567}

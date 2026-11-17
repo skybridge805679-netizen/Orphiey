@@ -6,17 +6,22 @@ function create(){
  let scheduleIds={today:null,tomorrow:null,reserved:{}};
  const ops=Operations.create(Object.fromEntries(Object.entries(Windows.data).map(([id,ws])=>[id,ws.map(w=>w.slot)]))),ls=ops.initial();
   // 단선지령식 반대선 운행처럼 대본이 「반대선 운행이라 수동 이동」하는 열차는 LS가 번호를 따라가지 못할 뿐 실제로는 지나간다:
-  // 역을 넘어 열번을 옮기면, 그 사이 역들에 같은 방향으로 세워 둔 입환진로(종각 51-1T, 동묘앞 24-B015T 등)는 열차가 지나가 해정된 것으로 본다.
+  // 역을 넘어 열번을 옮기면, 출발역~도착역 사이에 같은 방향으로 세워 둔 입환진로(종각 53-B045T, 지하서울 21-1T 등)는 그 열차가 지나가는 진로로 표시해 두고,
+  // 그 역을 AUTO로 전환할 때 해정한다 (대본: 「K1137열차 지하서울역 도착 후 … 종각역 Auto 전환. 지하서울역 Auto 전환」).
   function passedShuntRoutes(a){
    if(a.op!=='move'||!a.targetStation||a.targetStation===a.station)return;
    const N=root.SimNetwork,from=N.catalog[a.station]?.order,to=N.catalog[a.targetStation]?.order,row=(ls.stations[a.targetStation]?.windows[a.targetSlot]||[]).find(t=>t.uid===a.uid);if(from==null||to==null||!row)return;
-   const dir=row.direction==='down'?1:-1,lo=Math.min(from,to),hi=Math.max(from,to);
+   const dir=to>from?1:-1,lo=Math.min(from,to),hi=Math.max(from,to);
    for(const st of N.stations){if(!st.controlled||st.order<lo||st.order>hi)continue;const s=states[st.id],C=root.SimCore.forStation(st.id);if(!s)continue;
     for(const [id,x] of Object.entries(s.routes)){const sig=C.signals[C.routes[id]?.signal];if(x.occupied||sig?.kind!=='입환'||sig.dir!==dir)continue;
-     const o=C.dispatch(s,{type:'occupy',id,number:row.number,seconds:1,source:'LS'});const c=o.ok?C.dispatch(s,{type:'clear',id,source:'LS'}):o;
-     s.logs.unshift({time:s.clock,source:'LS',action:'pass',result:c.ok?'완료':'보류',message:row.number+' 반대선 통과 · '+id+(c.ok?' 진로 해정':' · '+c.message)});}}
+     x.passed=row.number;s.logs.unshift({time:s.clock,source:'LS',action:'pass',result:'완료',message:row.number+' 반대선 운행 · '+id+' 입환진로 (AUTO 전환 시 해정)'});}}
   }
- let seq=0,paused=false,speed=1,replay=false,revision=0,cache=null,tableCache=null,tableDirty=true;let ftsLibrarySource=null,ftsRunSource=null,ftsLibraryCache=null,ftsRunCache=null;const published=new Map();const events=[];
+  function releasePassed(station){
+   const s=states[station],C=root.SimCore.forStation(station);if(!s)return;
+   for(const [id,x] of Object.entries(s.routes)){if(!x.passed||x.occupied)continue;const sig=C.routes[id]?.signal;delete s.routes[id];if(sig)s.signals[sig]='STOP';
+    s.logs.unshift({time:s.clock,source:'SYSTEM',action:'release',result:'완료',message:id+' 입환진로 해정 · AUTO 전환 ('+x.passed+' 통과)'});}
+  }
+ let lsPending=null;let seq=0,paused=false,speed=1,replay=false,revision=0,cache=null,tableCache=null,tableDirty=true;let ftsLibrarySource=null,ftsRunSource=null,ftsLibraryCache=null,ftsRunCache=null;const published=new Map();const events=[];
  const emit=(kind,data)=>{events.push({seq:++seq,kind,...data});if(events.length>1000)events.shift();};
  const root={SimCore:{...Core,forStation:session.core},SimNetwork:Network,SimTimetable:Timetable,SimTrainWindows:Windows,SimTrackNetwork:require('./track-network'),SimLine:require('./line'),SimAuto:require('./autocontrol'),SimScenarios:require('./scenarios'),SimEmergency:require('./emergency'),SimScheduleScenarios:require('./schedule-scenarios'),SimScenarioMotion:require('./scenario-motion')};
  root.SimLine.journeys.clear();root.SimLine.state.enforce=true;root.SimLine.state.single.clear();
@@ -70,12 +75,15 @@ function create(){
   if(replay&&!['clock','select','numbers:validate'].includes(type))return {ok:false,message:'로그재생 중에는 실시간 제어를 할 수 없습니다.'};
   if(type==='assessment'){if(fts.isActive())return {ok:false,message:'진행 중인 FTS 교육의 시간은 총괄제어에서 관리합니다.'};const op=action.op;if(op==='start'){assessment.start(action.options,now());paused=false;}else if(op==='begin'){if(action.options?.practiceIndex!==null&&action.options?.practiceIndex!==undefined&&(!Number.isInteger(action.options.practiceIndex)||!require('./practice').tasks[action.options.practiceIndex]))throw Error('Invalid practice task');assessment.begin(action.options,now());paused=false;}else if(op==='complete'||op==='cancel'){if(typeof action.key!=='string')throw Error('Assessment task key required');assessment.finishTask(now(),op==='complete'?'completed':'stopped',action.key);}else if(op==='finish')assessment.finish(now());else throw Error('Unknown assessment operation');return {ok:true};}
   if(type==='fts')return fts.command(action);
+  if(type==='remote:view')return fts.remoteView();
   if(type==='alarm:ack'){const texts=(Array.isArray(action.texts)?action.texts:[]).map(String).slice(0,50);fts.event({type:'alarmAck',text:texts.join(' | '),ok:true,source:'MMI'});return {ok:true};}
   if(type==='clock'){if(action.paused!==undefined)paused=!!action.paused;if(action.speed!==undefined){if(!Number.isFinite(action.speed)||action.speed<0||action.speed>120)throw new Error('Invalid clock speed');speed=action.speed;}return {ok:true};}
   if(type==='tick'){tick(action.seconds);return {ok:true};}
   if(type==='select'){session.select(action.station);return {ok:true};}
+  // LS 열번 이동·교환의 「목표 열번창 고르는 중」 상태: LS 창이 여럿(LS +)이어도 한 창에서 고르고 다른 창에서 칸을 누를 수 있게 엔진이 들고 있다
+  if(type==='lsPending'){const p=action.pending;if(p!==null&&!(p&&['move','swap'].includes(p.op)&&typeof p.station==='string'&&typeof p.slot==='string'&&typeof p.uid==='string'))return {ok:false,message:'열번 선택 상태를 확인하세요.'};lsPending=p?{op:p.op,station:p.station,slot:p.slot,uid:p.uid}:null;return {ok:true};}
   if(type==='control'){
-   refresh();const result=session.dispatch(action.station,action.action);fts.event({...action.action,station:action.station,ok:result.ok!==false});emit('control',{station:action.station,action:action.action,result});root.SimScenarioUI.event({...action.action,station:action.station,ok:result.ok!==false});refresh();return result;
+   refresh();const result=session.dispatch(action.station,action.action);if(result.ok!==false&&action.action?.type==='mode'&&states[action.station]?.mode==='AUTO')releasePassed(action.station);fts.event({...action.action,station:action.station,ok:result.ok!==false});emit('control',{station:action.station,action:action.action,result});root.SimScenarioUI.event({...action.action,station:action.station,ok:result.ok!==false});refresh();return result;
   }
   if(type==='numbers'){const a=action.action,r=ops.dispatch(ls,a),s=states[a.station];if(r.ok){root.SimScenarioUI.manualNumberAction(a);passedShuntRoutes(a);if(a.op==='rename'){const was=(ls.stations[a.station]?.windows[a.slot]||[]).find(t=>t.uid===a.uid)?.was?.at(-1);if(was)fts.own(was,String(a.number).trim().toUpperCase());}}if(s){s.logs.unshift({time:s.clock,source:'LS',action:a.op,result:r.ok?'완료':'보류',message:r.message});if(r.ok)s.events.push({type:'lsOperation',operation:a,time:s.clock,source:'LS'});}root.SimScenarioUI.event({type:'lsOperation',operation:a,station:a.station,ok:r.ok});fts.event({type:'lsOperation',operation:a,station:a.station,ok:r.ok,source:action.fts?'FTS':a.source==='MMI'?'MMI':'LS'});refresh();return r;}
   if(type==='numbers:validate')return root.SimLSUI.validate(action.action);
@@ -120,7 +128,7 @@ function create(){
   // 시나리오 열차(시간표 밖 예약 번호)의 실제 위치도 엔진이 낸다 — 화면은 계산하지 않는다
   for(const id of root.SimScenarioUI.reservedNumbers?.()||[])if(!(id in positions))positions[id]=root.SimScenarioUI.position({id});
   if(ftsLibrarySource!==fts.library()){ftsLibrarySource=fts.library();ftsLibraryCache=structuredClone(ftsLibrarySource);}if(ftsRunSource!==fts.runLibrary()){ftsRunSource=fts.runLibrary();ftsRunCache=structuredClone(ftsRunSource);}
-  const value={fts:fts.snapshot(),editHistory:Timetable.history(model),seq,pid:process.pid,selected:session.selected,states,ls,clock:{paused,speed,replay},assessment:assessment.snapshot(now()),line:{enforce:root.SimLine.state.enforce,single:[...root.SimLine.state.single]},equipment:{faults:root.SimEquipment.faultList(),sent:root.SimEquipment.sentTimes()},auto:{enabled:root.SimAutoUI.enabled(),reflect:root.SimAutoUI.reflecting(),transits:root.SimAutoUI.transits(),troubles:root.SimAutoUI.troubles(),actuals:root.SimAutoUI.actuals(),positions},scenario:root.SimScenarioUI.snapshot(),drill:root.SimDrill.snapshot(),journeys:[...root.SimLine.journeys],scheduleIds:{...scheduleIds,list:scheduleIdList().map(s=>({id:s.id,name:s.name,trains:s.timetable?.trains?.length||0}))},events};
+  const value={lsPending,fts:fts.snapshot(),editHistory:Timetable.history(model),seq,pid:process.pid,selected:session.selected,states,ls,clock:{paused,speed,replay},assessment:assessment.snapshot(now()),line:{enforce:root.SimLine.state.enforce,single:[...root.SimLine.state.single]},equipment:{faults:root.SimEquipment.faultList(),sent:root.SimEquipment.sentTimes()},auto:{enabled:root.SimAutoUI.enabled(),reflect:root.SimAutoUI.reflecting(),transits:root.SimAutoUI.transits(),troubles:root.SimAutoUI.troubles(),actuals:root.SimAutoUI.actuals(),positions},scenario:root.SimScenarioUI.snapshot(),drill:root.SimDrill.snapshot(),journeys:[...root.SimLine.journeys],scheduleIds:{...scheduleIds,list:scheduleIdList().map(s=>({id:s.id,name:s.name,trains:s.timetable?.trains?.length||0}))},events};
   if(tableDirty||!tableCache){tableCache=JSON.parse(JSON.stringify(model));tableDirty=false;}
   cache=JSON.parse(JSON.stringify(value,(_key,v)=>typeof v==='function'?undefined:v instanceof Set?[...v]:v));cache.timetable=tableCache;cache.ftsLibrary=ftsLibraryCache;cache.ftsRunLibrary=ftsRunCache;
   for(const [key,v]of Object.entries(cache)){if(key==='events')continue;const previous=published.get(key);if(previous?.value===v)continue;const hash=JSON.stringify(v);if(previous?.hash!==hash)published.set(key,{at:revision,hash,value:v});}

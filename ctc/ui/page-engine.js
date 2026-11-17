@@ -38,5 +38,5 @@ function openView(kind){
  else if(kind==='fts')root.SimFTSUI?.open?.();
 }
 root.setInterval(()=>{try{runtime.pulse();}catch(error){console.error(error);}},1000);
-root.OrpheiaEngine={reset:async()=>{runtime.command({type:'clock',paused:true});runtime=load('./engine/runtime.cjs',document.baseURI).create();runtime.command({type:'clock',paused:true});for(const k of Object.keys(localStorage))if(/^(orpheia\.|ctclab-)/.test(k))localStorage.removeItem(k);sessionStorage.removeItem('orpheia.fresh-start');   /* ORPHEIA VN: keep the story's saves */sessionStorage.setItem('orpheia.fresh-start','1');root.location.reload();return {ok:true};},request,openView,native:false};
+root.OrpheiaEngine={reset:async()=>{runtime.command({type:'clock',paused:true});runtime=load('./engine/runtime.cjs',document.baseURI).create();runtime.command({type:'clock',paused:true});for(const k of Object.keys(localStorage))if(/^(orpheia\.|ctclab-)/.test(k))localStorage.removeItem(k);sessionStorage.clear();sessionStorage.setItem('orpheia.fresh-start','1');root.location.reload();return {ok:true};},request,openView,native:false};
 })(window);

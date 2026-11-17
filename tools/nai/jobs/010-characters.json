@@ -11,7 +11,8 @@
      "extra": "light smile, closed mouth, hands together"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
+   "uc": "patterned background, geometric background, multiple views"
   },
   {
    "out": "assets/nai/chr/orpheia_sd_praise_v2.png",
@@ -23,7 +24,8 @@
      "extra": "smile, open mouth, happy, hands together"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
+   "uc": "patterned background, geometric background, multiple views"
   },
   {
    "out": "assets/nai/chr/orpheia_sd_worried_v2.png",
@@ -35,7 +37,8 @@
      "extra": "worried, frown, hand on own chest"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
+   "uc": "patterned background, geometric background, multiple views"
   },
   {
    "out": "assets/nai/chr/orpheia_sd_briefing.png",
@@ -47,7 +50,8 @@
      "extra": "smile, index finger raised, explaining, one hand on hip"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
+   "uc": "patterned background, geometric background, multiple views"
   },
   {
    "out": "assets/nai/chr/orpheia_sd_surprised.png",
@@ -59,7 +63,8 @@
      "extra": "surprised, open mouth, wide-eyed, hands up"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
+   "uc": "patterned background, geometric background, multiple views"
   },
   {
    "out": "assets/nai/chr/orpheia_sd_pout.png",
@@ -71,7 +76,8 @@
      "extra": "pout, puffed cheeks, looking away, arms crossed"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
+   "uc": "patterned background, geometric background, multiple views"
   },
   {
    "out": "assets/nai/chr/orpheia_sd_shy.png",
@@ -83,7 +89,8 @@
      "extra": "blush, shy, embarrassed, looking down, hands together"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
+   "uc": "patterned background, geometric background, multiple views"
   },
   {
    "out": "assets/nai/chr/orpheia_sd_casual.png",
@@ -96,7 +103,8 @@
      "outfit": "white blouse, light blue cardigan, long skirt, brown boots, shoulder bag"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
+   "uc": "patterned background, geometric background, multiple views"
   },
   {
    "out": "assets/nai/chr/orpheia_sd_yukata.png",
@@ -109,7 +117,8 @@
      "outfit": "yukata, floral print, obi, hair flower, sandals"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
+   "uc": "patterned background, geometric background, multiple views"
   },
   {
    "out": "assets/nai/chr/orpheia_sd_santa.png",
@@ -122,7 +131,8 @@
      "outfit": "santa costume, santa hat, fur trim, red dress, white apron, red capelet"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
+   "uc": "patterned background, geometric background, multiple views"
   },
   {
    "out": "assets/nai/chr/orpheia_sd_coat.png",
@@ -135,7 +145,8 @@
      "outfit": "winter coat, beige coat, white scarf, beret, gloves, boots"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
+   "uc": "patterned background, geometric background, multiple views"
   },
   {
    "out": "assets/nai/chr/orpheia_sd_suit.png",
@@ -148,7 +159,8 @@
      "outfit": "black business suit, black jacket, white shirt, black pencil skirt, black pantyhose, formal"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
+   "uc": "patterned background, geometric background, multiple views"
   },
   {
    "out": "assets/nai/chr/orpheia_sd_driver_v2.png",
@@ -161,7 +173,8 @@
      "outfit": "train conductor uniform, navy jacket, peaked cap, white gloves"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
+   "uc": "patterned background, geometric background, multiple views"
   },
   {
    "out": "assets/nai/chr/orpheia_sd_stationmaster_v2.png",
@@ -174,7 +187,8 @@
      "outfit": "station master uniform, navy uniform, peaked cap, armband, white gloves"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
+   "uc": "patterned background, geometric background, multiple views"
   },
   {
    "out": "assets/nai/chr/orpheia_sd_engineer_v2.png",
@@ -187,7 +201,8 @@
      "outfit": "yellow hardhat, high-visibility vest, work uniform, work gloves"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
+   "uc": "patterned background, geometric background, multiple views"
   },
   {
    "out": "assets/nai/chr/orpheia_sd_evacuation_v2.png",
@@ -200,7 +215,8 @@
      "outfit": "orange safety vest, armband, holding flashlight, maid headdress"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
+   "uc": "patterned background, geometric background, multiple views"
   },
   {
    "out": "assets/nai/face/face_neutral.png",
@@ -284,7 +300,8 @@
      "extra": "expressionless, closed mouth, arms at sides"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
+   "uc": "patterned background, geometric background, multiple views"
   },
   {
    "out": "assets/nai/chr/chr_instructor_stern.png",
@@ -296,7 +313,8 @@
      "extra": "stern, frown, arms crossed"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
+   "uc": "patterned background, geometric background, multiple views"
   },
   {
    "out": "assets/nai/chr/chr_instructor_smile.png",
@@ -308,7 +326,8 @@
      "extra": "light smile, closed mouth"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
+   "uc": "patterned background, geometric background, multiple views"
   },
   {
    "out": "assets/nai/chr/chr_instructor_coffee.png",
@@ -320,7 +339,8 @@
      "extra": "closed eyes, holding paper cup, drinking"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
+   "uc": "patterned background, geometric background, multiple views"
   },
   {
    "out": "assets/nai/chr/chr_instructor_casual.png",
@@ -333,7 +353,8 @@
      "outfit": "beige turtleneck sweater, long camel coat, black pants"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
+   "uc": "patterned background, geometric background, multiple views"
   },
   {
    "out": "assets/nai/chr/chr_harin_neutral.png",
@@ -345,7 +366,8 @@
      "extra": "smile, closed mouth"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
+   "uc": "patterned background, geometric background, multiple views"
   },
   {
    "out": "assets/nai/chr/chr_harin_smile.png",
@@ -357,7 +379,8 @@
      "extra": "smile, open mouth, closed eyes, happy"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
+   "uc": "patterned background, geometric background, multiple views"
   },
   {
    "out": "assets/nai/chr/chr_harin_surprised.png",
@@ -369,7 +392,8 @@
      "extra": "surprised, wide-eyed, open mouth, hands up"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
+   "uc": "patterned background, geometric background, multiple views"
   },
   {
    "out": "assets/nai/chr/chr_harin_pout.png",
@@ -381,7 +405,8 @@
      "extra": "pout, puffed cheeks, hands on hips"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
+   "uc": "patterned background, geometric background, multiple views"
   },
   {
    "out": "assets/nai/chr/chr_harin_excited.png",
@@ -393,7 +418,8 @@
      "extra": "sparkling eyes, open mouth, clenched hands, leaning forward, excited"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
+   "uc": "patterned background, geometric background, multiple views"
   },
   {
    "out": "assets/nai/chr/chr_harin_casual.png",
@@ -406,7 +432,8 @@
      "outfit": "yellow hoodie, denim shorts, sneakers, backpack"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
+   "uc": "patterned background, geometric background, multiple views"
   },
   {
    "out": "assets/nai/chr/chr_harin_yukata.png",
@@ -419,7 +446,8 @@
      "outfit": "yukata, orange yukata, floral print, obi, hair flower, sandals"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
+   "uc": "patterned background, geometric background, multiple views"
   },
   {
    "out": "assets/nai/chr/chr_jian_neutral.png",
@@ -431,7 +459,8 @@
      "extra": "expressionless, holding laptop"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
+   "uc": "patterned background, geometric background, multiple views"
   },
   {
    "out": "assets/nai/chr/chr_jian_smile.png",
@@ -443,7 +472,8 @@
      "extra": "light smile, holding laptop"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
+   "uc": "patterned background, geometric background, multiple views"
   },
   {
    "out": "assets/nai/chr/chr_jian_serious.png",
@@ -455,7 +485,8 @@
      "extra": "serious, pushing up eyewear"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background"
+   "scene": "visual novel sprite, full body, standing, looking at viewer, transparent background",
+   "uc": "patterned background, geometric background, multiple views"
   },
   {
    "out": "assets/nai/face/face_harin_driver.png",

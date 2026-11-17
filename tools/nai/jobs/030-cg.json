@@ -31,7 +31,8 @@
      "extra": "holding telephone receiver"
     }
    ],
-   "scene": "visual novel cg, night railway control training room, large glowing wall track display, the girl in the maid outfit on the right reaches her hand toward the viewer with a gentle smile, small figures behind her, pov hand on chair, left side of the image dark and empty for a title menu"
+   "scene": "visual novel cg, night railway control training room, large glowing wall track display, the girl in the maid outfit on the right reaches her hand toward the viewer with a gentle smile, small figures behind her, pov hand on chair, characters grouped on the right half, the left half shows the softly blurred dim control room and faint glowing track lines, negative space on the left, cinematic lighting",
+   "uc": "blank space, solid color, white background, black background, border, split screen"
   },
   {
    "out": "assets/nai/cg/title_key_visual_clear.png",
@@ -66,7 +67,8 @@
      "extra": "light smile, hugging laptop"
     }
    ],
-   "scene": "visual novel cg, spring morning, cherry blossom path under an elevated railway, petals falling, everyone smiling, left side of the image empty for a title menu"
+   "scene": "visual novel cg, spring morning, cherry blossom path under an elevated railway, petals falling, everyone smiling, characters grouped on the right half, the left half shows the softly blurred cherry blossom path and sky, negative space on the left",
+   "uc": "blank space, solid color, white background, black background, border, split screen"
   },
   {
    "out": "assets/nai/cg/cg_ctc_first_login.png",

@@ -100,6 +100,13 @@ NovelAI는 이미지 API 공식 문서를 공개하지 않는다. 아래는 공�
 - 워크플로: `.github/workflows/nai-generate.yml` — `tools/nai/jobs/*.json`을 고쳐 푸시하면 그 브랜치에서 실행, **아직 없는 그림만** 만들어 같은 브랜치에 커밋(`assets/nai/…`, 기록 `tools/nai/log/last-run.txt`). 시크릿은 `NAI_TOKEN`.
 - 작업 순서: 시험 작업(시드 여러 개) → 주인님이 고른 시드 고정 → 차분 일괄 → 게임 에셋 이름으로 교체.
 
+## 7-1. 스탠딩 규격 (2026-11-19 주인님 지정)
+
+- **cowboy shot**(허벅지 위) · 832×1216 · 투명 배경. 프롬프트 `visual novel sprite, cowboy shot, standing, looking at viewer, facing viewer, 2.1::transparent background::`, UC에 `full body, feet, shoes`. 전신으로 나오면 `1.6::cowboy shot::, from thighs up`.
+- 기준 그림(neutral)·의상은 시드, 표정은 기준 그림 img2img.
+- 받은 뒤 `python3 tools/nai/normalize.py`: 머리 꼭대기를 위에서 4%에 맞춘다(낮으면 아래 기준 확대, 높으면 아래로 내림). 가로는 건드리지 않는다.
+- CG가 뜨면(`@cg`) 스탠딩은 치운다(`vn.js`). CG가 끝나면 `@show`로 다시 세운다.
+
 ## 8. 게임 연결
 
 - `node tools/nai/install.mjs` — `assets/nai/*`를 게임 파일 이름으로 복사(바뀐 것만). 새 그림을 받으면 다시 돌린다.

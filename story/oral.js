@@ -153,7 +153,7 @@ const Oral=(()=>{
   D=load();D.plays=(D.plays||0)+1;const order='CBAS';if(!D.best||order.indexOf(rank)>order.indexOf(D.best.rank)||(rank===D.best.rank&&S.score>(D.best.score||0)))D.best={rank,score:S.score,combo:Math.max(S.bestCombo,D.best?.combo||0)};else D.best.combo=Math.max(D.best.combo||0,S.bestCombo);save(D);
   const wrong=S.res.filter(r=>r.frac<0.9).map(r=>r.it);
   const say={S:'주인님, 완벽해요! 교수님이 펜을 내려놓으셨어요♪',A:'거의 다 말했어요! 빨간 글씨만 한 번 더 보면 S예요.',B:'반은 넘었어요. 틀린 문제는 곧 다시 나오니까, 그때 갚아 줘요!',C:'괜찮아요, 주인님. 구술은 말해 본 만큼 늘어요. 같이 한 번 더 해요.'}[rank];
-  mount(`<img class="oral-bg" src="${img('bg_exam_hall.png')}" alt=""><div class="ch-result oral-result"><div class="ch-card"><small>구술 시험 결과 · ${esc(opt.mode==='card'?'카드':'답안')} · ${S.res.length}문제</small>
+  mount(`<img class="oral-bg" src="${img('bg_exam_hall.png')}" alt=""><div class="ch-result oral-result"><div class="ch-card"><img class="ch-emblem ${rank==='S'?'is-s':''}" src="${img('ui/emblem_'+(rank==='S'?'gold':'teal')+'.png')}" alt=""><small>구술 시험 결과 · ${esc(opt.mode==='card'?'카드':'답안')} · ${S.res.length}문제</small>
    <p class="score rank-${rank}">${rank}</p><p>점수 <b>${S.score}</b> · 평균 ${Math.round(avg*100)}점 · 최고 콤보 ${S.bestCombo}${S.newMastered?.length?` · 새로 익힘 ${S.newMastered.length}`:''}</p>
    <ul class="oral-list">${S.res.map(r=>`<li class="${r.frac>=.9?'ok':r.frac>=.6?'mid':'ng'}"><span>${Math.round(r.frac*100)}</span>${esc(r.it.q.length>48?r.it.q.slice(0,48)+'…':r.it.q)}</li>`).join('')}</ul>
    <p class="oral-orpline"><img src="${img(rank==='S'||rank==='A'?FACE.smile:FACE.worry)}" alt="">${esc(say)}</p>

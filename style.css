@@ -656,3 +656,33 @@ img.vn-stamp{width:min(34vw,360px);text-shadow:none}
 .oral-list li.ok span{color:var(--cyan)}.oral-list li.mid span{color:#ffd27a}.oral-list li.ng span{color:#ff8a8a}
 .oral-orpline{display:flex;align-items:center;gap:10px;text-align:left;font-size:14px;color:#cfe3e6}.oral-orpline img{width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid #78eadb66}
 @media (max-width:760px){.oral-lobby .oral-prof{display:none}.oral-q .oral-prof{display:none}.oral-cards{grid-template-columns:1fr 1fr}.oral-hud{gap:10px;font-size:12px}}
+
+/* ── 오르페이아의 문장 (assets/ui/emblem_{gold,teal,white,black}.png) ── */
+/* 시작 화면: 흰 문장이 숨 쉬듯 빛난다 */
+.sound-gate .gate-emblem{display:block;width:min(240px,46vw);margin:0 auto 18px;opacity:.92;filter:drop-shadow(0 0 18px #78eadb66);animation:emblemBreathe 3.6s ease-in-out infinite}
+@keyframes emblemBreathe{0%,100%{opacity:.75;filter:drop-shadow(0 0 10px #78eadb44)}50%{opacity:1;filter:drop-shadow(0 0 26px #78eadbaa)}}
+/* 타이틀: 로고 뒤 청록 문장 워터마크 */
+.vn-title-emblem{position:absolute;z-index:1;left:2%;top:50%;width:min(620px,48vw);transform:translateY(-50%);opacity:.13;pointer-events:none;mix-blend-mode:screen;animation:emblemDrift 9s ease-in-out infinite}
+@keyframes emblemDrift{0%,100%{opacity:.10;transform:translateY(-50%) scale(1)}50%{opacity:.18;transform:translateY(-51%) scale(1.02)}}
+/* 장 카드·실습 결과: 금 문장이 피어나고 글자가 그 위에 */
+.vn-card .vn-card-emblem{position:absolute;left:50%;top:50%;width:min(520px,70vmin);transform:translate(-50%,-50%);opacity:0;pointer-events:none;animation:emblemCard 2.4s ease-out forwards;z-index:-1}
+.vn-card{isolation:isolate}
+@keyframes emblemCard{0%{opacity:0;transform:translate(-50%,-50%) scale(.86);filter:blur(6px)}35%{opacity:.34;filter:blur(0)}100%{opacity:.22;transform:translate(-50%,-50%) scale(1)}}
+.vn-card .rank-emblem.is-s{animation:emblemS 1.8s ease-out forwards}
+@keyframes emblemS{0%{opacity:0;transform:translate(-50%,-50%) scale(1.25);filter:brightness(2) blur(4px)}40%{opacity:.6;filter:brightness(1.6)}100%{opacity:.36;transform:translate(-50%,-50%) scale(1);filter:drop-shadow(0 0 24px #ffd27a88)}}
+/* 도전·구술 결과 카드 */
+.ch-card{position:relative;isolation:isolate;overflow:hidden}
+.ch-card .ch-emblem{position:absolute;left:50%;top:44%;width:min(420px,80%);transform:translate(-50%,-50%);opacity:.12;z-index:-1;pointer-events:none}
+.ch-card .ch-emblem.is-s{opacity:.3;filter:drop-shadow(0 0 20px #ffd27a77);animation:emblemS2 1.6s ease-out}
+@keyframes emblemS2{from{opacity:0;transform:translate(-50%,-50%) scale(1.2)}to{opacity:.3;transform:translate(-50%,-50%) scale(1)}}
+/* 0.3초 예측 연산: 오르페이아의 능력 — 문장이 붉은 빛으로 맥동 */
+.ctc-forecast .ctc-fc-emblem{position:absolute;left:50%;top:50%;width:min(720px,90vmin);transform:translate(-50%,-50%);opacity:.16;pointer-events:none;filter:drop-shadow(0 0 30px #ff2d55) sepia(1) saturate(6) hue-rotate(-40deg);animation:emblemPulse 1.6s ease-in-out infinite}
+.ctc-forecast .ctc-fc-box{position:relative;z-index:1}
+@keyframes emblemPulse{0%,100%{opacity:.10;transform:translate(-50%,-50%) scale(.98)}50%{opacity:.22;transform:translate(-50%,-50%) scale(1.02)}}
+/* 이야기 연출 @emblem: 화면 가득 피었다 사라진다 */
+.vn-emblem-bloom{position:absolute;inset:0;z-index:9;display:grid;place-items:center;pointer-events:none;background:radial-gradient(circle,#ffffff22,transparent 60%);animation:bloomBg 2.2s ease-out forwards}
+.vn-emblem-bloom img{width:min(560px,72vmin);animation:bloomImg 2.2s cubic-bezier(.2,.7,.2,1) forwards}
+.vn-emblem-bloom.c-white img{filter:drop-shadow(0 0 28px #78eadb)}.vn-emblem-bloom.c-gold img{filter:drop-shadow(0 0 28px #ffd27a)}.vn-emblem-bloom.c-teal img{filter:drop-shadow(0 0 28px #78eadb)}
+@keyframes bloomImg{0%{opacity:0;transform:scale(.6) rotate(-4deg);filter:blur(8px)}30%{opacity:1;transform:scale(1.04) rotate(0)}70%{opacity:.9;transform:scale(1)}100%{opacity:0;transform:scale(1.12)}}
+@keyframes bloomBg{0%{opacity:0}25%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.gate-emblem,.vn-title-emblem,.ctc-fc-emblem,.vn-emblem-bloom img,.vn-card .vn-card-emblem{animation:none!important}.vn-card .vn-card-emblem{opacity:.22}}

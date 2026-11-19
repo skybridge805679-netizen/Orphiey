@@ -163,7 +163,7 @@ const CTCDrill=(()=>{
   <aside class="ctc-desk" id="ctcDesk" hidden><div class="dk-status"></div><div class="dk-main"></div></aside><div class="dk-log"></div>
   <div class="ctc-toast" hidden><img alt=""><span></span></div>
   <div class="ctc-dialogue" hidden><div class="ctc-face"><img alt=""></div><div class="ctc-talk"><div class="ctc-name"></div><div class="ctc-text"></div></div><div class="ctc-next">▼</div><small class="ctc-peekhint">H · 대화창 숨기고 LS 보기</small></div>
-  <div class="ctc-forecast" hidden><div class="ctc-fc-box"><small>0.3초 예측 연산</small><h3>그 무전이 나간 미래</h3><div class="ctc-fc-body"></div><button type="button" class="primary">↺ 되감기</button></div></div>
+  <div class="ctc-forecast" hidden><img class="ctc-fc-emblem" src="assets/ui/emblem_white.png" alt=""><div class="ctc-fc-box"><small>0.3초 예측 연산</small><h3>그 무전이 나간 미래</h3><div class="ctc-fc-body"></div><button type="button" class="primary">↺ 되감기</button></div></div>
   <dialog id="ctcDlg"><div class="ctc-dlg-body"></div><form method="dialog"><button class="primary">닫기</button></form></dialog>`;
   document.body.appendChild(el);frame=$('#ctcFrame');
   $('.ctc-dialogue').addEventListener('click',()=>advanceFn?.());

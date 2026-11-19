@@ -329,7 +329,7 @@ const Challenge=(()=>{
   save(rec);
   const box=document.createElement('div');box.className='ch-result';
   box.innerHTML=R.error?`<div class="ch-card"><small>도전 모드</small><h2>시뮬레이터를 불러오지 못했어요</h2><p>${R.error}</p><div class="ch-btns"><button data-a="title">타이틀로</button></div></div>`
-   :`<div class="ch-card"><small>도전 결과 · ${info.twists.length?'상황 변경 '+info.twists.length+'건':'상황 변경 없음'}</small><h2>${R.title}</h2><p class="score rank-${R.rank}">${R.rank}</p>
+   :`<div class="ch-card"><img class="ch-emblem ${R.rank==='S'?'is-s':''}" src="assets/ui/emblem_${R.rank==='S'?'gold':'teal'}.png" alt=""><small>도전 결과 · ${info.twists.length?'상황 변경 '+info.twists.length+'건':'상황 변경 없음'}</small><h2>${R.title}</h2><p class="score rank-${R.rank}">${R.rank}</p>
    <p>판단 첫 시도 정답 ${R.firstTry} / ${R.decisions}${R.rewinds?` · 예측 되감기 ${R.rewinds}회`:''}</p>
    <p>${R.procedureComplete?'선택된 상황변경의 필수 절차 완료':'필수 절차 미완료'}</p>
    ${(R.missed||[]).length?'<ul>'+R.missed.map(x=>'<li>'+String(x).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))+'</li>').join('')+'</ul>':''}

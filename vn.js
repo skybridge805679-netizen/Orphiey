@@ -94,6 +94,7 @@ function step(){
    case 'chapter':return card('chapter',op.num,op.title);
    case 'alarm':return alarm(op.arg);
    case 'flash':fx('flash');SFX.play('flash');S.pc++;break;
+   case 'emblem':emblem(op.arg||'white');S.pc++;break;   // 오르페이아의 문장이 화면 가득 피었다 사라진다(색: white·gold·teal·black)
    case 'sfx':SFX.play(op.arg);S.pc++;break;
    case 'shake':if(op.arg)pendingFx[ALIAS[op.arg]||op.arg]='shake';else fx('shake');S.pc++;paint();break;
    case 'wait':busy=true;setTimeout(()=>{busy=false;S.pc++;step();},+op.arg||600);return;
@@ -187,10 +188,11 @@ function paintChars(){
  for(const el of [...wrap.children,...(phone?.querySelector('.vn-phone-screen').children||[])])if(!keep.has(el.id.slice(4)))el.remove();
 }
 function setHidden(v){hidden=v;$('#vn')?.classList.toggle('ui-hidden',v);}
+function emblem(color){const vn=$('#vn');if(!vn)return;const e=document.createElement('div');e.className='vn-emblem-bloom c-'+color;e.innerHTML=`<img src="${asset('ui/emblem_'+(['gold','teal','black','white'].includes(color)?color:'white')+'.png')}" alt="">`;vn.append(e);SFX.play(color==='gold'?'stamp':'flash');setTimeout(()=>e.remove(),2200);}
 function fx(kind){const vn=$('#vn');if(!vn)return;vn.classList.remove(kind);void vn.offsetWidth;vn.classList.add(kind);setTimeout(()=>vn.classList.remove(kind),700);}
 function card(kind,a,b){
  paint();busy=true;S.line=null;const c=$('#vnCard');$('#vnBox').classList.add('quiet');
- c.className='vn-card '+kind;c.hidden=false;if(kind==='chapter')SFX.play('card');c.style.backgroundImage=kind==='chapter'&&ART_READY.has('ui_chapter_card.png')?`linear-gradient(#03090f88,#03090fcc),url(${asset('ui_chapter_card.png')})`:'';c.innerHTML=kind==='chapter'?`<small>${esc(a)}</small><h2>${esc(b)}</h2>`:`<p>${esc(a)}</p>`;
+ c.className='vn-card '+kind;c.hidden=false;if(kind==='chapter')SFX.play('card');c.style.backgroundImage=kind==='chapter'&&ART_READY.has('ui_chapter_card.png')?`linear-gradient(#03090f88,#03090fcc),url(${asset('ui_chapter_card.png')})`:'';c.innerHTML=kind==='chapter'?`<img class="vn-card-emblem" src="${asset('ui/emblem_gold.png')}" alt=""><small>${esc(a)}</small><h2>${esc(b)}</h2>`:`<p>${esc(a)}</p>`;
  const done=()=>{if(c.hidden)return;c.hidden=true;$('#vnBox')?.classList.remove('quiet');busy=false;S.pc++;step();};
  c.onclick=e=>{e.stopPropagation();done();};setTimeout(done,skip?150:kind==='chapter'?2600:1700);
 }
@@ -239,7 +241,7 @@ function ctcDrill(id){
   S.flags.ctcScore=R.score;S.flags.ctcRank=({S:4,A:3,B:2,C:1})[R.rank]||0;S.flags.ctcRewinds=(S.flags.ctcRewinds||0)+R.rewinds;
   if(R.rank==='S')S.flags.study=(S.flags.study||0)+1;
   const c=$('#vnCard');$('#vnBox').classList.add('quiet');c.className='vn-card drill-done';c.hidden=false;
-  c.innerHTML=`<small>실습 결과 · CTC LAB</small><h2>${esc(R.title)}</h2><p class="score rank-${R.rank}">${R.rank}</p><p>판단 첫 시도 정답 ${R.firstTry} / ${R.decisions}${R.rewinds?` · 예측 되감기 ${R.rewinds}회`:''}${R.hint?' · 힌트 사용':''}${R.scene?'':` · FTS 채점 ${R.score}점`}</p>${R.scope?`<p>${esc(R.scope.reason)} · ${R.procedureComplete?'필수 절차 완료':'필수 절차 미완료'}</p>`:''}${R.missed.length||R.deductions.length?`<ul class="sheet">${R.deductions.map(d=>`<li>⚠ 감점 · ${esc(d)}</li>`).join('')}${R.missed.slice(0,6).map(m=>`<li>남은 항목 · ${esc(m.length>70?m.slice(0,69)+'…':m)}</li>`).join('')}</ul>`:''}<button class="primary">이야기로 돌아가기 ▶</button>`;
+  c.innerHTML=`<img class="vn-card-emblem rank-emblem ${R.rank==='S'?'is-s':''}" src="${asset('ui/emblem_'+(R.rank==='S'?'gold':'teal')+'.png')}" alt=""><small>실습 결과 · CTC LAB</small><h2>${esc(R.title)}</h2><p class="score rank-${R.rank}">${R.rank}</p><p>판단 첫 시도 정답 ${R.firstTry} / ${R.decisions}${R.rewinds?` · 예측 되감기 ${R.rewinds}회`:''}${R.hint?' · 힌트 사용':''}${R.scene?'':` · FTS 채점 ${R.score}점`}</p>${R.scope?`<p>${esc(R.scope.reason)} · ${R.procedureComplete?'필수 절차 완료':'필수 절차 미완료'}</p>`:''}${R.missed.length||R.deductions.length?`<ul class="sheet">${R.deductions.map(d=>`<li>⚠ 감점 · ${esc(d)}</li>`).join('')}${R.missed.slice(0,6).map(m=>`<li>남은 항목 · ${esc(m.length>70?m.slice(0,69)+'…':m)}</li>`).join('')}</ul>`:''}<button class="primary">이야기로 돌아가기 ▶</button>`;
   c.querySelector('button').onclick=e=>{e.stopPropagation();c.hidden=true;$('#vnBox').classList.remove('quiet');busy=false;S.pc++;step();};
  });
 }
@@ -311,7 +313,7 @@ function menu(k){
 // 음악 파일이 하나도 없으면(타이틀 곡 없음) 치워 버린다.
 function soundGate(){
  if(BGM.status().unlocked||document.querySelector('.sound-gate'))return;
- const g=document.createElement('div');g.className='sound-gate';g.innerHTML='<div><small>RAILWAY DISPATCH VISUAL NOVEL</small><b>오르페이아</b><p>화면을 눌러 시작해요 ♪</p></div>';
+ const g=document.createElement('div');g.className='sound-gate';g.innerHTML='<div><img class="gate-emblem" src="'+asset('ui/emblem_white.png')+'" alt=""><small>RAILWAY DISPATCH VISUAL NOVEL</small><b>오르페이아</b><p>화면을 눌러 시작해요 ♪</p></div>';
  document.body.append(g);
  const done=e=>{if(e.type==='keydown'&&['Shift','Control','Alt','Meta','Escape','CapsLock','Tab'].includes(e.key))return;e.preventDefault();e.stopPropagation();remove();};
  const remove=()=>{g.classList.add('out');setTimeout(()=>g.remove(),400);document.removeEventListener('keydown',done,true);};
@@ -322,7 +324,7 @@ function title(){
  BGM.play('bgm_title');soundGate();stopAuto();clearTimeout(typing?.t);typing=null;busy=false;skip=false;auto=false;S=null;
  if(run){cancelStory();stopMedia();run=null;}document.body.classList.remove('in-drill');document.body.classList.add('vn-mode');closeDialogs();
  const cont=latest();
- $('#main').innerHTML=`<section class="vn-title"><img class="vn-title-bg${ART_READY.has(meta.cleared?'title_key_visual_clear.png':'title_key_visual.png')?' kv'+(meta.cleared?' kv-clear':''):''}" src="${asset(meta.cleared?art('title_key_visual_clear.png',art('title_key_visual.png',art('bg_spring_cherry.png','bg_control_room_night.png'))):art('title_key_visual.png','bg_control_room_night.png'))}" alt=""><img class="vn-title-chr" src="${asset(art('title_key_visual.png','')?'':'orpheia_sd_maid_v2.png')}" alt="" ${art('title_key_visual.png','')?'hidden':''}><div class="vn-title-body"><small>RAILWAY DISPATCH VISUAL NOVEL</small>${ART_READY.has('title_logo.png')?`<img class="vn-title-logo" src="${asset('title_logo.png')}" alt="오르페이아 — 電脳侍女의 비상관제 일지">`:'<h1>오르페이아<span>電脳侍女의 비상관제 일지</span></h1>'}${meta.cleared?'<p class="vn-cleared">ALL CLEAR · 회상과 갤러리가 모두 열렸어요</p>':''}<nav>
+ $('#main').innerHTML=`<section class="vn-title"><img class="vn-title-bg${ART_READY.has(meta.cleared?'title_key_visual_clear.png':'title_key_visual.png')?' kv'+(meta.cleared?' kv-clear':''):''}" src="${asset(meta.cleared?art('title_key_visual_clear.png',art('title_key_visual.png',art('bg_spring_cherry.png','bg_control_room_night.png'))):art('title_key_visual.png','bg_control_room_night.png'))}" alt=""><img class="vn-title-chr" src="${asset(art('title_key_visual.png','')?'':'orpheia_sd_maid_v2.png')}" alt="" ${art('title_key_visual.png','')?'hidden':''}><img class="vn-title-emblem" src="${asset('ui/emblem_teal.png')}" alt=""><div class="vn-title-body"><small>RAILWAY DISPATCH VISUAL NOVEL</small>${ART_READY.has('title_logo.png')?`<img class="vn-title-logo" src="${asset('title_logo.png')}" alt="오르페이아 — 電脳侍女의 비상관제 일지">`:'<h1>오르페이아<span>電脳侍女의 비상관제 일지</span></h1>'}${meta.cleared?'<p class="vn-cleared">ALL CLEAR · 회상과 갤러리가 모두 열렸어요</p>':''}<nav>
  <button class="primary" data-t="new">처음부터</button><button data-t="continue" ${cont?'':'disabled'}>이어하기</button><button data-t="load" ${Object.keys(meta.saves).length?'':'disabled'}>불러오기</button>${meta.cleared||meta.settings.unlockAll?'<button data-t="challenge" class="challenge">⚡ 도전 모드 · 무작위 상황 변경</button>':''}<button data-t="oral" class="oral-entry">🎓 구술 시험실 · 운행선관리 233문항</button><button data-t="recall">부록 · 교재 문제집</button><button data-t="gallery">갤러리</button><button data-t="config">설정</button></nav>
  <p class="vn-title-note">관제교육장 실전 시나리오를 실제 LS·MMI(CTC LAB)로 연습해요. 교재 74문제는 부록에서 언제든 풀 수 있어요.</p></div></section>`;
  const go={new:()=>{if(Object.keys(meta.saves).length&&!confirm('처음부터 시작할까요? 기존 세이브는 그대로 남습니다.'))return;S=fresh(chapters[0].id);log=[];shell();paint();step();},continue:()=>loadFrom(cont),load:()=>slotsDialog('load'),recall:()=>catalog(),oral:()=>Oral.start(),gallery:()=>openCG(),config,challenge:()=>Challenge.start()};

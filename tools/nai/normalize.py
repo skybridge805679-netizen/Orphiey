@@ -42,6 +42,8 @@ def normalize(path):
     out = Image.new('RGBA', (W, H), (0, 0, 0, 0))
     ox = round(W / 2 - cx)
     oy = H - im.size[1]                                    # 아래를 캔버스 아래에
+    if s <= 1.001 and t2 < want:
+        oy = want - t2                                     # 머리가 선보다 위면 아래로 내린다(아래쪽이 조금 더 잘린다)
     out.paste(im, (ox, oy), im)                            # 음수 위치도 잘려서 붙는다
     out.save(path)
     return s, ox

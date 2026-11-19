@@ -1,5 +1,3 @@
-2026-11-17T22:40:53.851Z
-NAI 생성 3장 성공, 0장 실패
-✅ assets/nai/face/face_instructor_neutral.png (seed 3001, params_version 4)
-✅ assets/nai/face/face_harin_neutral.png (seed 4101, params_version 4)
-✅ assets/nai/face/face_jian_neutral.png (seed 5102, params_version 4)
+2026-11-19T01:10:31.928Z
+NAI 생성 0장 성공, 0장 실패
+

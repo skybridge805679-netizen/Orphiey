@@ -24,7 +24,7 @@ function build(job,seed){
  // 인원 태그(1girl, 2girls…)는 기본 프롬프트에, 인물 외형은 캐릭터 칸에 (V5 다인물 규칙)
  const girls=chars.filter(c=>/girl/.test(c.d.count)).length,boys=chars.filter(c=>/boy/.test(c.d.count)).length;
  const count=[girls?`${girls}girl${girls>1?'s':''}`:'',boys?`${boys}boy${boys>1?'s':''}`:'',chars.length===1?'solo':''];
- const base=P.prompt_prefix.trim().replace(/,\s*$/,'')+', '+join(...count,job.chibi?'chibi, visual novel chibi':'',job.scene)+(job.quality===false?'':P.quality_suffix);
+ const base=(job.noPrefix?'':P.prompt_prefix.trim().replace(/,\s*$/,'')+', ')+join(...count,job.chibi?'chibi, visual novel chibi':'',job.scene)+(job.quality===false?'':P.quality_suffix);
  const uc=join(P.uc,job.uc);
  const many=chars.length>1;
  const char_captions=chars.map(c=>({char_caption:join(c.d.look,c.outfit??c.d.outfit,c.extra),centers:[{x:c.x??0.5,y:c.y??0.5}]}));

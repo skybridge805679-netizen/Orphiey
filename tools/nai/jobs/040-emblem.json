@@ -1,0 +1,53 @@
+{
+ "_comment": "오르페이아 문장 초안 (오리지널: 리라·선로·신호·메이드 리본·에메랄드). 참고한 것은 장르(흑백 대칭 문장)뿐",
+ "jobs": [
+  {
+   "out": "assets/nai/emblem/draft_a_lyre_wings.png",
+   "size": "square",
+   "noPrefix": true,
+   "seeds": [
+    9101,
+    9102
+   ],
+   "chars": [],
+   "scene": "no humans, emblem, symbol, insignia, heraldry, black and white, monochrome, high contrast, lineart, ink, symmetrical, ornate, intricate, tribal pattern, sharp curves, white background, simple background, centered, flat, vector art, a lyre at the center with strings made of parallel railway tracks, two large stylized swept wings spreading from the lyre, a small emerald gem at the heart of the lyre, ribbon ends trailing below, thin circular ring of tiny decorative script around the center",
+   "uc": "person, girl, face, color, colorful, gradient, 3d, photo, blurry, frame, border, watermark, signature"
+  },
+  {
+   "out": "assets/nai/emblem/draft_b_heart_signal.png",
+   "size": "square",
+   "noPrefix": true,
+   "seeds": [
+    9101,
+    9102
+   ],
+   "chars": [],
+   "scene": "no humans, emblem, symbol, insignia, heraldry, black and white, monochrome, high contrast, lineart, ink, symmetrical, ornate, intricate, tribal pattern, sharp curves, white background, simple background, centered, flat, vector art, a stylized heart shape formed by two curving railway rails, a railway signal lamp at the center, a long spear-like pointer crossing diagonally, maid ribbon bow woven through the heart, thorny vines and small musical notes, tiny decorative script bands",
+   "uc": "person, girl, face, color, colorful, gradient, 3d, photo, blurry, frame, border, watermark, signature"
+  },
+  {
+   "out": "assets/nai/emblem/draft_c_medallion.png",
+   "size": "square",
+   "noPrefix": true,
+   "seeds": [
+    9101,
+    9102
+   ],
+   "chars": [],
+   "scene": "no humans, emblem, symbol, insignia, heraldry, black and white, monochrome, high contrast, lineart, ink, symmetrical, ornate, intricate, tribal pattern, sharp curves, white background, simple background, centered, flat, vector art, a circular medallion containing a lyre silhouette, a maid headdress frill and ribbon bow crowning the top, railway tracks radiating outward like sun rays, ornate scrollwork and blades hanging below, a gem pendant at the bottom",
+   "uc": "person, girl, face, color, colorful, gradient, 3d, photo, blurry, frame, border, watermark, signature"
+  },
+  {
+   "out": "assets/nai/emblem/draft_d_circuit_lily.png",
+   "size": "square",
+   "noPrefix": true,
+   "seeds": [
+    9101,
+    9102
+   ],
+   "chars": [],
+   "scene": "no humans, emblem, symbol, insignia, heraldry, black and white, monochrome, high contrast, lineart, ink, symmetrical, ornate, intricate, tribal pattern, sharp curves, white background, simple background, centered, flat, vector art, a lily flower made of circuit board lines and rails, a lyre hidden in the petals, symmetrical blade-like leaves and swirling tendrils, a single gem in the center, tiny decorative script curving along the leaves",
+   "uc": "person, girl, face, color, colorful, gradient, 3d, photo, blurry, frame, border, watermark, signature"
+  }
+ ]
+}

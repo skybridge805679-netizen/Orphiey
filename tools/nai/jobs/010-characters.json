@@ -1,6 +1,58 @@
 {
- "_comment": "배치 1: 인물 스탠딩·얼굴 (오르페이아 seed 1001 고정, 인물마다 시드 하나로 차분 통일)",
+ "_comment": "인물 스탠딩 규격: cowboy shot · 832x1216 · 투명 배경. 기준 그림(neutral)과 의상은 시드, 표정은 012에서 기준 그림 img2img. 받은 뒤 tools/nai/normalize.py로 머리 높이·가운데 정렬",
  "jobs": [
+  {
+   "out": "assets/nai/chr/orpheia_sd_maid_v2.png",
+   "size": "portrait",
+   "seed": 1001,
+   "chars": [
+    {
+     "id": "orpheia",
+     "extra": "light smile, closed mouth, hands together"
+    }
+   ],
+   "scene": "visual novel sprite, cowboy shot, standing, looking at viewer, facing viewer, 2.1::transparent background::",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background, full body, feet, shoes"
+  },
+  {
+   "out": "assets/nai/chr/chr_instructor_neutral.png",
+   "size": "portrait",
+   "seed": 3001,
+   "chars": [
+    {
+     "id": "seo",
+     "extra": "expressionless, closed mouth, arms at sides"
+    }
+   ],
+   "scene": "visual novel sprite, cowboy shot, standing, looking at viewer, facing viewer, 2.1::transparent background::",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background, full body, feet, shoes"
+  },
+  {
+   "out": "assets/nai/chr/chr_harin_neutral.png",
+   "size": "portrait",
+   "seed": 4101,
+   "chars": [
+    {
+     "id": "harin",
+     "extra": "smile, closed mouth, hands behind back"
+    }
+   ],
+   "scene": "visual novel sprite, cowboy shot, standing, looking at viewer, facing viewer, 2.1::transparent background::",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background, full body, feet, shoes"
+  },
+  {
+   "out": "assets/nai/chr/chr_jian_neutral.png",
+   "size": "portrait",
+   "seed": 5102,
+   "chars": [
+    {
+     "id": "jian",
+     "extra": "expressionless, holding silver laptop computer, laptop under arm"
+    }
+   ],
+   "scene": "visual novel sprite, cowboy shot, standing, looking at viewer, facing viewer, 2.1::transparent background::",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background, full body, feet, shoes"
+  },
   {
    "out": "assets/nai/chr/orpheia_sd_casual.png",
    "size": "portrait",
@@ -12,8 +64,8 @@
      "outfit": "white blouse, light blue cardigan, long skirt, brown boots, shoulder bag"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
-   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background"
+   "scene": "visual novel sprite, cowboy shot, standing, looking at viewer, facing viewer, 2.1::transparent background::",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background, full body, feet, shoes"
   },
   {
    "out": "assets/nai/chr/orpheia_sd_yukata.png",
@@ -26,8 +78,8 @@
      "outfit": "yukata, floral print, obi, hair flower, sandals"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
-   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background"
+   "scene": "visual novel sprite, cowboy shot, standing, looking at viewer, facing viewer, 2.1::transparent background::",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background, full body, feet, shoes"
   },
   {
    "out": "assets/nai/chr/orpheia_sd_santa.png",
@@ -40,8 +92,8 @@
      "outfit": "santa costume, santa hat, fur trim, red dress, white apron, red capelet"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
-   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background"
+   "scene": "visual novel sprite, cowboy shot, standing, looking at viewer, facing viewer, 2.1::transparent background::",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background, full body, feet, shoes"
   },
   {
    "out": "assets/nai/chr/orpheia_sd_coat.png",
@@ -54,8 +106,8 @@
      "outfit": "winter coat, beige coat, white scarf, beret, gloves, boots"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
-   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background"
+   "scene": "visual novel sprite, cowboy shot, standing, looking at viewer, facing viewer, 2.1::transparent background::",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background, full body, feet, shoes"
   },
   {
    "out": "assets/nai/chr/orpheia_sd_suit.png",
@@ -68,8 +120,8 @@
      "outfit": "black business suit, black jacket, white shirt, black pencil skirt, black pantyhose, formal"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
-   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background"
+   "scene": "visual novel sprite, cowboy shot, standing, looking at viewer, facing viewer, 2.1::transparent background::",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background, full body, feet, shoes"
   },
   {
    "out": "assets/nai/chr/orpheia_sd_driver_v2.png",
@@ -82,8 +134,8 @@
      "outfit": "train conductor uniform, navy jacket, peaked cap, white gloves"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
-   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background"
+   "scene": "visual novel sprite, cowboy shot, standing, looking at viewer, facing viewer, 2.1::transparent background::",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background, full body, feet, shoes"
   },
   {
    "out": "assets/nai/chr/orpheia_sd_stationmaster_v2.png",
@@ -96,8 +148,8 @@
      "outfit": "station master uniform, navy uniform, peaked cap, armband, white gloves"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
-   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background"
+   "scene": "visual novel sprite, cowboy shot, standing, looking at viewer, facing viewer, 2.1::transparent background::",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background, full body, feet, shoes"
   },
   {
    "out": "assets/nai/chr/orpheia_sd_engineer_v2.png",
@@ -110,8 +162,8 @@
      "outfit": "yellow hardhat, high-visibility vest, work uniform, work gloves"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
-   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background"
+   "scene": "visual novel sprite, cowboy shot, standing, looking at viewer, facing viewer, 2.1::transparent background::",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background, full body, feet, shoes"
   },
   {
    "out": "assets/nai/chr/orpheia_sd_evacuation_v2.png",
@@ -124,33 +176,8 @@
      "outfit": "orange safety vest, armband, holding flashlight, maid headdress"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
-   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background"
-  },
-  {
-   "out": "assets/nai/face/face_neutral.png",
-   "size": "square",
-   "seed": 1001,
-   "chars": [
-    {
-     "id": "orpheia",
-     "extra": "light smile, closed mouth"
-    }
-   ],
-   "scene": "portrait, upper body, close-up, looking at viewer, transparent background"
-  },
-  {
-   "out": "assets/nai/chr/chr_instructor_neutral.png",
-   "size": "portrait",
-   "seed": 3001,
-   "chars": [
-    {
-     "id": "seo",
-     "extra": "expressionless, closed mouth, arms at sides"
-    }
-   ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
-   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background"
+   "scene": "visual novel sprite, cowboy shot, standing, looking at viewer, facing viewer, 2.1::transparent background::",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background, full body, feet, shoes"
   },
   {
    "out": "assets/nai/chr/chr_instructor_casual.png",
@@ -163,26 +190,13 @@
      "outfit": "beige turtleneck sweater, long camel coat, black pants"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
-   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background"
-  },
-  {
-   "out": "assets/nai/chr/chr_harin_neutral.png",
-   "size": "portrait",
-   "seed": 4001,
-   "chars": [
-    {
-     "id": "harin",
-     "extra": "smile, closed mouth"
-    }
-   ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
-   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background"
+   "scene": "visual novel sprite, cowboy shot, standing, looking at viewer, facing viewer, 2.1::transparent background::",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background, full body, feet, shoes"
   },
   {
    "out": "assets/nai/chr/chr_harin_casual.png",
    "size": "portrait",
-   "seed": 4001,
+   "seed": 4101,
    "chars": [
     {
      "id": "harin",
@@ -190,13 +204,13 @@
      "outfit": "yellow hoodie, denim shorts, sneakers, backpack"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
-   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background"
+   "scene": "visual novel sprite, cowboy shot, standing, looking at viewer, facing viewer, 2.1::transparent background::",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background, full body, feet, shoes"
   },
   {
    "out": "assets/nai/chr/chr_harin_yukata.png",
    "size": "portrait",
-   "seed": 4001,
+   "seed": 4101,
    "chars": [
     {
      "id": "harin",
@@ -204,21 +218,20 @@
      "outfit": "yukata, orange yukata, floral print, obi, hair flower, sandals"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
-   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background"
+   "scene": "visual novel sprite, cowboy shot, standing, looking at viewer, facing viewer, 2.1::transparent background::",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background, full body, feet, shoes"
   },
   {
-   "out": "assets/nai/chr/chr_jian_neutral.png",
-   "size": "portrait",
-   "seed": 5001,
+   "out": "assets/nai/face/face_neutral.png",
+   "size": "square",
+   "seed": 1001,
    "chars": [
     {
-     "id": "jian",
-     "extra": "expressionless, holding laptop"
+     "id": "orpheia",
+     "extra": "light smile, closed mouth"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
-   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background"
+   "scene": "portrait, upper body, close-up, looking at viewer, transparent background"
   },
   {
    "out": "assets/nai/face/face_harin_driver.png",

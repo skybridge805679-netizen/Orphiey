@@ -85,7 +85,7 @@ function step(){
    case 'add':S.flags[op.flag]=(S.flags[op.flag]||0)+op.val;S.pc++;break;
    case 'bg':S.bg=bgFile(op.arg);S.cg='';S.bgm='';markSeen(S.bg);BGM.scene(op.arg);S.pc++;paint();break;
    case 'bgm':S.bgm=op.arg==='auto'?'':op.arg;if(S.bgm)BGM.play(S.bgm==='off'?'':S.bgm);else BGM.scene(S.bg);S.pc++;break;
-   case 'cg':{const f=op.arg==='off'?'':cgFile(op.arg);S.cg=f;if(f)markSeen(f);S.pc++;paint();break;}
+   case 'cg':{const f=op.arg==='off'?'':cgFile(op.arg);S.cg=f;if(f){markSeen(f);S.chars={};S.phone=false;}S.pc++;paint();break;}   // CG가 뜨면 스탠딩은 치운다(끝나면 @show로 다시 세운다)
    case 'show':{const was=S.chars[op.who];S.chars[op.who]={expr:op.expr,pos:op.pos};if(!was)pendingFx[op.who]='enter';else if(was.expr!==op.expr&&EXPR_FX[op.expr])pendingFx[op.who]=EXPR_FX[op.expr];S.pc++;paint();break;}
    case 'phone':S.phone=op.arg!=='off';if(S.phone)SFX.play('phone');if(S.phone&&S.chars.orpheia)pendingFx.orpheia='enter';S.pc++;paint();break;
    case 'hop':case 'tilt':case 'nod':case 'sink':if(op.arg)pendingFx[ALIAS[op.arg]||op.arg]=op.t;S.pc++;paint();break;

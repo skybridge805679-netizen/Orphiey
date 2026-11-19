@@ -10,8 +10,8 @@
      "extra": "smile, open mouth, happy, hands together"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
-   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background",
+   "scene": "visual novel sprite, cowboy shot, standing, looking at viewer, facing viewer, 2.1::transparent background::",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background, full body, feet, shoes",
    "init": {
     "image": "assets/nai/chr/orpheia_sd_maid_v2.png",
     "strength": 0.5,
@@ -27,8 +27,8 @@
      "extra": "worried, frown, sad, hands together"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
-   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background",
+   "scene": "visual novel sprite, cowboy shot, standing, looking at viewer, facing viewer, 2.1::transparent background::",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background, full body, feet, shoes",
    "init": {
     "image": "assets/nai/chr/orpheia_sd_maid_v2.png",
     "strength": 0.5,
@@ -44,8 +44,8 @@
      "extra": "surprised, open mouth, wide-eyed"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
-   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background",
+   "scene": "visual novel sprite, cowboy shot, standing, looking at viewer, facing viewer, 2.1::transparent background::",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background, full body, feet, shoes",
    "init": {
     "image": "assets/nai/chr/orpheia_sd_maid_v2.png",
     "strength": 0.5,
@@ -61,8 +61,8 @@
      "extra": "pout, puffed cheeks, looking away, annoyed"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
-   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background",
+   "scene": "visual novel sprite, cowboy shot, standing, looking at viewer, facing viewer, 2.1::transparent background::",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background, full body, feet, shoes",
    "init": {
     "image": "assets/nai/chr/orpheia_sd_maid_v2.png",
     "strength": 0.55,
@@ -78,8 +78,8 @@
      "extra": "blush, shy, embarrassed, looking down, smile"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
-   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background",
+   "scene": "visual novel sprite, cowboy shot, standing, looking at viewer, facing viewer, 2.1::transparent background::",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background, full body, feet, shoes",
    "init": {
     "image": "assets/nai/chr/orpheia_sd_maid_v2.png",
     "strength": 0.5,
@@ -95,8 +95,8 @@
      "extra": "smile, index finger raised, pointing up, explaining, one eye closed, one hand on hip"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
-   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background",
+   "scene": "visual novel sprite, cowboy shot, standing, looking at viewer, facing viewer, 2.1::transparent background::",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background, full body, feet, shoes",
    "init": {
     "image": "assets/nai/chr/orpheia_sd_maid_v2.png",
     "strength": 0.75,
@@ -197,8 +197,8 @@
      "extra": "stern, frown, crossed arms"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
-   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background",
+   "scene": "visual novel sprite, cowboy shot, standing, looking at viewer, facing viewer, 2.1::transparent background::",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background, full body, feet, shoes",
    "init": {
     "image": "assets/nai/chr/chr_instructor_neutral.png",
     "strength": 0.75,
@@ -214,8 +214,8 @@
      "extra": "light smile, closed mouth, gentle"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
-   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background",
+   "scene": "visual novel sprite, cowboy shot, standing, looking at viewer, facing viewer, 2.1::transparent background::",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background, full body, feet, shoes",
    "init": {
     "image": "assets/nai/chr/chr_instructor_neutral.png",
     "strength": 0.5,
@@ -231,8 +231,8 @@
      "extra": "closed eyes, holding paper cup, drinking coffee"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
-   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background",
+   "scene": "visual novel sprite, cowboy shot, standing, looking at viewer, facing viewer, 2.1::transparent background::",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background, full body, feet, shoes",
    "init": {
     "image": "assets/nai/chr/chr_instructor_neutral.png",
     "strength": 0.65,
@@ -248,8 +248,8 @@
      "extra": "smile, open mouth, closed eyes, happy"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
-   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background",
+   "scene": "visual novel sprite, cowboy shot, standing, looking at viewer, facing viewer, 2.1::transparent background::",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background, full body, feet, shoes",
    "init": {
     "image": "assets/nai/chr/chr_harin_neutral.png",
     "strength": 0.5,
@@ -265,8 +265,8 @@
      "extra": "surprised, wide-eyed, open mouth"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
-   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background",
+   "scene": "visual novel sprite, cowboy shot, standing, looking at viewer, facing viewer, 2.1::transparent background::",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background, full body, feet, shoes",
    "init": {
     "image": "assets/nai/chr/chr_harin_neutral.png",
     "strength": 0.55,
@@ -282,8 +282,8 @@
      "extra": "pout, puffed cheeks, annoyed"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
-   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background",
+   "scene": "visual novel sprite, cowboy shot, standing, looking at viewer, facing viewer, 2.1::transparent background::",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background, full body, feet, shoes",
    "init": {
     "image": "assets/nai/chr/chr_harin_neutral.png",
     "strength": 0.55,
@@ -299,8 +299,8 @@
      "extra": "sparkling eyes, open mouth, excited, clenched hands"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
-   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background",
+   "scene": "visual novel sprite, cowboy shot, standing, looking at viewer, facing viewer, 2.1::transparent background::",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background, full body, feet, shoes",
    "init": {
     "image": "assets/nai/chr/chr_harin_neutral.png",
     "strength": 0.6,
@@ -316,8 +316,8 @@
      "extra": "light smile, holding silver laptop computer"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
-   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background",
+   "scene": "visual novel sprite, cowboy shot, standing, looking at viewer, facing viewer, 2.1::transparent background::",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background, full body, feet, shoes",
    "init": {
     "image": "assets/nai/chr/chr_jian_neutral.png",
     "strength": 0.5,
@@ -333,8 +333,8 @@
      "extra": "serious, pushing up eyewear"
     }
    ],
-   "scene": "visual novel sprite, full body, standing, looking at viewer, 2.1::transparent background::",
-   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background",
+   "scene": "visual novel sprite, cowboy shot, standing, looking at viewer, facing viewer, 2.1::transparent background::",
+   "uc": "patterned background, geometric background, multiple views, lab coat, white coat, scenery, outdoors, frame, border, rectangle, background, full body, feet, shoes",
    "init": {
     "image": "assets/nai/chr/chr_jian_neutral.png",
     "strength": 0.55,

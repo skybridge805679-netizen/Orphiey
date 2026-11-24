@@ -1,7 +1,7 @@
 (function(root){
 'use strict';
 // 구술 릴레이 (운행선관리 구술 연습): 문제가 하나씩 뜨고, 교육생이 말하면(음성인식) 핵심 항목이 하나씩 체크된다.
-//  · 항목을 다 말하면 즉시 끝, 제한 시간(기본 120초)이 지나도 끝. 「패스」라고 말하면 넘어간다.
+//  · 항목을 다 말하면 즉시 끝, 제한 시간(기본 120초)이 지나도 끝. 다 말했으면 「이상입니다」(못 말한 항목은 오답), 모르면 「패스」.
 //  · 끝나면 점수(부분점수)와 모범 답안 전체를 보여 주고, 말하지 못한 항목은 굵은 빨간 글씨로 표시한다. 몇 초 뒤 다음 문제.
 //  · 출제는 간격 반복(틀린 문제는 곧 다시, 맞힌 문제는 뜸하게). 기록은 이 컴퓨터에 남는다.
 // 마이크·받아쓰기는 음성 1인 모드의 것을 빌려 쓴다 (SimVoiceSolo.attach). 휴대폰 리모컨 마이크도 그대로 된다.
@@ -35,24 +35,36 @@ function start(opts){
  if(s.mode==='speak')VS()?.attach(consumer);      // 마이크는 말하기 모드에서만
  bindKeys();next();
 }
-const consumer={onText:text=>heard(text),hint:()=>run?.q?R().hint(run.q.item):''};
+// 마이크 빌려 쓰기: 길게 이어 말하므로 숨 고르기에서 자르고(10~20초 — 측정해 보니 6~12초보다 Whisper가 덜 빠뜨린다), 말하는 동안에도 중간 받아쓰기로 미리 체크한다.
+// 힌트에는 그 문제의 핵심 단어와 직전까지 받아쓴 글의 끝을 넣는다 (잘린 마디 앞뒤가 이어진다)
+// 휴대폰 리모컨에 알린다: 구술 연습(말하기) 중이면 리모컨에 휴대폰 마이크 버튼과 지금 문제가 뜬다
+function tell(on){if(run?.s.mode!=='speak'&&on)return;const q=run?.q;try{root.SimRemote?.command?.({type:'fts',op:'oral',on:!!on,question:q?.item.q||'',got:q?.done.length||0,total:q?.item.key.length||0,heard:q?.heard.at(-1)?.text||''});}catch{}}
+const consumer={onText:text=>heard(text),onPartial:text=>partial(text),live:true,segment:{soft:10,gap:0.25,hard:20},hint:()=>run?.q?R().hint(run.q.item,run.q.transcript):''};
 function next(){
  if(!run)return;clearTimeout(run.wait);const stats=load(KEY.stats,{});
  const item=R().pick(run.items,stats,{recent:run.recent,srs:run.s.srs});
  run.recent=[...run.recent,item.id].slice(-Math.min(5,Math.max(0,run.items.length-1)));
  run.q={item,transcript:'',heard:[],done:[],t0:Date.now(),limit:Math.max(10,Number(run.s.limit)||120)};run.phase='ask';
- render();if(run.s.read&&run.s.mode==='speak')VS()?.announce(item.q);
+ render();tell(true);if(run.s.read&&run.s.mode==='speak')VS()?.announce(item.q);
  clearInterval(run.timer);if(run.s.mode!=='card')run.timer=setInterval(tick,250);      // 카드는 시간 제한 없음
  if(run.s.mode==='type')setTimeout(()=>$('oralType')?.focus(),0);
 }
+// 중간 받아쓰기: 아직 끝나지 않은 마디의 글로 미리 체크한다 (체크는 되돌리지 않는다). 마디가 끝나 확정된 글이 오면 버린다
+function partial(text){if(!run||!['ask','grace'].includes(run.phase)||!text)return;const q=run.q;q.partial=text;
+ const newly=R().check(q.item,q.transcript+' '+text,q.done);if(!newly.length){render();return;}q.done.push(...newly);q.live=(q.live||0)+newly.length;
+ render();if(q.done.length===q.item.key.length)finish('all');}
+// 시간이 끝났을 때 하던 말: 마저 받아쓴 뒤(최대 5초) 채점한다 — 마지막에 몰아 말한 항목이 버려지지 않게
+function timeUp(){const q=run.q;if(run.s.mode!=='speak'){finish('time');return;}run.phase='grace';q.graceAt=Date.now();VS()?.flush();render();
+ const wait=()=>{if(!run||run.phase!=='grace'||run.q!==q)return;const st=VS()?.state()||{};if((!st.busy&&!st.talking)||Date.now()-q.graceAt>5000){run.phase='ask';finish('time');return;}setTimeout(wait,200);};setTimeout(wait,300);}
 function tick(){if(!run||run.phase!=='ask')return;const left=run.q.limit-(Date.now()-run.q.t0)/1000;const t=$('oralTime');if(t){t.textContent=clock(left);t.classList.toggle('low',left<=20);}
  const lv=$('oralLevel');if(lv){const st=VS()?.state()||{};lv.style.width=Math.round(Math.max(0,Math.min(1,(st.level||0)/3))*100)+'%';const m=$('oralMic');if(m)m.textContent=micText(st);}
- if(left<=0)finish('time');}
+ if(left<=0)timeUp();}
 function heard(text){
- if(!run||run.phase!=='ask'||!text)return;const q=run.q;
- if(R().isSkip(text)){q.heard.push({text,skip:true});finish('skip');return;}
- q.transcript+=' '+text;const newly=R().check(q.item,q.transcript,q.done);q.done.push(...newly);q.heard.push({text,hit:newly.length});
- render();if(q.done.length===q.item.key.length)finish('all');
+ if(!run||!['ask','grace'].includes(run.phase)||!text)return;const q=run.q;q.partial='';
+ if(R().isSkip(text)&&run.phase==='ask'){q.heard.push({text,skip:true});finish('skip');return;}
+ const head=R().endOf(text),said=head??text;      // 「이상입니다」: 함께 말한 앞부분까지 채점한 뒤 끝낸다
+ let newly=[];if(said.trim()){q.transcript+=' '+said;newly=R().check(q.item,q.transcript,q.done);q.done.push(...newly);}q.heard.push({text,hit:newly.length+(q.live||0),end:head!=null});q.live=0;tell(true);
+ if(run.phase==='grace'){render();return;}if(q.done.length===q.item.key.length){finish('all');return;}if(head!=null){finish('end');return;}render();
 }
 // self: 카드에서 스스로 매긴 점수 비율 (모르겠음 0 · 헷갈림 0.7 · 알았음 1)
 function finish(reason,self){
@@ -65,10 +77,10 @@ function finish(reason,self){
  run.phase='result';run.last=r;run.left=Number(run.s.gap)||5;render();
  const count=()=>{if(!run||run.phase!=='result')return;if(run.paused){run.wait=setTimeout(count,500);return;}if(run.left<=0){next();return;}const c=$('oralNext');if(c)c.textContent=`${run.left}초 뒤 다음 문제`;run.left--;run.wait=setTimeout(count,1000);};count();
 }
-function stop(closed){if(!run)return;clearInterval(run.timer);unbindKeys();clearTimeout(run.wait);VS()?.detach(consumer);const was=run;run=null;
+function stop(closed){if(!run)return;tell(false);clearInterval(run.timer);unbindKeys();clearTimeout(run.wait);VS()?.detach(consumer);const was=run;run=null;
  if(!closed&&doc){if(win&&!win.closed){summary(was);}else{const o=doc.getElementById('oralOverlay');if(o)o.hidden=true;}}}
 const clock=s=>{s=Math.max(0,Math.ceil(s));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');};
-const micText=st=>st.error&&!st.phone?'⚠ '+st.error:st.progress&&st.progress.total?`음성인식 모델 내려받는 중 ${Math.round(st.progress.loaded/1e6)} / ${Math.round(st.progress.total/1e6)}MB`:!st.model?'음성인식 준비 중…':st.busy?'⏳ 받아쓰는 중…':st.speaking?'🔊 문제 읽는 중':st.phone?'🎙 듣는 중 (휴대폰 마이크)':'🎙 듣는 중 — 말하세요';
+const micText=st=>st.error&&!st.phone?'⚠ '+st.error:st.progress&&st.progress.total?`음성인식 모델 ${st.progress.cached?'불러오는 중':'내려받는 중'} ${Math.round(st.progress.loaded/1e6)} / ${Math.round(st.progress.total/1e6)}MB`:!st.model?'음성인식 준비 중…':st.busy?'⏳ 받아쓰는 중…':st.speaking?'🔊 문제 읽는 중':st.phone?'🎙 듣는 중 (휴대폰 마이크)':'🎙 듣는 중 — 말하세요';
 // ── 화면
 function render(){
  const box=$('oralRoot');if(!box||!run)return;const q=run.q,it=q.item,res=run.results,avg=res.length?Math.round(res.reduce((a,r)=>a+r.score,0)/res.length):0;
@@ -86,11 +98,11 @@ function render(){
 <section class="oral-type"><textarea id="oralType" rows="5" placeholder="답을 입력하세요. 맞힌 항목은 위에 바로 체크됩니다. (Ctrl+Enter 제출)">${esc(q.typed||'')}</textarea></section>
 <footer class="oral-foot"><button type="button" id="oralSubmit" class="primary">제출 <kbd>Ctrl+Enter</kbd></button><button type="button" id="oralSkip">모르겠음</button><button type="button" id="oralStop">연습 끝내기</button></footer>`;
   const t=$('oralType');t.oninput=()=>{q.typed=t.value;q.done=R().check(it,t.value,[]);const sl=$('oralSlots');if(sl)sl.innerHTML=slotsOf(q);const c=$('oralCount');if(c)c.textContent=q.done.length+' / '+it.key.length;if(q.done.length===it.key.length)finish('all');};
- }else if(run.phase==='ask'){
+ }else if(run.phase==='ask'||run.phase==='grace'){
   const slots=it.key.map((k,i)=>q.done.includes(i)?`<li class="ok">✔ ${esc(k)}</li>`:`<li class="todo">○ 항목 ${i+1}</li>`).join('');
   box.innerHTML=`${head}<section class="oral-q">${meta}<h1>${esc(it.q)}</h1></section>
 <section class="oral-keys"><h2>말해야 할 항목 ${q.done.length} / ${it.key.length}</h2><ol>${slots}</ol></section>
-<section class="oral-heard"><h2><span id="oralMic">${esc(micText(VS()?.state()||{}))}</span> <span class="oral-meter"><i id="oralLevel"></i></span></h2><ul>${q.heard.slice(-4).reverse().map(h=>`<li class="${h.hit?'hit':''}"><q>${esc(h.text)}</q>${h.hit?` <small>+${h.hit}항목</small>`:''}</li>`).join('')||'<li class="empty">항목을 하나씩 말하세요. 「패스」라고 말하면 넘어갑니다.</li>'}</ul></section>
+<section class="oral-heard"><img class="oral-listen" src="assets/orpheia/ui/listen.webp" alt="" aria-hidden="true" width="560" height="562"><h2><span id="oralMic">${esc(micText(VS()?.state()||{}))}</span> <span class="oral-meter"><i id="oralLevel"></i></span></h2><ul>${run.phase==='grace'?'<li class="live">⏱ 시간 종료 — 하던 말을 마저 받아쓰는 중…</li>':''}${q.partial?`<li class="live"><q>${esc(q.partial)}</q> <small>듣는 중${q.live?` · +${q.live}항목`:''}</small></li>`:''}${q.heard.slice(-4).reverse().map(h=>`<li class="${h.hit?'hit':''}"><q>${esc(h.text)}</q>${h.hit?` <small>+${h.hit}항목</small>`:''}</li>`).join('')||'<li class="empty">항목을 하나씩 말하세요. 다 말했으면 「이상입니다」, 모르면 「패스」.</li>'}</ul></section>
 <footer class="oral-foot"><button type="button" id="oralSkip">패스 (다음 문제)</button><button type="button" id="oralStop">연습 끝내기</button>
 <details><summary>마이크 없이 시험 (글로 입력)</summary><form id="oralForm"><input id="oralText" autocomplete="off" placeholder="말할 내용을 입력"><button>입력</button></form></details></footer>`;
  }else{
@@ -98,7 +110,7 @@ function render(){
   // 모범 답안 줄 ↔ 빠진 항목: 그 줄과 가장 비슷한 항목이 빠졌으면 그 줄을 강조
   const lineMiss=line=>{let best=-1,score=0;it.key.forEach((k,i)=>{const s=Math.max(R().similar(k,line),R().similar(line,k));if(s>score){score=s;best=i;}});return score>=0.5&&missed.has(best);};
   box.innerHTML=`${head}<section class="oral-q">${meta}<h1>${esc(it.q)}</h1></section>
-<section class="oral-result ${r.score===100?'perfect':''}"><div class="oral-big">${r.score}점 <small>${r.got} / ${r.total}항목 · ${r.seconds}초 · ${{all:run.s.mode==='type'?'모두 맞힘':'모두 말함',time:'시간 종료',skip:run.s.mode==='type'?'모르겠음':'패스',submit:'제출'}[r.reason]}</small></div>
+<section class="oral-result ${r.score===100?'perfect':''}">${r.reason!=='self'&&run.s.mode!=='card'?`<img class="oral-react" src="assets/orpheia/ui/${r.score>=80?'perfect':r.reason==='time'?'alert':'cheer'}.webp" alt="" aria-hidden="true" width="560" height="560">`:''}<div class="oral-big">${r.score}점 <small>${r.got} / ${r.total}항목 · ${r.seconds}초 · ${{all:run.s.mode==='type'?'모두 맞힘':'모두 말함',time:'시간 종료',skip:run.s.mode==='type'?'모르겠음':'패스',end:'이상입니다',submit:'제출'}[r.reason]}</small></div>
 <h2>핵심 항목</h2><ol class="oral-check">${it.key.map((k,i)=>missed.has(i)?`<li class="miss">✖ <b>${esc(k)}</b></li>`:`<li class="ok">✔ ${esc(k)}</li>`).join('')}</ol>
 <h2>모범 답안 <small>— 말하지 못한 부분은 굵은 빨간 글씨</small></h2><ol class="oral-answer">${R().highlight(it,r.missed).map((parts,n)=>`<li class="${parts.length===1&&parts[0].miss||lineMiss(it.a[n])&&!parts.some(p=>!p.miss&&p.text.trim().length>8)?'miss':''}">${parts.map(p=>p.miss?`<mark class="miss">${esc(p.text)}</mark>`:esc(p.text)).join('')}</li>`).join('')}</ol>
 ${(it.ref||[]).length?`<h2>참고</h2><ul class="oral-ref">${it.ref.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}</section>
@@ -127,5 +139,5 @@ function overview(){const stats=load(KEY.stats,{}),all=R().all(),now=Date.now(),
  return {byMode:{speak:log.filter(r=>(r.mode||'speak')==='speak').length,card:log.filter(r=>r.mode==='card').length,type:log.filter(r=>r.mode==='type').length},total:all.length,seen:seen.length,due:seen.filter(x=>stats[x.id].due<=now).length,mastered:seen.filter(x=>(stats[x.id].interval||0)>=7).length,
   weak:seen.filter(x=>stats[x.id].score<100).sort((a,b)=>(stats[a.id].score-stats[b.id].score)||(stats[b.id].lapses-stats[a.id].lapses)).slice(0,8).map(x=>({id:x.id,q:x.q,score:stats[x.id].score,lapses:stats[x.id].lapses}))};}
 function reset(){save(KEY.stats,{});save(KEY.log,[]);}
-root.SimOralRelayUI={start,stop,settings,overview,reset,heard:t=>heard(t),state:()=>run&&{phase:run.phase,item:run.q?.item.id,done:run.q?.done.slice(),results:run.results.slice()}};
+root.SimOralRelayUI={start,stop,settings,overview,reset,heard:t=>heard(t),partial:t=>partial(t),state:()=>run&&{phase:run.phase,item:run.q?.item.id,done:run.q?.done.slice(),results:run.results.slice()}};
 })(typeof window!=='undefined'?window:globalThis);

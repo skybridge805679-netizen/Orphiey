@@ -33,8 +33,8 @@ const SECTIONS=['지하청량리-수원','지하청량리-영등포','지하청�
 // ---------------------------------------------------------------- shell
 const MENU=[['setup','교육설정'],['system','시스템관리'],['users','사용자관리'],['scenario','시나리오관리',[['problems','문제 관리'],['situations','상황 관리'],['scenarios','시나리오 관리']]],['monitor','모니터링관리'],['history','교육이력관리'],['oral','구술 연습'],['remote','원격 조작']];
 function shell(){
- return `<div class="fts"><div class="fts-head"><img class="fts-banner" src="assets/orpheia/banner.png" alt="" aria-hidden="true" width="2172" height="724"><div class="fts-brand"><img src="assets/orpheia/emblem.png" alt="" width="38" height="38"><div><small>ORPHEIA · TRAINING CONTROL</small><b>FTS 제어통제 시스템</b></div></div><span class="fts-lamps"><i class="fts-engine" title="${root.OrpheiaEngine.native===false?'관제 엔진 (브라우저 시험 연결)':'독립 관제 엔진 연결'}">ENGINE</i>${['CTC','EMC','SIC','DB'].map(x=>`<i class="simulated" title="${x} 모의 · 외부 장치 통신 미연결">${x} · 모의</i>`).join('')}</span></div>
-<div class="fts-main"><nav class="fts-nav">${MENU.map(([id,label,sub])=>`<button type="button" data-fts-page="${sub?sub[0][0]:id}" data-fts-group="${id}">▸ ${label}</button>${sub?`<div class="fts-sub">${sub.map(([s,l])=>`<button type="button" data-fts-page="${s}">— ${l}</button>`).join('')}</div>`:''}`).join('')}</nav>
+ return `<div class="fts"><div class="fts-head"><img class="fts-banner" src="assets/orpheia/banner.png" alt="" aria-hidden="true" width="1536" height="640"><div class="fts-brand"><img src="assets/orpheia/emblem.png" alt="" width="38" height="38"><div><small>ORPHEIA · TRAINING CONTROL</small><b>FTS 제어통제 시스템</b></div></div><span class="fts-lamps"><i class="fts-engine" title="${root.OrpheiaEngine.native===false?'관제 엔진 (브라우저 시험 연결)':'독립 관제 엔진 연결'}">ENGINE</i>${['CTC','EMC','SIC','DB'].map(x=>`<i class="simulated" title="${x} 모의 · 외부 장치 통신 미연결">${x} · 모의</i>`).join('')}</span></div>
+<div class="fts-main"><nav class="fts-nav">${MENU.map(([id,label,sub])=>`<button type="button" data-fts-page="${sub?sub[0][0]:id}" data-fts-group="${id}"><i class="fts-nav-dot" aria-hidden="true"></i>${label}</button>${sub?`<div class="fts-sub">${sub.map(([s,l])=>`<button type="button" data-fts-page="${s}"><i class="fts-nav-dot" aria-hidden="true"></i>${l}</button>`).join('')}</div>`:''}`).join('')}</nav>
 <section class="fts-workspace"><div class="fts-workspace-head"><div><small>INSTRUCTOR WORKSPACE</small><h2 id="ftsPageTitle">교육설정</h2></div><span id="ftsSessionStatus">교육 전 준비</span></div><div class="fts-body" id="ftsBody"></div></section></div></div>`;
 }
 function go(p){
@@ -241,7 +241,7 @@ ${table('sTable',['시나리오 상황명칭','구간','스케줄ID'],rows,{sele
    else{const sch=schedules().find(x=>x.id===schSel);if(!sch){alert('수정할 스케줄ID를 선택하세요.');return;}sch.timetable=snap;sch.createdAt=stamp();sch.relative=false;delete sch.generated;delete sch.timing;delete sch.builtin;}
    persist();go('situations');alert(`${schSel} 열차 스케줄에 ${snap.trains.length}개 열차를 저장했습니다.`);
   };
-  $('schDelete').onclick=()=>{const used=[...lib.situations.filter(x=>x.scheduleId===schSel),...lib.problems.filter(x=>x.setup?.scheduleId===schSel)];if(used.length){alert('상황·문제에서 사용 중인 스케줄입니다: '+used.map(x=>x.name).join(', '));return;}if(!schSel){alert('삭제할 스케줄ID를 선택하세요.');return;}confirmBox(`${schSel} 열차 스케줄을 삭제하시겠습니까?`,()=>{lib.schedules=schedules().filter(x=>x.id!==schSel);persist();schSel=null;go('situations');});};
+  $('schDelete').onclick=()=>{if(/^\d{3}00$/.test(schSel||'')){alert(`${schSel}는 마스터 스케줄(끝 두 자리 00)이라 삭제할 수 없습니다.`);return;}const used=[...lib.situations.filter(x=>x.scheduleId===schSel),...lib.problems.filter(x=>x.setup?.scheduleId===schSel)];if(used.length){alert('상황·문제에서 사용 중인 스케줄입니다: '+used.map(x=>x.name).join(', '));return;}if(!schSel){alert('삭제할 스케줄ID를 선택하세요.');return;}confirmBox(`${schSel} 열차 스케줄을 삭제하시겠습니까?`,()=>{lib.schedules=schedules().filter(x=>x.id!==schSel);persist();schSel=null;go('situations');});};
   $('schApplySit').onclick=()=>{if(!sSel||!schSel){alert('상황과 스케줄ID를 모두 선택하세요.');return;}const s=lib.situations.find(x=>x.id===sSel);s.scheduleId=schSel;persist();go('situations');};
   $('schCopy').onclick=()=>{const sch=schedules().find(x=>x.id===schSel),t=sch?.timetable?.trains.find(x=>x.id===schTrain),targets=schedules().filter(x=>x.id!==schSel);if(!t){alert('복사할 열차를 선택하세요.');return;}if(!targets.length){alert('대상 스케줄ID를 먼저 생성하세요.');return;}
    if(!M().windowIds().includes('ftsCopy'))M().createWindow('ftsCopy',{container:panel(),title:'스케줄 간 열차 복사',x:180,y:80,width:470,body:'<div class="fts-picker" id="ftsCopyBody"></div>'});
@@ -343,7 +343,7 @@ PAGES.setup={
 ${table('suSits',['시나리오상황','구간','스케줄ID'],rows)}
 <label><input type="checkbox" id="suActions" ${setup.showActions?'checked':''}> 교육생 문제 발생 화면에 조치사항 표시</label><label title="교수 없이 교육생이 말과 LS 조작만으로 진행합니다. 마이크로 들은 무전 한 마디마다 그 말에 나온 열차가 반응하고, 기관사·역·관제팀장의 대답을 음성으로 읽습니다."><input type="checkbox" id="suVoice" ${setup.voice?'checked':''}> 음성 1인 모드 (교수 없이 음성인식으로 진행)</label><div id="suVoicePrep"></div><label><input type="checkbox" id="suAuto" ${setup.autoRun?'checked':''}>교육 중 시간표에 따른 열차 자동운행</label>
 <div class="fts-row-btns"><button type="button" class="sched-btn primary" id="suStart">교육 시작</button><button type="button" class="sched-btn" id="suClear">Clear</button></div></div>
-<div class="fts-right"><div class="fts-bar">교육 설정</div><div class="fts-sub-bar">시나리오 조회</div><div class="fts-grid2"><label>스케줄ID<input id="suSch"></label><button type="button" class="sched-btn" id="suSchFind">조회</button></div><div id="suSchList"></div></div></div>`;
+<div class="fts-right"><div class="fts-bar">교육 설정</div><div class="fts-sub-bar">시나리오 조회</div><div class="fts-grid2"><label>스케줄ID<input id="suSch"></label><button type="button" class="sched-btn" id="suSchFind">조회</button></div><div id="suSchList"></div><img class="fts-deco fts-deco-greet" src="assets/orpheia/ui/greet.webp" alt="" aria-hidden="true" width="560" height="560"></div></div>`;
  },
  bind(){
   const remember=()=>{setup.professor=$('suProf').value;setup.student=$('suStud').value;setup.showActions=$('suActions').checked;setup.autoRun=$('suAuto').checked;setup.voice=$('suVoice').checked;};
@@ -407,7 +407,7 @@ function renderLog(){const box=$('ftsLog');if(!box)return;const list=logs().slic
  box.innerHTML=`<table><thead><tr><th>시각</th><th>구분</th><th>내용</th></tr></thead><tbody>${list.map(l=>`<tr class="${l.level==='E'?'bad':''}"><td>${esc(T().clock(l.at))}</td><td>${l.level==='E'?'오류':'정보'}</td><td>${esc(l.text)}</td></tr>`).join('')||'<tr class="empty"><td colspan="3">기록이 없습니다.</td></tr>'}</tbody></table>`;}
 function renderMonitor(){
  const box=$('ftsMonitor');if(!box)return;
- if(!session){box.innerHTML='<p class="fts-empty">진행 중인 교육이 없습니다. [교육설정]에서 시나리오를 고르고 교육 시작을 누르세요.</p>';return;}
+ if(!session){box.innerHTML='<div class="fts-idle"><img src="assets/orpheia/ui/wait.webp" alt="" aria-hidden="true" width="409" height="640"><p class="fts-empty">진행 중인 교육이 없습니다. [교육설정]에서 시나리오를 고르고 교육 시작을 누르세요.</p></div>';return;}
  const item=session.items[Math.min(session.current,session.items.length-1)],p=activeLibrary().problems.find(x=>x.id===item.problem),s=activeLibrary().situations.find(x=>x.id===item.situation);
  const v=F().view(p,item),ctx=ctxFor(item),elapsed=item.startedAt!=null?(item.endedAt??now())-item.startedAt:0;
  const remaining=Math.max(0,(p?.limit||0)-elapsed),progress=session.items.map(it=>{const q=activeLibrary().problems.find(x=>x.id===it.problem);return [it.status,it.error||'',it.score,(q?.checks||[]).map((_,i)=>!!it.met?.[i]),(q?.deductions||[]).map((_,i)=>!!it.deducted?.[i]),it.obj,it.missed,it.comm,it.reactions,it.branch];}),signature=JSON.stringify([session.current,progress,session.manual,session.finished,ctx.script,(p?.trigger?.conditions||[]).map((c,i)=>item.triggerMet?.[i]??F().test(c,ctx))]);
@@ -485,7 +485,7 @@ PAGES.oral={
   const s=O.settings(),v=O.overview(),chs=R.chapters();
   const opt=(val,label)=>`<option value="${esc(val)}" ${s.scope===val?'selected':''}>${esc(label)}</option>`;
   return `<div class="fts-split"><div class="fts-left"><div class="fts-bar">구술 릴레이 설정</div>
-<p class="fts-help">문제가 하나씩 뜨면 소리 내어 답하세요. 말한 핵심 항목이 하나씩 체크되고, 다 말하면 바로 다음 문제로 넘어갑니다. 「패스」라고 말하면 넘어갑니다.<br>마이크·음성인식은 음성 1인 모드와 같습니다 (PC 마이크 또는 휴대폰 리모컨의 「🎙 휴대폰 마이크」).</p>
+<p class="fts-help">문제가 하나씩 뜨면 소리 내어 답하세요. 말한 핵심 항목이 하나씩 체크되고, 다 말하면 바로 다음 문제로 넘어갑니다. 답을 마칠 때 「이상입니다」라고 하면 그 문제를 끝내고(못 말한 항목은 오답), 모르면 「패스」.<br>마이크·음성인식은 음성 1인 모드와 같습니다 (PC 마이크 또는 휴대폰 리모컨의 「🎙 휴대폰 마이크」).</p>
 <div class="fts-row-btns wrap" role="radiogroup" aria-label="연습 방식">${[['speak','🎙 말하기','소리 내어 답하면 항목이 체크'],['card','🃏 카드','정답을 보고 스스로 평가'],['type','⌨ 타이핑','입력하면 항목이 체크']].map(([m,l,d])=>`<label class="fts-mode ${s.mode===m?'on':''}"><input type="radio" name="orMode" value="${m}" ${s.mode===m?'checked':''}> <b>${l}</b> <small>${d}</small></label>`).join('')}</div>
 <p class="fts-help">세 방식은 같은 간격 반복 기록을 씁니다 — 말하기에서 틀린 문제는 카드·타이핑에서 곧 다시 나오고, 카드에서 「모르겠음」 한 문제는 말하기에서 먼저 나옵니다.</p>
 <div class="fts-grid2"><label>출제 범위<select id="orScope">${opt('all','전범위 ('+R.pool('all').length+'문항)')}${opt('exam','기출 ('+R.pool('exam').length+'문항)')}${chs.map(c=>opt('ch:'+c,c+' ('+R.pool('ch:'+c).length+'문항)')).join('')}</select></label>
@@ -529,7 +529,7 @@ ${table('rmClients',['구분','주소','기기','마지막 응답',''],(i.client
  }
 };
 PAGES.history={
- html:()=>`<div class="fts-cap">교육 이력</div>${table('hTable',['일시','교수','교육생','시나리오','점수','사유'],history.map(h=>({id:h.id,cells:[esc(Number.isFinite(Date.parse(h.at))?new Date(h.at).toLocaleString('sv-SE',{timeZone:'Asia/Seoul'}):h.at),esc(h.professor),esc(h.student),esc(h.scenario),`${h.got}/${h.full} (${h.percent}%)`,esc(h.reason)]})))}<div id="hDetail"></div>
+ html:()=>`<div class="fts-history-head"><img class="fts-deco fts-deco-grade" src="assets/orpheia/ui/grade.webp" alt="" aria-hidden="true" width="559" height="560"><div><div class="fts-cap">교육 이력</div><p class="fts-help">끝난 교육의 점수와 사유가 쌓입니다. 줄을 누르면 문제별 채점 내용을 볼 수 있습니다.</p></div></div>${table('hTable',['일시','교수','교육생','시나리오','점수','사유'],history.map(h=>({id:h.id,cells:[esc(Number.isFinite(Date.parse(h.at))?new Date(h.at).toLocaleString('sv-SE',{timeZone:'Asia/Seoul'}):h.at),esc(h.professor),esc(h.student),esc(h.scenario),`${h.got}/${h.full} (${h.percent}%)`,esc(h.reason)]})))}<div id="hDetail"></div>
 <div class="fts-row-btns"><button type="button" class="sched-btn" id="hExport">교육 이력 내보내기</button><button type="button" class="sched-btn danger" id="hClear">이력 모두 지우기</button></div>`,
  bind(){
   pick('hTable',id=>{const h=history.find(x=>x.id===id);$('hDetail').innerHTML=table('hRows',['과목','문제','상태','점수','소요(초)','미충족·오류'],h.rows.map((r,i)=>({id:String(i),cells:[esc(r.subject),esc(r.problem),esc(r.status),`${r.score}/${r.full}`,r.seconds??'',esc(r.error||(r.checks||[]).filter(c=>!c.met).map(c=>c.label).join(' · '))]})));});
@@ -558,5 +558,7 @@ function open(){
  panel().hidden=false;panel().classList.add('fts-inline');panel().scrollIntoView({block:'start'});return true;   // pop-ups blocked: in the LS page
 }
 function close(){if(root.SimWorkspace?.ftsDetached?.()){root.SimWorkspace.closeFts();return;}panel().hidden=true;panel().classList.remove('fts-inline');}
-root.SimFTSUI={init,open,close,isOpen:ftsOpen,showProblem,closeProblem,problemOpen,logs,go,library:()=>lib,session:()=>session,importLibrary,tick,users:()=>users,history:()=>history};
+// MMI 「오프라인 열차스케줄」 창이 같은 라이브러리(오프라인 스케줄 = lib.schedules)를 고칠 때: fn이 false를 돌려주면 되돌린다
+function commit(fn){syncRemote();const before=structuredClone(lib);let r;try{r=fn(lib);}catch(e){lib=before;throw e;}if(r===false){lib=before;return false;}if(!persist())return false;if(ftsOpen()&&page==='situations')go('situations');return true;}
+root.SimFTSUI={commit,init,open,close,isOpen:ftsOpen,showProblem,closeProblem,problemOpen,logs,go,library:()=>lib,session:()=>session,importLibrary,tick,users:()=>users,history:()=>history};
 })(window);

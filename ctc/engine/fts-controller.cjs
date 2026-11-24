@@ -85,6 +85,7 @@ while(current()?.situationIndex===entry){const x=current();if(x.startedAt===null
   case 'stop':close('교수 종료');return {ok:true};
   case 'reload':{if(!active(session))return {ok:false,message:'진행 중인 교육이 없습니다.'};const it=current(),entry=it.situationIndex,indices=session.items.map((x,i)=>x.situationIndex===entry?i:-1).filter(i=>i>=0);session.attempts.push({entry,at:now(),items:clone(indices.map(i=>session.items[i]))});for(const i of indices){const x=session.items[i];Object.assign(x,{status:'대기',startedAt:null,endedAt:null,met:[],deducted:[],score:0});delete x.error;delete x.fired;delete session.manual[i];}session.current=indices[0];session.readyAt=now();session.loadedEntry=null;session.attempt++;host.pause(false);announce('reload','상황 재로딩 · 이전 시도 기록 보존');step();return {ok:true};}
   case 'clearHistory':history=[];return {ok:true};
+  case 'oral':{oral=a.on?{on:true,question:String(a.question||'').slice(0,300),got:Number(a.got)||0,total:Number(a.total)||0,heard:String(a.heard||'').slice(0,200)}:null;return {ok:true};}      // LS의 구술 연습 상태 → 휴대폰 리모컨이 마이크를 켤 수 있게
   case 'voice':{const it=current();if(!active(session)||!session.voice||!it||it.error||it.status!=='진행')return {ok:false,message:'음성 모드로 진행 중인 문제가 없습니다.'};const r=voiceHear(it,String(a.text||'').slice(0,500));step();return r;}
   default:return {ok:false,message:'알 수 없는 FTS 명령'};
  }}
@@ -100,7 +101,7 @@ while(current()?.situationIndex===entry){const x=current();if(x.startedAt===null
  // ── 음성 1인 모드 (engine/voice.js): 교육생의 무전 한 마디 = 대본 한 단계. 그 말에 나온 열차만 반응하고, 상대 대사를 화면이 음성으로 읽는다.
  const plans=new Map();
  function voicePlan(it){const v=F.view(problem(it),it),key=it.problem+'|'+JSON.stringify(it.branch||{});if(!plans.has(key))plans.set(key,V.plan(v));return plans.get(key);}
- function voiceState(it){const k=session.items.indexOf(it);return session.voice.items[k]??={done:{},ran:[],played:{},queue:[],heard:[],seq:0};}
+ function voiceState(it){const k=session.items.indexOf(it);return session.voice.items[k]??={done:{},ran:[],played:{},queue:[],heard:[],seq:0,mem:{}};}
  function say(st,lines){for(const l of lines)st.queue.push({seq:++st.seq,who:l.who,name:l.name,text:l.text});if(st.queue.length>200)st.queue.splice(0,st.queue.length-200);}
  const voiceRan=(rid,ph)=>{const it=current();if(!session?.voice||!it)return false;return voiceState(it).ran.includes(rid+'|'+JSON.stringify(ph));};
  function findTrain(number){for(const [station,x] of Object.entries(host.context().ls.stations))for(const [slot,rows] of Object.entries(x.windows))for(const r of rows)if(r.number===number)return {station,slot,uid:r.uid,direction:r.direction};return null;}
@@ -138,13 +139,21 @@ while(current()?.situationIndex===entry){const x=current();if(x.startedAt===null
  function voiceHear(it,text){
   const st=voiceState(it),P=voicePlan(it),elapsed=now()-(it.startedAt??now());
   const open=P.comms.find(c=>c.steps.some(id=>{const s=P.steps.find(x=>x.id===id);return s.required&&st.done[id]==null;}));
-  const hits=V.match(P,st.done,text,{current:open?.id,near:voiceNext(st,P,4).map(s=>s.id)});
+  st.mem??={};const near=voiceNext(st,P,4);
+  for(const id of Object.keys(st.mem))if(st.done[id]!=null||!near.some(s=>s.id===id))delete st.mem[id];      // 이어 말하기 기억은 다음에 할 말(가까운 단계)에만 · 끝난 단계는 지운다
+  const said=V.trainsIn(text,P.known),ctx=st.ctx&&elapsed-st.ctx.at<=20?st.ctx.trains:[];      // 바로 앞 마디(20초 안)에서 부른 열차
+  const hits=V.match(P,st.done,text,{current:open?.id,near:near.map(s=>s.id),memory:st.mem,context:ctx});
+  if(said.length)st.ctx={trains:said,at:elapsed};
   st.heard.push({at:elapsed,text,norm:V.normalize(text),steps:hits.map(h=>h.step.id)});if(st.heard.length>300)st.heard.shift();
   if(!hits.length&&V.isAck(text)){st.heard.at(-1).ack=true;return {ok:true,matched:[],ack:true,heard:V.normalize(text)};}
-  if(!hits.length){log('음성 · 알아듣지 못함 · '+text,'W');return {ok:true,matched:[],heard:V.normalize(text),next:voiceNext(st,P,1)[0]?.text||''};}
+  // 긴 단계의 일부: 기억해 두고 다음 마디와 합쳐 본다 (숨 쉬며 나눠 말한 「안내방송 … / 호출 … 신호 확인 출발」)
+  if(!hits.length&&hits.partial){const s=hits.partial;(st.mem[s.id]??=[]).push(text);if(st.mem[s.id].length>6)st.mem[s.id].shift();const r=V.remaining(s,st.mem[s.id]);
+   st.heard.at(-1).partial=s.id;log('음성 · 일부 · '+s.comm+' · '+text,'I');
+   return {ok:true,matched:[],partial:{id:s.id,comm:s.comm,label:s.label,got:r.got,parts:r.parts,rest:r.rest},heard:V.normalize(text),next:r.rest||s.text};}
+  if(!hits.length){log('음성 · 알아듣지 못함 · '+text,'W');const n=voiceNext(st,P,1)[0],r=n&&st.mem[n.id]?V.remaining(n,st.mem[n.id]):null;return {ok:true,matched:[],heard:V.normalize(text),next:r?.rest||n?.text||''};}
   const m=session.manual[session.current]??={};
   for(const {step:s} of hits){
-   st.done[s.id]=elapsed;log('음성 · '+s.comm+' · '+s.text.slice(0,60));
+   st.done[s.id]=elapsed;delete st.mem[s.id];log('음성 · '+s.comm+' · '+s.text.slice(0,60));
    if(s.stop)voiceStop(st,s.stop);
    say(st,s.reply);
    for(const n of s.to)voiceTrainDone(it,st,P,s.comm,n);
@@ -155,7 +164,9 @@ while(current()?.situationIndex===entry){const x=current();if(x.startedAt===null
   return {ok:true,next:voiceNext(st,P,1)[0]?.text||'',matched:hits.map(h=>({id:h.step.id,comm:h.step.comm,text:h.step.text})),heard:V.normalize(text)};
  }
  // 원격 리모컨(모바일)용 요약: 엔진 전체 스냅숏 대신 지금 문제·시간·교수가 누를 항목만 내려 준다
- function remoteView(){
+ let oral=null;
+ function remoteView(){const v=remoteBase();if(oral)v.oral=oral;return v;}
+ function remoteBase(){
   // 교육 전(또는 끝난 뒤): 리모컨에서 시나리오를 골라 교육을 시작할 수 있게 목록을 같이 준다
   const setup={scenarios:library.scenarios.map(s=>({id:s.id,name:s.name,count:library.situations.filter(x=>s.situations.includes(x.id)).reduce((n,x)=>n+x.problems.length,0)})),
    professors:users.filter(u=>u.role==='교수').map(u=>({id:u.id,name:u.name})),students:users.filter(u=>u.role==='교육생').map(u=>({id:u.id,name:u.name||u.id}))};
@@ -169,7 +180,7 @@ while(current()?.situationIndex===entry){const x=current();if(x.startedAt===null
    problem:{name:p.name,subject:p.subject,limit:p.limit||0,status:it.status,error:it.error||null},elapsed,remaining:Math.max(0,(p.limit||0)-elapsed),
    comms:(v?.communications||[]).map(c=>({key:'comm:'+c.id,label:c.label,text:c.text||'',at:it.comm?.[c.id]??null,optional:!!c.optional})),
    branches:(p.branches||[]).map(b=>({key:'branch:'+b.id,label:b.label,at:it.branch?.[b.id]??null})),manual,
-   voice:session.voice?(()=>{const st=session.voice.items[idx];return {on:true,heard:(st?.heard||[]).slice(-6).reverse().map(h=>({text:h.text,ok:!!h.steps.length||!!h.ack,steps:h.steps.map(id=>{const step=voicePlan(it).steps.find(x=>x.id===id);return step?step.comm+' · '+step.text.slice(0,40):id;})}))};})():null,
+   voice:session.voice?(()=>{const st=session.voice.items[idx];return {on:true,heard:(st?.heard||[]).slice(-6).reverse().map(h=>({text:h.text,ok:!!h.steps.length||!!h.ack,partial:!!h.partial&&!h.steps.length,steps:h.steps.map(id=>{const step=voicePlan(it).steps.find(x=>x.id===id);return step?step.comm+' · '+step.text.slice(0,40):id;})}))};})():null,
    result:session.finished?F.summary(runLibrary,session):null,...(session.finished?{setup}:{})};
  }
  function checkpoint(){return clone({library,users,history,session,runLibrary,events,ui,revision,sequence,notice,configured,logs});}

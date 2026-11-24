@@ -7,13 +7,16 @@ env.backends.onnx.wasm.numThreads=typeof SharedArrayBuffer==='function'?Math.max
 // 그래픽카드(WebGPU, f16)가 되면 whisper-large-v3-turbo(약 560MB, 한국어가 훨씬 정확), 아니면 whisper-small(약 250MB, CPU)
 const SMALL='onnx-community/whisper-small',TURBO='onnx-community/whisper-large-v3-turbo';
 let asr=null,loading=null,name='';
-const progress={};
+const progress={};let cached=false;
+// 이 모델 파일이 이미 캐시에 있는지 (있으면 화면에 「내려받는 중」 대신 「불러오는 중」 — 캐시에서 읽을 때도 진행률이 오기 때문)
+const inCache=async id=>{try{const c=await caches.open('transformers-cache');return (await c.keys()).some(r=>r.url.includes('/'+id+'/'));}catch{return false;}};
 function load(){
  if(loading)return loading;
- const opts=device=>({device,dtype:{encoder_model:'q8',decoder_model_merged:'q8'},progress_callback:p=>{if(p.status==='progress'&&p.file){progress[p.file]=[p.loaded||0,p.total||0];const t=Object.values(progress).reduce((a,[l,s])=>[a[0]+l,a[1]+s],[0,0]);self.postMessage({type:'progress',loaded:t[0],total:t[1]});}}});
+ const opts=device=>({device,dtype:{encoder_model:'q8',decoder_model_merged:'q8'},progress_callback:p=>{if(p.status==='progress'&&p.file){progress[p.file]=[p.loaded||0,p.total||0];const t=Object.values(progress).reduce((a,[l,s])=>[a[0]+l,a[1]+s],[0,0]);self.postMessage({type:'progress',loaded:t[0],total:t[1],cached});}}});
  loading=(async()=>{
   let gpu=null;try{gpu=await navigator.gpu?.requestAdapter();}catch{}
-  if(gpu&&gpu.features?.has?.('shader-f16')){try{asr=await pipeline('automatic-speech-recognition',TURBO,{...opts('webgpu'),dtype:{encoder_model:'q4f16',decoder_model_merged:'q4f16'}});name='large-v3-turbo';return 'webgpu';}catch{asr=null;}}
+  if(gpu&&gpu.features?.has?.('shader-f16')){cached=await inCache(TURBO);try{asr=await pipeline('automatic-speech-recognition',TURBO,{...opts('webgpu'),dtype:{encoder_model:'q4f16',decoder_model_merged:'q4f16'}});name='large-v3-turbo';return 'webgpu';}catch{asr=null;}}
+  cached=await inCache(SMALL);
   if(gpu){try{asr=await pipeline('automatic-speech-recognition',SMALL,opts('webgpu'));name='small';return 'webgpu';}catch{asr=null;}}
   asr=await pipeline('automatic-speech-recognition',SMALL,opts('wasm'));name='small';return 'cpu';
  })().then(device=>{self.postMessage({type:'ready',device,model:name,threads:env.backends.onnx.wasm.numThreads});return device;},e=>{loading=null;self.postMessage({type:'error',message:String(e?.message||e)});throw e;});
@@ -24,18 +27,24 @@ let special=null;
 async function transcribe(audio,prompt){
  const tok=asr.tokenizer,id=t=>tok.convert_tokens_to_ids([t])[0];
  special??={sop:id('<|startofprev|>'),sot:id('<|startoftranscript|>'),ko:id('<|ko|>'),tr:id('<|transcribe|>'),nt:id('<|notimestamps|>')};
- const ctx=prompt?tok.encode(' '+String(prompt),{add_special_tokens:false}).slice(-180):[];
+ // 디코더는 앞 문맥까지 448토큰이 한계 → 소리 길이에 맞춰 받아쓸 토큰(1초에 약 14개)을 먼저 잡고, 남는 만큼만 앞 문맥을 넣는다 (engine/voice-segment.js budget과 같은 식)
+ const want=Math.min(440,Math.ceil(audio.length/16000*14)+16),room=Math.max(0,Math.min(180,448-want-6));
+ const ctx=prompt&&room?tok.encode(' '+String(prompt),{add_special_tokens:false}).slice(-room):[];
  const pre=[...(ctx.length?[special.sop,...ctx]:[]),special.sot,special.ko,special.tr,special.nt];
- const f=await asr.processor(audio),out=await asr.model.generate({...f,decoder_input_ids:[pre],max_new_tokens:160});
+ const f=await asr.processor(audio),out=await asr.model.generate({...f,decoder_input_ids:[pre],max_new_tokens:Math.min(want,447-pre.length)});
  const seq=out[0].tolist?out[0].tolist():Array.from(out[0].data??out[0]);
  return tok.decode(seq.slice(pre.length).map(Number),{skip_special_tokens:true}).trim();
 }
+const count=t=>(String(t||'').match(/[가-힣A-Za-z0-9]/g)||[]).length;
 self.onmessage=async e=>{
  const m=e.data;
  if(m.type==='load'){load().catch(()=>{});return;}
  if(m.type==='transcribe'){
   try{await load();const t0=performance.now();
-   self.postMessage({type:'text',id:m.id,text:await transcribe(m.audio,m.prompt),ms:Math.round(performance.now()-t0)});}
+   let text=await transcribe(m.audio,m.prompt);
+   // 말한 길이에 비해 글자가 너무 적으면(첫 문장에서 받아쓰기를 끝냄) 앞 문맥 없이 한 번 더 받아써 긴 쪽을 쓴다
+   if(m.minChars&&count(text)<m.minChars){const again=await transcribe(m.audio,'');if(count(again)>count(text)&&count(again)<=m.audio.length/16000*11)text=again;}
+   self.postMessage({type:'text',id:m.id,text,ms:Math.round(performance.now()-t0)});}
   catch(err){self.postMessage({type:'error',id:m.id,message:String(err?.message||err)});}
  }
 };
